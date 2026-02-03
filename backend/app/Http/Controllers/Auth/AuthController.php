@@ -25,7 +25,7 @@ class AuthController extends Controller
         $userData = $request->validated();
 
         // AN TOÀN: Luôn ép role là student cho luồng đăng ký công khai
-        $userData['role'] = 'student'; 
+        $userData['role'] = 'student';
         $userData['password'] = Hash::make($request->password);
 
         $user = User::create($userData);
@@ -67,7 +67,7 @@ class AuthController extends Controller
         // $user->tokens()->delete(); 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-            return response()->json([
+        return response()->json([
             'message' => 'Đăng nhập thành công!',
             'access_token' => $token,
             'token_type' => 'Bearer',
@@ -136,18 +136,18 @@ class AuthController extends Controller
 
         $validated = $request->validate([
             'email' => 'sometimes|required|email|unique:users,email,' . $user->id,
-            'name'  => 'sometimes|required|string|max:255',
+            'name' => 'sometimes|required|string|max:255',
             'phone' => 'nullable|string|max:15',
         ], [
             'email.unique' => 'Email này đã tồn tại trong hệ thống.',
-            'phone.max'    => 'Số điện thoại không được quá 15 ký tự.'
+            'phone.max' => 'Số điện thoại không được quá 15 ký tự.'
         ]);
         $user->fill($validated);
         $user->save();
 
         return response()->json([
             'message' => 'Cập nhật thông tin thành công!',
-            'data'    => $user
+            'data' => $user
         ]);
     }
     public function changePassword(ChangePasswordRequest $request)
@@ -172,53 +172,53 @@ class AuthController extends Controller
         ]);
     }
 
-// --- API 1: Gửi yêu cầu quên mật khẩu ---
-public function forgotPassword(Request $request)
-{
-    $request->validate([
-        'email' => 'required|email|exists:users,email' 
-    ], [
-        'email.exists' => 'Địa chỉ email này không tồn tại trong hệ thống.',
-        'email.email' => 'Email không đúng định dạng.',
-        'email.required' => 'Vui lòng nhập email.'
-    ]);
+    // --- API 1: Gửi yêu cầu quên mật khẩu ---
+    public function forgotPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email'
+        ], [
+            'email.exists' => 'Địa chỉ email này không tồn tại trong hệ thống.',
+            'email.email' => 'Email không đúng định dạng.',
+            'email.required' => 'Vui lòng nhập email.'
+        ]);
 
-    // Gửi link reset password (Laravel tự xử lý token và bảng password_reset_tokens)
-    $status = Password::sendResetLink($request->only('email'));
+        // Gửi link reset password (Laravel tự xử lý token và bảng password_reset_tokens)
+        $status = Password::sendResetLink($request->only('email'));
 
-    if ($status === Password::RESET_LINK_SENT) {
-        return response()->json(['message' => 'Đường dẫn đặt lại mật khẩu đã được gửi vào email của bạn.']);
-    }
-
-    // Nếu lỗi (ví dụ email không tồn tại)
-    return response()->json(['message' => 'Không thể gửi email. Vui lòng kiểm tra lại địa chỉ email.'], 400);
-}
-
-// --- API 2: Đặt lại mật khẩu mới (Sau khi user bấm link) ---
-public function resetPassword(Request $request)
-{
-    $request->validate([
-        'token' => 'required',
-        'email' => 'required|email',
-        'password' => 'required|min:8|confirmed',
-    ]);
-
-    $status = Password::reset(
-        $request->only('email', 'password', 'password_confirmation', 'token'),
-        function ($user, $password) {
-            $user->forceFill([
-                'password' => Hash::make($password)
-            ])->save();
-            
-            // Có thể thêm dòng này để xóa hết token cũ (bảo mật)
-             $user->tokens()->delete(); 
+        if ($status === Password::RESET_LINK_SENT) {
+            return response()->json(['message' => 'Đường dẫn đặt lại mật khẩu đã được gửi vào email của bạn.']);
         }
-    );
 
-    if ($status === Password::PASSWORD_RESET) {
-        return response()->json(['message' => 'Mật khẩu đã được đặt lại thành công.']);
+        // Nếu lỗi (ví dụ email không tồn tại)
+        return response()->json(['message' => 'Không thể gửi email. Vui lòng kiểm tra lại địa chỉ email.'], 400);
     }
 
-    return response()->json(['message' => 'Token không hợp lệ hoặc đã hết hạn.'], 400);
+    // --- API 2: Đặt lại mật khẩu mới (Sau khi user bấm link) ---
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password)
+                ])->save();
+
+                // Có thể thêm dòng này để xóa hết token cũ (bảo mật)
+                $user->tokens()->delete();
+            }
+        );
+
+        if ($status === Password::PASSWORD_RESET) {
+            return response()->json(['message' => 'Mật khẩu đã được đặt lại thành công.']);
+        }
+
+        return response()->json(['message' => 'Token không hợp lệ hoặc đã hết hạn.'], 400);
     }
 }
