@@ -1,7 +1,10 @@
 <?php
 
 namespace App\Http\Controllers\Auth;
-
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SendOtpMail;
 use App\Http\Controllers\Controller;
 use App\Models\Auth\User;
 use App\Http\Requests\Auth\RegisterRequest;
@@ -177,48 +180,62 @@ class AuthController extends Controller
     {
         $request->validate([
             'email' => 'required|email|exists:users,email'
-        ], [
-            'email.exists' => 'Địa chỉ email này không tồn tại trong hệ thống.',
-            'email.email' => 'Email không đúng định dạng.',
-            'email.required' => 'Vui lòng nhập email.'
         ]);
 
-        // Gửi link reset password (Laravel tự xử lý token và bảng password_reset_tokens)
-        $status = Password::sendResetLink($request->only('email'));
+        $email = $request->email;
+        
+        // 1. Sinh mã OTP 6 số
+        $otp = rand(100000, 999999);
 
-        if ($status === Password::RESET_LINK_SENT) {
-            return response()->json(['message' => 'Đường dẫn đặt lại mật khẩu đã được gửi vào email của bạn.']);
-        }
+        // 2. Lưu vào database (Dùng updateOrInsert để email luôn chỉ có 1 mã mới nhất)
+        DB::table('password_otps')->updateOrInsert(
+            ['email' => $email],
+            [
+                'otp' => $otp,
+                'created_at' => Carbon::now()
+            ]
+        );
+        $user = User::where('email', $email)->first();
+        // 3. Gửi email
+        Mail::to($email)->send(new SendOtpMail($otp, $user->name));
 
-        // Nếu lỗi (ví dụ email không tồn tại)
-        return response()->json(['message' => 'Không thể gửi email. Vui lòng kiểm tra lại địa chỉ email.'], 400);
+        return response()->json(['message' => 'Mã OTP đã được gửi đến email của bạn.']);
     }
 
-    // --- API 2: Đặt lại mật khẩu mới (Sau khi user bấm link) ---
+// --- API 2: Đặt lại mật khẩu bằng OTP ---
     public function resetPassword(Request $request)
     {
         $request->validate([
-            'token' => 'required',
-            'email' => 'required|email',
+            'email'    => 'required|email|exists:users,email',
+            'otp'      => 'required|digits:6',
             'password' => 'required|min:8|confirmed',
         ]);
 
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user, $password) {
-                $user->forceFill([
-                    'password' => Hash::make($password)
-                ])->save();
+        // 1. Tìm bản ghi OTP theo email
+        $otpRecord = DB::table('password_otps')->where('email', $request->email)->first();
 
-                // Có thể thêm dòng này để xóa hết token cũ (bảo mật)
-                $user->tokens()->delete();
-            }
-        );
-
-        if ($status === Password::PASSWORD_RESET) {
-            return response()->json(['message' => 'Mật khẩu đã được đặt lại thành công.']);
+        // 2. Kiểm tra OTP có tồn tại và khớp không
+        if (!$otpRecord || $otpRecord->otp != $request->otp) {
+            return response()->json(['message' => 'Mã OTP không chính xác.'], 400);
         }
 
-        return response()->json(['message' => 'Token không hợp lệ hoặc đã hết hạn.'], 400);
+        // 3. Kiểm tra hết hạn
+        if (Carbon::parse($otpRecord->created_at)->addMinutes(10)->isPast()) {
+            DB::table('password_otps')->where('email', $request->email)->delete(); // Xóa mã cũ
+            return response()->json(['message' => 'Mã OTP đã hết hạn. Vui lòng lấy mã mới.'], 400);
+        }
+
+        // 4. Đổi mật khẩu cho User
+        $user = User::where('email', $request->email)->first();
+        $user->password = Hash::make($request->password);
+        $user->save();
+        
+        // Xóa Token Sanctum cũ để bắt đăng nhập lại
+        $user->tokens()->delete(); 
+
+        // 5. Xóa OTP sau khi dùng xong
+        DB::table('password_otps')->where('email', $request->email)->delete();
+
+        return response()->json(['message' => 'Mật khẩu đã được đặt lại thành công. Bạn có thể đăng nhập ngay.']);
     }
 }
