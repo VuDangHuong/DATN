@@ -20,4 +20,10 @@ export const authApi = {
   updateProfile(data) {
     return axiosClient.post('auth/update-profile', data)
   },
+  forgotPassword(email) {
+    return axiosClient.post('auth/forgot-password', { email })
+  },
+  resetPassword(data) {
+    return axiosClient.post('auth/reset-password', data)
+  },
 }

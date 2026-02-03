@@ -120,6 +120,24 @@ export const useAuthStore = defineStore('auth', () => {
       throw error
     }
   }
+
+  async function forgotPassword(email) {
+    try {
+      const response = await authApi.forgotPassword(email)
+      return response
+    } catch (error) {
+      throw error
+    }
+  }
+
+  async function resetPassword(payload) {
+    try {
+      const response = await authApi.resetPassword(payload)
+      return response
+    } catch (error) {
+      throw error
+    }
+  }
   return {
     user,
     token,
@@ -130,5 +148,7 @@ export const useAuthStore = defineStore('auth', () => {
     updateAvatar,
     fetchUser,
     updateProfile,
+    forgotPassword,
+    resetPassword,
   }
 })

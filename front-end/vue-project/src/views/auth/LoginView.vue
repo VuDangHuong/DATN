@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import logoTlu from '@/assets/images/logo-dai-hoc-thuy-loi.jpg'
-
+import ForgotPasswordModal from './ForgotPasswordModal.vue'
 const router = useRouter()
 const authStore = useAuthStore()
 
@@ -11,6 +11,8 @@ const email = ref('')
 const password = ref('')
 const isLoading = ref(false)
 const errorMessage = ref('')
+
+const showForgotModal = ref(false)
 
 const handleLogin = async () => {
   errorMessage.value = ''
@@ -179,12 +181,16 @@ const handleLogin = async () => {
             </label>
           </div>
           <div class="text-sm">
-            <a href="#" class="font-medium text-blue-800 hover:text-blue-600 hover:underline">
+            <a
+              href="#"
+              @click.prevent="showForgotModal = true"
+              class="font-medium text-blue-800 hover:text-blue-600 hover:underline"
+            >
               Quên mật khẩu?
             </a>
           </div>
         </div>
-
+        <ForgotPasswordModal :show="showForgotModal" @close="showForgotModal = false" />
         <div>
           <button
             type="submit"
@@ -227,5 +233,4 @@ const handleLogin = async () => {
 </template>
 
 <style scoped>
-/* Bạn có thể thêm CSS tùy chỉnh ở đây nếu Tailwind không đủ */
 </style>
