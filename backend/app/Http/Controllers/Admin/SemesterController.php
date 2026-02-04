@@ -15,7 +15,13 @@ class SemesterController extends Controller
     public function index(Request $request)
     {
         $query = Semester::query();
-
+        if ($request->has('search') && !empty($request->search)) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('name', 'LIKE', "%{$search}%")
+                ->orWhere('code', 'LIKE', "%{$search}%");
+            });
+        }
         // Sắp xếp kỳ mới nhất lên đầu
         $query->orderBy('year', 'desc')->orderBy('code', 'desc');
 
