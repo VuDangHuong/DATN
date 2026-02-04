@@ -89,7 +89,7 @@ class SemesterController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Logic phụ: Nếu update thành Active, tắt các kỳ khác
+        // Logic phụ: Nếu update thành Active, tắt các kỳ khác sẽ off đi
         if ($request->has('is_active') && $request->is_active == true) {
              Semester::where('id', '!=', $id)->update(['is_active' => false]);
         }
