@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 // Giả sử bạn đã tạo UserController để Admin tạo tài khoản cho GV
 use App\Http\Controllers\Admin\UserController; 
+use App\Http\Controllers\Admin\SemesterController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,6 +36,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/users/import', [UserController::class, 'import']);
     });
 
+    Route::prefix('semesters')->group(function () {
+        Route::get('/', [SemesterController::class, 'index']);
+        Route::get('/{id}', [SemesterController::class, 'show']);
+
+        Route::middleware('role:admin')->group(function () {
+            Route::post('/', [SemesterController::class, 'store']);
+            Route::put('/{id}', [SemesterController::class, 'update']);
+            Route::delete('/{id}', [SemesterController::class, 'destroy']);
+        });
+    });
     // Lưu ý: Nếu Admin cũng cần quyền làm việc của GV, có thể để 'role:lecturer,admin'
     Route::prefix('lecturer')->middleware('role:lecturer,admin')->group(function () {
         // API chấm điểm, duyệt đề tài...
