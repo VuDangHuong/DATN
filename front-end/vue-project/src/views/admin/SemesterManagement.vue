@@ -12,6 +12,7 @@ const { semesters, loading } = storeToRefs(semesterStore)
 const showModal = ref(false)
 const isEditing = ref(false)
 const formErrors = ref({})
+const searchQuery = ref('')
 
 const defaultForm = {
   id: null,
@@ -24,6 +25,19 @@ const defaultForm = {
 }
 
 const form = reactive({ ...defaultForm })
+
+const debounce = (fn, delay = 300) => {
+  let timeout
+  return (...args) => {
+    clearTimeout(timeout)
+    timeout = setTimeout(() => fn(...args), delay)
+  }
+}
+
+const handleSearch = debounce(() => {
+  // Gọi action fetchSemesters trong Store kèm tham số search
+  semesterStore.fetchSemesters({ search: searchQuery.value })
+}, 500)
 
 const formatDate = (dateString) => {
   if (!dateString) return '---'
@@ -118,18 +132,36 @@ onMounted(() => {
 
 <template>
   <div class="p-6">
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
       <div>
         <h1 class="text-2xl font-bold text-gray-800">Quản lý Học kỳ</h1>
         <p class="text-sm text-gray-500">Thiết lập thời gian và trạng thái các kỳ học.</p>
       </div>
-      <button
-        @click="openCreateModal"
-        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center shadow-sm transition"
-      >
-        <SvgIcon name="plus" class="h-5 w-5 mr-2" />
-        Tạo học kỳ mới
-      </button>
+
+      <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+        <div class="relative w-full sm:w-64">
+          <span
+            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400"
+          >
+            <SvgIcon name="search" class="h-5 w-5" />
+          </span>
+          <input
+            v-model="searchQuery"
+            @input="handleSearch"
+            type="text"
+            placeholder="Tìm theo tên hoặc mã..."
+            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm"
+          />
+        </div>
+
+        <button
+          @click="openCreateModal"
+          class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center justify-center shadow-sm transition whitespace-nowrap"
+        >
+          <SvgIcon name="plus" class="h-5 w-5 mr-2" />
+          Tạo học kỳ mới
+        </button>
+      </div>
     </div>
 
     <div class="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
