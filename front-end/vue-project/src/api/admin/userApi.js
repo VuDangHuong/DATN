@@ -1,5 +1,5 @@
 // src/api/userApi.js
-import axiosClient from './axiosClient'
+import axiosClient from '../axiosClient'
 
 export const userApi = {
   // Lấy danh sách (có lọc và phân trang)

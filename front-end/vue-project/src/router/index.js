@@ -13,6 +13,7 @@ import SystemConfig from '@/views/admin/SystemConfig.vue'
 import Reports from '@/views/admin/Reports.vue'
 import ChangePasswordForm from '@/views/auth/ChangePasswordForm.vue'
 import ProfileView from '@/components/profile/ProfileView.vue'
+import SemesterManagement from '@/views/admin/SemesterManagement.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -34,6 +35,11 @@ const router = createRouter({
           path: 'dashboard', // /admin/dashboard
           name: 'admin-dashboard',
           component: AdminDashboard,
+        },
+        {
+          path: 'semesters', // /admin/users
+          name: 'semester-management',
+          component: SemesterManagement,
         },
         {
           path: 'users', // /admin/users

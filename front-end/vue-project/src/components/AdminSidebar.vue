@@ -24,6 +24,7 @@ const handleLinkClick = () => {
 const menuItems = [
   { name: 'Dashboard', path: '/admin/dashboard', icon: 'dashboard' },
   { name: 'Quản lý người dùng', path: '/admin/users', icon: 'users' },
+  { name: 'Quản lý niên khóa', path: '/admin/semesters', icon: 'semesters' },
   { name: 'Quản lý lớp học phần', path: '/admin/classes', icon: 'classes' },
   { name: 'Quản lý danh mục', path: '/admin/master-data', icon: 'master-data' },
   { name: 'Cấu hình hệ thống', path: '/admin/settings', icon: 'settings' },

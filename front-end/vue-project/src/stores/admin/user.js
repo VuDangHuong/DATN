@@ -1,7 +1,7 @@
 // File: src/stores/user.js
 import { defineStore } from 'pinia'
 import { ref, reactive } from 'vue'
-import { userApi } from '@/api/userApi'
+import { userApi } from '@/api/admin/userApi'
 
 export const useUserStore = defineStore('user', () => {
   // --- STATE (Dữ liệu) ---
