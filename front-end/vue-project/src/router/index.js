@@ -8,7 +8,7 @@ import DashboardView from '../DashboardView.vue'
 import AdminDashboard from '@/views/admin/AdminDashboard.vue'
 import UserManagement from '@/views/admin/UserManagement.vue'
 import ClassManagement from '@/views/admin/ClassManagement.vue'
-import MasterData from '@/views/admin/MasterData.vue'
+import CategoryManagement from '@/views/admin/CategoryManagement.vue'
 import SystemConfig from '@/views/admin/SystemConfig.vue'
 import Reports from '@/views/admin/Reports.vue'
 import ChangePasswordForm from '@/views/auth/ChangePasswordForm.vue'
@@ -54,7 +54,7 @@ const router = createRouter({
         {
           path: 'master-data',
           name: 'master-data',
-          component: MasterData,
+          component: CategoryManagement,
         },
         {
           path: 'settings',

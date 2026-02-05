@@ -1,4 +1,4 @@
-// src/api/userApi.js
+// src/api/admin/userApi.js
 import axiosClient from '../axiosClient'
 
 export const userApi = {
