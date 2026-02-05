@@ -14,23 +14,29 @@ class UserController extends Controller
     {
         $query = User::query();
 
-        // Nếu có truyền role lên (ví dụ ?role=lecturer) thì lọc, không thì lấy hết
+        // 1. Lọc theo Role (lecturer, student, admin)
         if ($request->has('role') && $request->role != 'all') {
             $query->where('role', $request->role);
         }
 
-        // Tìm kiếm theo tên hoặc mã hoặc email
+        // 2. Tìm kiếm
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'LIKE', "%{$search}%")
-                    ->orWhere('email', 'LIKE', "%{$search}%")
-                    ->orWhere('code', 'LIKE', "%{$search}%");
+                ->orWhere('email', 'LIKE', "%{$search}%")
+                ->orWhere('code', 'LIKE', "%{$search}%");
             });
         }
 
-        // Sắp xếp mới nhất trước và phân trang 10 dòng/trang
-        $users = $query->orderBy('created_at', 'desc')->paginate(10);
+        // Sắp xếp
+        $query->orderBy('created_at', 'desc');
+
+        if ($request->has('all') && $request->all == 'true') {
+            $users = $query->get();
+        } else {
+            $users = $query->paginate(10);
+        }
 
         return response()->json($users);
     }

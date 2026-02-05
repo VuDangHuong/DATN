@@ -7,7 +7,7 @@ use App\Http\Controllers\Admin\SemesterController;
 use App\Http\Controllers\Admin\FacultyController;
 use App\Http\Controllers\Admin\MajorController;
 use App\Http\Controllers\Admin\ModuleClassController;
-
+use App\Http\Controllers\Admin\SubjectController;
 /*
 |--------------------------------------------------------------------------
 | 1. PUBLIC ROUTES (Không cần đăng nhập)
@@ -64,9 +64,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // Đường dẫn sẽ là: /api/admin/faculties, /api/admin/majors...
         Route::apiResource('faculties', FacultyController::class);
         Route::apiResource('majors', MajorController::class);
+        Route::apiResource('subjects', SubjectController::class);
         Route::apiResource('classes', ModuleClassController::class);
         
         // 3. Quản lý Học kỳ (Thêm/Sửa/Ẩn)
+        Route::get('/semesters', [SemesterController::class, 'index']);
         Route::post('/semesters', [SemesterController::class, 'store']);
         Route::put('/semesters/{id}', [SemesterController::class, 'update']);
         Route::delete('/semesters/{id}', [SemesterController::class, 'destroy']);

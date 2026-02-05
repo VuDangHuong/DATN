@@ -5,13 +5,18 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Academic\Classes;
 use Illuminate\Http\Request;
-
+use App\Models\Academic\Semester;
 class ModuleClassController extends Controller
 {
     public function index(Request $request)
     {
         $query = Classes::with(['subject', 'semester', 'teacher']);
 
+        if (!$request->has('include_inactive')) {
+            $query->whereHas('semester', function($q) {
+                $q->where('is_active', true);
+            });
+        }
         // Lọc theo Học kỳ
         if ($request->has('semester_id')) {
             $query->where('semester_id', $request->semester_id);
@@ -42,7 +47,12 @@ class ModuleClassController extends Controller
             'name'         => 'nullable|string',
             'max_members' => 'integer|min:1'
         ]);
-
+        $semester = Semester::find($request->semester_id);
+        if (!$semester || !$semester->is_active) {
+            return response()->json([
+                'message' => 'Không thể mở lớp. Học kỳ này hiện đang đóng hoặc không tồn tại.'
+            ], 403);
+        }
         $class = Classes::create($request->all());
 
         return response()->json(['message' => 'Mở lớp học phần thành công', 'data' => $class], 201);
@@ -60,6 +70,11 @@ class ModuleClassController extends Controller
         $class = Classes::find($id);
         if (!$class) return response()->json(['message' => 'Lớp không tồn tại'], 404);
 
+        if (!$class->semester || !$class->semester->is_active) {
+            return response()->json([
+                'message' => 'Học kỳ của lớp này đã kết thúc hoặc bị đóng. Không thể chỉnh sửa thông tin.'
+            ], 403);
+        }
         $request->validate([
             'lecturer_id'   => 'nullable|exists:users,id',
             'max_members' => 'integer|min:1',
