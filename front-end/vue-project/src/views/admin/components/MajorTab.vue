@@ -104,8 +104,14 @@ onMounted(() => {
           <td class="p-3 font-medium">{{ item.name }}</td>
           <td class="p-3 text-sm text-gray-600">{{ item.faculty?.name || '---' }}</td>
           <td class="p-3 text-right space-x-2">
-            <button @click="openModal(item)" class="text-indigo-600 hover:underline">Sửa</button>
-            <button @click="handleDelete(item.id)" class="text-red-600 hover:underline">Xóa</button>
+            <button @click="openModal(item)" class="text-indigo-600 hover:underline">
+              <SvgIcon name="edit" class="h-4 w-4 mr-1" />
+              Sửa
+            </button>
+            <button @click="handleDelete(item.id)" class="text-red-600 hover:underline">
+              <SvgIcon name="trash" class="h-4 w-4 mr-1" />
+              Xóa
+            </button>
           </td>
         </tr>
       </tbody>

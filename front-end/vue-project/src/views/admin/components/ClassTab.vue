@@ -158,7 +158,7 @@ const handleDelete = async (id) => {
       <table class="w-full border-collapse min-w-[800px]">
         <thead>
           <tr class="bg-white border-b border-gray-200 text-sm">
-            <th class="p-3 text-left">Mã Lớp</th>
+            <th class="p-3 text-left">Mã Lớp / Lớp</th>
             <th class="p-3 text-left">Môn Học / Học kỳ</th>
             <th class="p-3 text-left">Giảng viên</th>
             <th class="p-3 text-center">Sĩ số</th>
@@ -196,12 +196,14 @@ const handleDelete = async (id) => {
                 @click="openEdit(c)"
                 class="text-indigo-600 hover:text-indigo-900 font-medium text-sm"
               >
+                <SvgIcon name="edit" class="h-4 w-4 mr-1" />
                 Sửa
               </button>
               <button
                 @click="handleDelete(c.id)"
                 class="text-red-600 hover:text-red-800 font-medium text-sm"
               >
+                <SvgIcon name="trash" class="h-4 w-4 mr-1" />
                 Hủy
               </button>
             </td>
