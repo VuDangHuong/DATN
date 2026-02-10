@@ -4,7 +4,6 @@ import { reactive, watch, computed } from 'vue'
 const props = defineProps({
   show: Boolean,
   editingItem: Object,
-  // Dữ liệu dropdown nhận từ cha
   subjects: { type: Array, default: () => [] },
   semesters: { type: Array, default: () => [] },
   lecturers: { type: Array, default: () => [] },
@@ -16,43 +15,99 @@ const defaultForm = {
   id: null,
   code: '',
   name: '',
-  subject_id: '',
   semester_id: '',
   lecturer_id: '',
-  max_members: 60,
+  default_max_members: 60,
+  subject_details: [],
 }
 
 const form = reactive({ ...defaultForm })
 
-// Khi mở Modal hoặc đổi item
+const selectedSubjectsList = computed(() => {
+  if (!form.subject_details) return []
+  // Map thông tin chi tiết từ props.subjects vào để hiển thị tên
+  return form.subject_details.map((detail) => {
+    const originalSubject = props.subjects.find((s) => s.id === detail.subject_id)
+    return {
+      ...detail,
+      name: originalSubject?.name || 'Unknown',
+      code: originalSubject?.code || '---',
+    }
+  })
+})
+
+// Xử lý khi chọn/bỏ chọn checkbox
+const toggleSubject = (subjectId) => {
+  const index = form.subject_details.findIndex((item) => item.subject_id === subjectId)
+
+  if (index === -1) {
+    form.subject_details.push({
+      subject_id: subjectId,
+      max_members: form.default_max_members,
+    })
+  } else {
+    // Nếu có rồi -> Xóa đi
+    form.subject_details.splice(index, 1)
+  }
+}
+
+// Kiểm tra xem ID môn học có đang được chọn không (để checked checkbox)
+const isSelected = (subjectId) => {
+  return form.subject_details.some((item) => item.subject_id === subjectId)
+}
+
+// Cập nhật sĩ số cho 1 môn cụ thể
+const updateMemberForSubject = (subjectId, val) => {
+  const item = form.subject_details.find((i) => i.subject_id === subjectId)
+  if (item) item.max_members = Number(val)
+}
+
 watch(
   () => props.show,
   (newVal) => {
     if (newVal) {
       if (props.editingItem) {
-        console.log('Dữ liệu sửa:', props.editingItem)
-        console.log('Danh sách học kỳ:', props.semesters)
+        // --- EDIT ---
         Object.assign(form, {
           id: props.editingItem.id,
           code: props.editingItem.code,
           name: props.editingItem.name,
-          subject_id: props.editingItem.subject_id ? Number(props.editingItem.subject_id) : '',
-          semester_id: props.editingItem.semester_id ? Number(props.editingItem.semester_id) : '',
-          lecturer_id: props.editingItem.lecturer_id ? Number(props.editingItem.lecturer_id) : '',
-          max_members: props.editingItem.max_members,
+          semester_id: props.editingItem.semester_id,
+          lecturer_id: props.editingItem.lecturer_id,
+          default_max_members: props.editingItem.max_members || 60,
+
+          // Convert dữ liệu từ server (nếu server trả về pivot)
+          subject_details: props.editingItem.subjects
+            ? props.editingItem.subjects.map((s) => ({
+                subject_id: s.id,
+                // Lấy sĩ số từ bảng trung gian (pivot) nếu có, nếu không lấy của lớp
+                max_members: s.pivot?.max_members || props.editingItem.max_members || 60,
+              }))
+            : [],
         })
       } else {
+        // --- CREATE ---
         Object.assign(form, defaultForm)
-        // Auto select học kỳ mới nhất nếu có
-        if (props.semesters && props.semesters.length > 0) {
-          form.semester_id = props.semesters[0].id
-        }
+        form.subject_details = []
+        if (props.semesters.length > 0) form.semester_id = props.semesters[0].id
       }
     }
   },
 )
 
+// Khi thay đổi "Sĩ số mặc định", cập nhật cho tất cả các môn (nếu muốn tiện lợi)
+const updateAllMembers = () => {
+  form.subject_details.forEach((item) => {
+    item.max_members = form.default_max_members
+  })
+}
+
 const handleSubmit = () => {
+  if (form.subject_details.length === 0) {
+    alert('Vui lòng chọn ít nhất một môn học.')
+    return
+  }
+  // Gửi form đi. Lưu ý Backend cần xử lý mảng subject_details này
   emit('save', { ...form })
 }
 </script>
@@ -76,24 +131,76 @@ const handleSubmit = () => {
         <form @submit.prevent="handleSubmit" class="p-6 space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="col-span-2">
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Môn học <span class="text-red-500">*</span></label
+              <label class="block text-sm font-bold text-gray-700 mb-2">
+                1. Chọn Môn học <span class="text-red-500">*</span>
+              </label>
+              <div
+                v-if="subjects.length > 0"
+                class="grid grid-cols-2 gap-2 border rounded-lg p-3 max-h-40 overflow-y-auto bg-gray-50"
               >
-              <select
-                v-model="form.subject_id"
-                class="w-full border-gray-300 rounded-lg p-2"
-                required
-                :disabled="!!editingItem"
-                :class="{ 'bg-gray-100': !!editingItem }"
+                <div v-for="s in subjects" :key="s.id" class="flex items-center">
+                  <input
+                    type="checkbox"
+                    :id="'sub-' + s.id"
+                    :checked="isSelected(s.id)"
+                    @change="toggleSubject(s.id)"
+                    class="h-4 w-4 text-blue-600 rounded cursor-pointer"
+                  />
+                  <label
+                    :for="'sub-' + s.id"
+                    class="ml-2 text-sm text-gray-700 cursor-pointer select-none"
+                  >
+                    {{ s.code }} - {{ s.name }}
+                  </label>
+                </div>
+              </div>
+              <div v-else class="text-xs text-orange-500 bg-orange-50 p-2 rounded">
+                ⚠️ Vui lòng chọn Ngành ở bộ lọc để tải môn học.
+              </div>
+            </div>
+
+            <div class="col-span-2 bg-blue-50 p-3 rounded-lg border border-blue-100">
+              <label class="block text-sm font-bold text-blue-800 mb-2">2. Cấu hình sĩ số</label>
+
+              <div class="flex items-center gap-2 mb-3">
+                <span class="text-sm text-gray-600">Áp dụng chung:</span>
+                <input
+                  v-model.number="form.default_max_members"
+                  @input="updateAllMembers"
+                  type="number"
+                  class="w-20 border rounded p-1 text-center font-bold"
+                />
+                <span class="text-xs text-gray-400">(Nhập để tự điền cho tất cả)</span>
+              </div>
+
+              <div
+                v-if="selectedSubjectsList.length > 0"
+                class="space-y-2 mt-2 max-h-40 overflow-y-auto pr-1"
               >
-                <option value="" disabled>-- Chọn môn học --</option>
-                <option v-for="s in subjects" :key="s.id" :value="s.id">
-                  {{ s.code }} - {{ s.name }} ({{ s.credits }} TC)
-                </option>
-              </select>
-              <p v-if="subjects.length === 0" class="text-xs text-orange-500 mt-1">
-                ⚠️ Vui lòng chọn Ngành ở bộ lọc bên ngoài để tải danh sách môn.
-              </p>
+                <div
+                  v-for="item in selectedSubjectsList"
+                  :key="item.subject_id"
+                  class="flex justify-between items-center bg-white p-2 rounded border shadow-sm"
+                >
+                  <span class="text-sm font-medium text-gray-700 truncate w-2/3">
+                    {{ item.code }} - {{ item.name }}
+                  </span>
+                  <div class="flex items-center gap-1 w-1/3 justify-end">
+                    <span class="text-xs text-gray-500">Max:</span>
+                    <input
+                      type="number"
+                      :value="item.max_members"
+                      @input="(e) => updateMemberForSubject(item.subject_id, e.target.value)"
+                      class="w-16 border rounded p-1 text-center text-sm"
+                      min="1"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+              <div v-else class="text-center text-sm text-gray-400 italic py-2">
+                Chưa chọn môn học nào
+              </div>
             </div>
 
             <div>
@@ -104,62 +211,42 @@ const handleSubmit = () => {
                 v-model="form.semester_id"
                 class="w-full border-gray-300 rounded-lg p-2"
                 required
-                :disabled="!!editingItem"
-                :class="{ 'bg-gray-100': !!editingItem }"
               >
                 <option v-for="sem in semesters" :key="sem.id" :value="sem.id">
-                  {{ sem.name }} ({{ sem.year }})
+                  {{ sem.name }}
                 </option>
               </select>
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Mã lớp (Unique) <span class="text-red-500">*</span></label
+                >Mã lớp <span class="text-red-500">*</span></label
               >
               <input
                 v-model="form.code"
                 type="text"
-                placeholder="VD: CSE481_01"
                 class="w-full border-gray-300 rounded-lg p-2 uppercase"
                 required
-                :disabled="!!editingItem"
-                :class="{ 'bg-gray-100': !!editingItem }"
               />
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Tên lớp (Hành chính)</label
+                >Tên lớp <span class="text-red-500">*</span></label
               >
               <input
                 v-model="form.name"
                 type="text"
-                placeholder="VD: 63CNTT1"
-                class="w-full border-gray-300 rounded-lg p-2"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Sĩ số tối đa</label>
-              <input
-                v-model="form.max_members"
-                type="number"
-                min="1"
                 class="w-full border-gray-300 rounded-lg p-2"
                 required
               />
             </div>
 
-            <div class="col-span-2">
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Giảng viên phụ trách</label
-              >
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Giảng viên</label>
               <select v-model="form.lecturer_id" class="w-full border-gray-300 rounded-lg p-2">
                 <option value="">-- Chưa phân công --</option>
-                <option v-for="L in lecturers" :key="L.id" :value="L.id">
-                  {{ L.name }} ({{ L.email }})
-                </option>
+                <option v-for="L in lecturers" :key="L.id" :value="L.id">{{ L.name }}</option>
               </select>
             </div>
           </div>
@@ -174,9 +261,9 @@ const handleSubmit = () => {
             </button>
             <button
               type="submit"
-              class="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm"
+              class="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
             >
-              {{ editingItem ? 'Lưu thay đổi' : 'Mở lớp' }}
+              Lưu
             </button>
           </div>
         </form>
@@ -184,19 +271,3 @@ const handleSubmit = () => {
     </div>
   </Teleport>
 </template>
-
-<style scoped>
-.animate-fade-in-up {
-  animation: fadeInUp 0.3s ease-out;
-}
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-</style>

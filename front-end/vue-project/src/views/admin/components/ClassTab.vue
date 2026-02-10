@@ -175,8 +175,18 @@ const handleDelete = async (id) => {
               <div class="text-xs text-gray-500">{{ c.name }}</div>
             </td>
             <td class="p-3">
-              <div class="font-medium">{{ c.subject?.name || '---' }}</div>
-              <div class="text-xs text-gray-500 mt-0.5">
+              <div class="font-medium text-gray-900">
+                <template v-if="c.subjects && c.subjects.length > 0">
+                  <div v-for="sub in c.subjects" :key="sub.id" class="mb-1 last:mb-0">
+                    • {{ sub.name }}
+                    <span class="text-xs text-gray-500 font-normal">({{ sub.code }})</span>
+                  </div>
+                </template>
+
+                <span v-else class="text-gray-400 italic">---</span>
+              </div>
+
+              <div class="text-xs text-blue-600 mt-1 pt-1 border-t border-gray-100">
                 {{ c.semester?.name }} ({{ c.semester?.year }})
               </div>
             </td>
@@ -187,9 +197,16 @@ const handleDelete = async (id) => {
               <span v-else class="text-gray-400 italic">Chưa phân công</span>
             </td>
             <td class="p-3 text-center">
-              <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                0 / {{ c.max_members }}
-              </span>
+              <div
+                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                :class="
+                  c.current_students >= c.max_members
+                    ? 'bg-red-100 text-red-800'
+                    : 'bg-green-100 text-green-800'
+                "
+              >
+                {{ c.current_students || 0 }} / {{ c.max_members }}
+              </div>
             </td>
             <td class="p-3 text-right space-x-2">
               <button
