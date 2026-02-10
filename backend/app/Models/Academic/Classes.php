@@ -10,7 +10,7 @@ class Classes extends Model
     protected $table = 'classes';
 
     protected $fillable = [
-        'subject_id',
+        // 'subject_id',
         'semester_id',
         'lecturer_id',
         'code',
@@ -21,9 +21,9 @@ class Classes extends Model
     /**
      * Quan hệ: Lớp thuộc về một Môn học
      */
-    public function subject()
+    public function subjects()
     {
-        return $this->belongsTo(Subject::class, 'subject_id');
+       return $this->belongsToMany(Subject::class, 'class_subject', 'class_id', 'subject_id');
     }
 
     /**

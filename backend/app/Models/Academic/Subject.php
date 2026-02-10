@@ -23,6 +23,6 @@ class Subject extends Model
 
     public function moduleClasses()
     {
-        return $this->hasMany(Classes::class, 'subject_id');
+        return $this->belongsToMany(Classes::class, 'class_subject', 'subject_id', 'class_id');
     }
 }
