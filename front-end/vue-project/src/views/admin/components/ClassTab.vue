@@ -197,16 +197,23 @@ const handleDelete = async (id) => {
               <span v-else class="text-gray-400 italic">Chưa phân công</span>
             </td>
             <td class="p-3 text-center">
-              <div
-                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                :class="
-                  c.current_students >= c.max_members
-                    ? 'bg-red-100 text-red-800'
-                    : 'bg-green-100 text-green-800'
-                "
-              >
-                {{ c.current_students || 0 }} / {{ c.max_members }}
-              </div>
+              <template v-if="c.subjects && c.subjects.length > 0">
+                <div v-for="sub in c.subjects" :key="sub.id" class="mb-1 last:mb-0">
+                  <div
+                    class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                    :class="
+                      (c.current_students || 0) >= (sub.pivot?.max_members || c.max_members || 60)
+                        ? 'bg-red-100 text-red-800'
+                        : 'bg-green-100 text-green-800'
+                    "
+                  >
+                    {{ c.current_students || 0 }} /
+                    {{ sub.pivot?.max_members || c.max_members || 60 }}
+                  </div>
+                </div>
+              </template>
+
+              <span v-else class="text-gray-400 italic">---</span>
             </td>
             <td class="p-3 text-right space-x-2">
               <button
