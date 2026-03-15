@@ -41,40 +41,27 @@ class ModuleClassController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'subject_ids'   => 'required|array|min:1',
-            'subject_ids.*' => 'exists:subjects,id',
-            'semester_id'   => 'required|exists:semesters,id',
-            'lecturer_id'   => 'nullable|exists:users,id',
-            'code'         => 'required|unique:classes,code',
-            'name'         => 'nullable|string',
-            'max_members' => 'nullable|integer|min:1|max:200'
+            'subject_details'              => 'required|array|min:1',
+            'subject_details.*.subject_id' => 'required|exists:subjects,id',
+            'subject_details.*.max_members'=> 'required|integer|min:1',
+            'semester_id'                  => 'required|exists:semesters,id',
+            'code'                         => 'required|unique:classes,code',
         ]);
-        $class = Classes::create($request->except(['subject_details']));
-        if ($request->has('subject_details')) {
-        foreach ($request->subject_details as $detail) {
-            $class->subjects()->attach($detail['subject_id'], [
-                'max_members' => $detail['max_members']
-            ]);
-            }
-        }
-        $semester = Semester::find($request->semester_id);
-        if (!$semester || !$semester->is_active) {
-            return response()->json([
-                'message' => 'Không thể mở lớp. Học kỳ này hiện đang đóng hoặc không tồn tại.'
-            ], 403);
-        }
 
         return DB::transaction(function () use ($request) {
-            $data = $request->except('subject_ids');
+            // Tạo lớp học (Bỏ max_members ở bảng chính)
+            $class = Classes::create($request->except(['subject_details']));
 
-            if (empty($data['max_members'])) {
-                $data['max_members'] = 60;
+            // Chuẩn bị dữ liệu cho attach
+            $syncData = [];
+            foreach ($request->subject_details as $detail) {
+                $syncData[$detail['subject_id']] = ['max_members' => $detail['max_members']];
             }
 
-            $class = Classes::create($data);
-            $class->subjects()->attach($request->subject_ids);
+            // Lưu hàng loạt vào bảng trung gian
+            $class->subjects()->attach($syncData);
 
-            return response()->json(['message' => 'Thành công', 'data' => $class->load('subjects')], 201);
+            return response()->json(['message' => 'Tạo lớp thành công', 'data' => $class->load('subjects')]);
         });
     }
 
@@ -88,35 +75,27 @@ class ModuleClassController extends Controller
 
     public function update(Request $request, $id)
     {
-        $class = Classes::with('semester')->find($id);
-        if (!$class) return response()->json(['message' => 'Lớp không tồn tại'], 404);
-
-        if (!$class->semester || !$class->semester->is_active) {
-            return response()->json([
-                'message' => 'Học kỳ của lớp này đã kết thúc hoặc bị đóng. Không thể chỉnh sửa.'
-            ], 403);
-        }
+        $class = Classes::findOrFail($id);
 
         $request->validate([
-            'subject_ids'   => 'sometimes|array|min:1',
-            'subject_ids.*' => 'exists:subjects,id',
-            'lecturer_id'   => 'nullable|exists:users,id',
-            'max_members'   => 'integer|min:1',
-            'name'          => 'nullable|string'
+            'subject_details'              => 'required|array|min:1',
+            'subject_details.*.subject_id' => 'required|exists:subjects,id',
+            'subject_details.*.max_members'=> 'required|integer|min:1',
+            'code'                         => 'required|unique:classes,code,' . $id,
         ]);
 
         return DB::transaction(function () use ($request, $class) {
-            $class->update($request->only(['lecturer_id', 'name', 'max_members']));
+            $class->update($request->except(['subject_details']));
 
-            // Nếu có gửi mảng môn học mới thì đồng bộ lại
-            if ($request->has('subject_ids')) {
-                $class->subjects()->sync($request->subject_ids);
+            // Dùng Sync để tự động: Xóa môn cũ, Thêm môn mới, Cập nhật sĩ số môn hiện tại
+            $syncData = [];
+            foreach ($request->subject_details as $detail) {
+                $syncData[$detail['subject_id']] = ['max_members' => $detail['max_members']];
             }
+            
+            $class->subjects()->sync($syncData);
 
-            return response()->json([
-                'message' => 'Cập nhật lớp thành công', 
-                'data' => $class->load('subjects')
-            ]);
+            return response()->json(['message' => 'Cập nhật thành công', 'data' => $class->load('subjects')]);
         });
     }
 
