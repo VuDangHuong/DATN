@@ -14,6 +14,7 @@ import Reports from '@/views/admin/Reports.vue'
 import ChangePasswordForm from '@/views/auth/ChangePasswordForm.vue'
 import ProfileView from '@/components/profile/ProfileView.vue'
 import SemesterManagement from '@/views/admin/SemesterManagement.vue'
+import ChatBotManagement from '@/views/admin/ChatBotManagement.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -76,6 +77,11 @@ const router = createRouter({
           path: 'profile',
           name: 'admin-profile',
           component: ProfileView,
+        },
+        {
+          path: 'chatBot',
+          name: 'chatBot',
+          component: ChatBotManagement,
         },
       ],
     },
