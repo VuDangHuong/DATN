@@ -18,35 +18,70 @@ class AdminChatbotController extends Controller
         $request->validate([
             'question' => 'required|string|max:1000',
             'category' => 'nullable|string|max:100',
+            'file' => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,pdf,xlsx,xls,csv,doc,docx|max:10240',
         ]);
 
-        $question = trim($request->question);
-        $adminId = Auth::id();
-
-        //Tìm context
-        $contexts = $this->gemini->findRelevantContexts($question, $request->category, 5);
-
-        //Sinh câu trả lời
-        if (empty($contexts)) {
-            $answer = $this->gemini->generateAnswer($question, 'Không có dữ liệu tri thức liên quan.');
-            $isAnswered = 2;
-        } else {
-            $contextText = collect($contexts)
-                ->map(fn($c) => "Hỏi: {$c['question']}\nĐáp: {$c['answer']}")
-                ->implode("\n\n---\n\n");
-
-            $answer = $this->gemini->generateAnswer($question, $contextText);
-            $isAnswered = 1;
+        // Phải có ít nhất question hoặc file
+        if (!$request->filled('question') && !$request->hasFile('file')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vui lòng nhập câu hỏi hoặc đính kèm file.',
+            ], 422);
         }
 
-        //Sinh câu hỏi gợi ý song song sau khi có answer
-        // $suggestedQuestions = $this->gemini->generateSuggestedQuestions($question, $answer);
+        $question = trim($request->input('question', 'Hãy mô tả nội dung file/ảnh này.'));
+        $adminId = Auth::id();
+        $fileName = null;
+        $answer = '';
+        $isAnswered = 2;
+        $contexts = [];
 
-        // 4. Lưu log
+        // =====================================================
+        // TH1: Có file đính kèm
+        // =====================================================
+        // Thêm vào AdminChatbotController@ask
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $extension = strtolower($file->getClientOriginalExtension());
+            $mimeType = $this->gemini->getSupportedMimeType($extension);
+
+            // ✅ Excel/CSV/Word → đọc text rồi ghép vào prompt
+            if (in_array($extension, ['xlsx', 'xls', 'csv', 'doc', 'docx'])) {
+                $fileText = $this->extractTextFromFile($file, $extension);
+                $answer = $this->gemini->generateAnswer(
+                    $question,
+                    "=== NỘI DUNG FILE ===\n{$fileText}"
+                );
+                $isAnswered = 2;
+
+                // ✅ Ảnh/PDF → gửi base64 trực tiếp
+            } else {
+                $fileBase64 = base64_encode(file_get_contents($file->getRealPath()));
+                $answer = $this->gemini->generateAnswerWithFile($question, '', $fileBase64, $mimeType);
+                $isAnswered = 2;
+            }
+        } else {
+            $contexts = $this->gemini->findRelevantContexts($question, $request->category, 5);
+
+            if (empty($contexts)) {
+                $answer = $this->gemini->generateAnswer($question, 'Không có dữ liệu tri thức liên quan.');
+                $isAnswered = 2;
+            } else {
+                $contextText = collect($contexts)
+                    ->map(fn($c) => "Hỏi: {$c['question']}\nĐáp: {$c['answer']}")
+                    ->implode("\n\n---\n\n");
+
+                $answer = $this->gemini->generateAnswer($question, $contextText);
+                $isAnswered = 1;
+            }
+        }
+
+        // Lưu log
         $log = ChatHistory::create([
             'user_id' => $adminId,
             'question' => $question,
             'answer' => $answer,
+            'file_name' => $fileName,   // ✅ lưu tên file nếu có
             'source_text' => $contexts,
             'is_answered' => $isAnswered,
             'type' => 'admin',
@@ -58,12 +93,51 @@ class AdminChatbotController extends Controller
                 'id' => $log->id,
                 'question' => $question,
                 'answer' => $answer,
+                'file_name' => $fileName,
                 'is_answered' => $isAnswered,
                 'sources' => $contexts,
-                // 'suggested_questions' => $suggestedQuestions,
                 'created_at' => $log->created_at,
             ],
         ]);
+    }
+    private function extractTextFromFile($file, string $extension): string
+    {
+        // CSV → đọc thẳng
+        if ($extension === 'csv') {
+            $content = file_get_contents($file->getRealPath());
+            return mb_convert_encoding($content, 'UTF-8', 'auto');
+        }
+
+        // Excel (xlsx, xls) → dùng PhpSpreadsheet
+        if (in_array($extension, ['xlsx', 'xls'])) {
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getRealPath());
+            $text = '';
+
+            foreach ($spreadsheet->getAllSheets() as $sheet) {
+                $text .= "Sheet: {$sheet->getTitle()}\n";
+                foreach ($sheet->toArray() as $row) {
+                    $text .= implode(' | ', array_filter($row, fn($v) => $v !== null)) . "\n";
+                }
+            }
+            return $text;
+        }
+
+        // Word (docx, doc) → dùng PhpWord
+        if (in_array($extension, ['docx', 'doc'])) {
+            $phpWord = \PhpOffice\PhpWord\IOFactory::load($file->getRealPath());
+            $text = '';
+
+            foreach ($phpWord->getSections() as $section) {
+                foreach ($section->getElements() as $element) {
+                    if (method_exists($element, 'getText')) {
+                        $text .= $element->getText() . "\n";
+                    }
+                }
+            }
+            return $text;
+        }
+
+        return '';
     }
     public function suggestedQuestions(Request $request)
     {

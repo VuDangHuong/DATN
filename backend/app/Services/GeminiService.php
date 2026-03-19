@@ -188,4 +188,99 @@ PROMPT;
             'score' => round($r['score'], 4),
         ])->values()->toArray();
     }
+
+    /**
+     * Gọi Gemini với file đính kèm (ảnh hoặc PDF)
+     */
+    public function generateAnswerWithFile(
+        string $question,
+        string $context,
+        string $fileBase64,
+        string $mimeType
+    ): string {
+        $contextPart = $context
+            ? "=== THÔNG TIN HỆ THỐNG ===\n{$context}\n\n"
+            : '';
+
+        $prompt = <<<PROMPT
+Bạn là trợ lý AI chăm sóc khách hàng chuyên nghiệp.
+{$contextPart}
+Người dùng đã gửi kèm file/ảnh. Hãy phân tích nội dung file/ảnh đó và trả lời câu hỏi bên dưới.
+Nếu không đủ thông tin, hãy trả lời: "Tôi chưa có thông tin về vấn đề này."
+
+=== CÂU HỎI ===
+{$question}
+PROMPT;
+
+        $models = [
+            'gemini-2.0-flash-lite',
+            'gemini-2.0-flash-001',
+            'gemini-2.5-flash',
+        ];
+
+        foreach ($models as $model) {
+            $response = Http::post("{$this->baseUrl}/models/{$model}:generateContent?key={$this->apiKey}", [
+                'contents' => [
+                    [
+                        'parts' => [
+                            // ✅ Phần file/ảnh base64
+                            [
+                                'inline_data' => [
+                                    'mime_type' => $mimeType,
+                                    'data' => $fileBase64,
+                                ],
+                            ],
+                            // ✅ Phần câu hỏi text
+                            ['text' => $prompt],
+                        ],
+                    ]
+                ],
+            ]);
+
+            if ($response->successful()) {
+                return $response->json('candidates.0.content.parts.0.text', 'Không thể tạo câu trả lời.');
+            }
+
+            if ($response->status() === 429) {
+                \Log::warning("429 generateAnswerWithFile: {$model}");
+                continue;
+            }
+
+            \Log::error("generateAnswerWithFile error: {$model}", [
+                'status' => $response->status(),
+                'body' => $response->json(),
+            ]);
+            break;
+        }
+
+        return 'Không thể tạo câu trả lời.';
+    }
+
+    /**
+     * Lấy MIME type được Gemini hỗ trợ
+     */
+    public function getSupportedMimeType(string $extension): ?string
+    {
+        return match (strtolower($extension)) {
+            // ✅ Ảnh
+            'jpg', 'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp',
+
+            // ✅ PDF
+            'pdf' => 'application/pdf',
+
+            // ✅ Excel
+            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'xls' => 'application/vnd.ms-excel',
+            'csv' => 'text/csv',
+
+            // ✅ Word
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'doc' => 'application/msword',
+
+            default => null,
+        };
+    }
 }
