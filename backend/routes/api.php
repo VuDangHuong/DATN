@@ -8,6 +8,8 @@ use App\Http\Controllers\Admin\FacultyController;
 use App\Http\Controllers\Admin\MajorController;
 use App\Http\Controllers\Admin\ModuleClassController;
 use App\Http\Controllers\Admin\SubjectController;
+use App\Http\Controllers\Admin\KnowledgeController;
+use App\Http\Controllers\Admin\AdminChatbotController;
 /*
 |--------------------------------------------------------------------------
 | 1. PUBLIC ROUTES (Không cần đăng nhập)
@@ -72,6 +74,21 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/semesters', [SemesterController::class, 'store']);
         Route::put('/semesters/{id}', [SemesterController::class, 'update']);
         Route::delete('/semesters/{id}', [SemesterController::class, 'destroy']);
+
+        //4: QUản lý ChatBot
+        Route::get   ('knowledge',            [KnowledgeController::class, 'index']);
+        Route::get   ('knowledge/categories', [KnowledgeController::class, 'categories']);
+        Route::post  ('knowledge',            [KnowledgeController::class, 'store']);
+        Route::put   ('knowledge/{id}',       [KnowledgeController::class, 'update']);
+        Route::delete('knowledge/{id}',       [KnowledgeController::class, 'destroy']);
+        Route::post  ('knowledge/import',     [KnowledgeController::class, 'importCsv']);
+
+        // === Admin ChatBot ===
+        Route::post  ('chatbot/ask',              [AdminChatbotController::class, 'ask']);
+        Route::get   ('chatbot/history',          [AdminChatbotController::class, 'history']);
+        Route::post  ('chatbot/{id}/feedback',    [AdminChatbotController::class, 'feedback']);
+
+        Route::post('chatbot/suggested-questions', [AdminChatbotController::class, 'suggestedQuestions']);
     });
 
     // =================================================================
