@@ -10,6 +10,10 @@ use App\Http\Controllers\Admin\ModuleClassController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\KnowledgeController;
 use App\Http\Controllers\Admin\AdminChatbotController;
+use App\Http\Controllers\Admin\AdminSignController;
+use App\Http\Controllers\Lecturers\LecturerSignController;
+use App\Http\Controllers\Students\SignRequestController;
+use App\Http\Controllers\Lecturers\SignProfileController;
 /*
 |--------------------------------------------------------------------------
 | 1. PUBLIC ROUTES (Không cần đăng nhập)
@@ -89,26 +93,48 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post  ('chatbot/{id}/feedback',    [AdminChatbotController::class, 'feedback']);
 
         Route::post('chatbot/suggested-questions', [AdminChatbotController::class, 'suggestedQuestions']);
+
+        // Xem tất cả yêu cầu + filter theo status
+        Route::get('/sign-requests', [AdminSignController::class, 'index']);
+        Route::get('/sign-requests/{id}', [AdminSignController::class, 'show']);
+        // Duyệt & chuyển cho GV
+        Route::post('/sign-requests/{id}/forward', [AdminSignController::class, 'forward']);
+        // Từ chối
+        Route::post('/sign-requests/{id}/reject', [AdminSignController::class, 'reject']);
+        // Phát hành file đã ký về cho SV
+        Route::post('/sign-requests/{id}/complete', [AdminSignController::class, 'complete']);
     });
 
     // =================================================================
     // C. LECTURER AREA (Khu vực Giảng viên)
     // =================================================================
     // Admin cũng có thể vào đây nếu cần (role:lecturer,admin)
-    Route::prefix('lecturer')->middleware('role:lecturer,admin')->group(function () {
-        // Ví dụ: Lấy danh sách lớp mình dạy
-        // Route::get('/my-classes', [ModuleClassController::class, 'getTeacherClasses']);
-        
-        // Chấm điểm, duyệt bài...
+        Route::prefix('lecturer')->middleware('role:lecturer,admin')->group(function () {
+            // Xem danh sách yêu cầu được giao
+        Route::get('/sign-requests', [LecturerSignController::class, 'index']);
+        Route::get('/sign-requests/{id}', [LecturerSignController::class, 'show']);
+        // Preview file trước khi ký
+        Route::get('/sign-requests/{id}/preview', [LecturerSignController::class, 'preview']);
+        // Upload file đã ký số (GV ký offline rồi upload)
+        Route::post('/sign-requests/{id}/sign', [LecturerSignController::class, 'sign']);
+        // Từ chối ký
+        Route::post('/sign-requests/{id}/reject', [LecturerSignController::class, 'reject']);
+        // Quản lý profile chữ ký
+        Route::get('/sign-profile', [SignProfileController::class, 'show']);
+        Route::post('/sign-profile', [SignProfileController::class, 'upsert']);
     });
 
     // =================================================================
     // D. STUDENT AREA (Khu vực Sinh viên)
     // =================================================================
-    Route::prefix('student')->middleware('role:student,admin')->group(function () {
-        // Ví dụ: Xem thời khóa biểu, điểm số
-        // Route::get('/timetable', ...);
-        // Route::post('/submission', ...);
+        Route::prefix('student')->middleware('role:student,admin')->group(function () {
+            // Tạo yêu cầu số hóa
+        Route::post('/sign-requests', [SignRequestController::class, 'store']);
+        // Xem trạng thái yêu cầu của mình
+        Route::get('/sign-requests', [SignRequestController::class, 'myRequests']);
+        Route::get('/sign-requests/{id}', [SignRequestController::class, 'show']);
+        // Tải file đã ký
+        Route::get('/sign-requests/{id}/download', [SignRequestController::class, 'download']);
     });
 
 });
