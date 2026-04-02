@@ -312,11 +312,13 @@
                   class="w-8 h-8 rounded-full flex-shrink-0 border-2 border-green-100 flex items-center justify-center"
                   style="background: #f0fdf4"
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="#22c55e">
-                    <path
-                      d="M12 2a5 5 0 015 5 5 5 0 01-5 5 5 5 0 01-5-5 5 5 0 015-5m0 12c5.33 0 8 2.67 8 4v2H4v-2c0-1.33 2.67-4 8-4z"
-                    />
-                  </svg>
+                  <img
+                    v-if="!isOpen"
+                    key="open"
+                    src="@/assets/images/icon_ChatBot.png"
+                    alt="ChatBot"
+                    class="w-16 h-16 rounded-full object-cover"
+                  />
                 </div>
                 <div
                   class="px-4 py-3 rounded-2xl rounded-tl-sm bg-white border border-slate-200 flex gap-1"
