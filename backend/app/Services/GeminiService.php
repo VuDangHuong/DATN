@@ -223,4 +223,70 @@ PROMPT;
             default => null,
         };
     }
+    // Thêm vào GeminiService.php — sau hàm generateAnswerWithFile
+
+/**
+ * Sinh 3 câu hỏi gợi ý liên quan đến câu trả lời vừa rồi
+ */
+    public function generateSuggestedQuestions(string $question, string $answer): array
+    {
+        $prompt = <<<PROMPT
+    Dựa vào cuộc hội thoại sau, hãy sinh ra đúng 3 câu hỏi gợi ý ngắn gọn mà người dùng có thể muốn hỏi tiếp theo.
+
+    Câu hỏi vừa hỏi: {$question}
+    Câu trả lời: {$answer}
+
+    Yêu cầu:
+    - Mỗi câu hỏi trên 1 dòng riêng, bắt đầu bằng số thứ tự (1. 2. 3.)
+    - Ngắn gọn, rõ ràng, liên quan chủ đề vừa trả lời
+    - Chỉ trả về đúng 3 câu hỏi, không giải thích thêm
+    PROMPT;
+
+        $models = [
+            'gemini-2.0-flash-lite',
+            'gemini-2.0-flash-001',
+            'gemini-2.5-flash',
+        ];
+
+        foreach ($models as $model) {
+            $response = Http::post("{$this->baseUrl}/models/{$model}:generateContent?key={$this->apiKey}", [
+                'contents' => [['parts' => [['text' => $prompt]]]],
+            ]);
+
+            if ($response->successful()) {
+                $text = $response->json('candidates.0.content.parts.0.text', '');
+
+                // Parse ra mảng — hỗ trợ cả format "1." và "* " và "-"
+                $lines = array_filter(
+                    explode("\n", trim($text)),
+                    fn($line) => trim($line) !== ''
+                );
+
+                $questions = array_values(
+                    array_map(
+                        fn($line) => trim(preg_replace('/^[\d\*\-\.]+\s*/', '', trim($line))),
+                        $lines
+                    )
+                );
+
+                return array_slice(
+                    array_filter($questions, fn($q) => mb_strlen($q) > 5),
+                    0, 3
+                );
+            }
+
+            if ($response->status() === 429) {
+                \Log::warning("429 generateSuggestedQuestions: {$model}");
+                continue;
+            }
+
+            \Log::error("generateSuggestedQuestions error: {$model}", [
+                'status' => $response->status(),
+                'body'   => $response->json(),
+            ]);
+            break;
+        }
+
+        return [];
+    }
 }
