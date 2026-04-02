@@ -1,13 +1,14 @@
 <?php
 
 namespace App\Models\Auth;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 // 1. QUAN TRỌNG: Phải dùng Authenticatable thay vì Model thường
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Sanctum\HasApiTokens; // Import thư viện Sanctum
-
+use App\Models\Communication\Message;
 class User extends Authenticatable
 {
     // 2. QUAN TRỌNG: Khai báo sử dụng Trait ở đây để có hàm createToken()
@@ -60,4 +61,8 @@ class User extends Authenticatable
     public function isAdmin() { return $this->role === 'admin'; }
     public function isLecturer() { return $this->role === 'lecturer'; }
     public function isStudent() { return $this->role === 'student'; }
+    public function messages():HasMany
+    {
+        return $this->hasMany(Message::class, 'user_id');
+    }
 }

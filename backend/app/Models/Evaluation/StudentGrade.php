@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\Auth\User;
 use App\Models\Academic\Classes;
+use App\Models\Group\Group;
 class StudentGrade extends Model
 {
    use HasFactory;
