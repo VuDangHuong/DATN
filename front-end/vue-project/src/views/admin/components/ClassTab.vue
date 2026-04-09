@@ -207,7 +207,6 @@ const handleDelete = async (id) => {
                         : 'bg-green-100 text-green-800'
                     "
                   >
-                    {{ c.current_students || 0 }} /
                     {{ sub.pivot?.max_members || c.max_members || 60 }}
                   </div>
                 </div>
