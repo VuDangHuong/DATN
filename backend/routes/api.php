@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Shared\ClassStudentController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Admin\UserController;
@@ -73,6 +74,32 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::apiResource('subjects', SubjectController::class);
         Route::apiResource('classes', ModuleClassController::class);
         
+        //sdasdas
+        Route::prefix('classes/{classId}/students')->group(function () {
+            // GET    /api/admin/classes/{classId}/students
+            // → Danh sách SV trong lớp kèm sĩ số hiện tại
+            Route::get('/', [ClassStudentController::class, 'index']);
+ 
+            // POST   /api/admin/classes/{classId}/students
+            // Body: { "student_code": "2251172367" }
+            // → Thêm 1 SV vào lớp theo mã code (phải tồn tại trong hệ thống)
+            Route::post('/', [ClassStudentController::class, 'store']);
+ 
+            // POST   /api/admin/classes/{classId}/students/import
+            // Body: multipart/form-data — file (xlsx|xls|csv)
+            // Cột A = Mã sinh viên (users.code, role=student)
+            // → Import nhiều SV từ file Excel
+            Route::post('/import', [ClassStudentController::class, 'import']);
+ 
+            // PATCH  /api/admin/classes/{classId}/students/{studentId}
+            // Body: { "has_group": true }
+            // → Cập nhật trạng thái SV trong lớp (vd: đã có nhóm chưa)
+            Route::patch('/{studentId}', [ClassStudentController::class, 'update']);
+ 
+            // DELETE /api/admin/classes/{classId}/students/{studentId}
+            // → Xóa SV khỏi lớp
+            Route::delete('/{studentId}', [ClassStudentController::class, 'destroy']);
+        });
         // 3. Quản lý Học kỳ (Thêm/Sửa/Ẩn)
         Route::get('/semesters', [SemesterController::class, 'index']);
         Route::post('/semesters', [SemesterController::class, 'store']);
@@ -122,6 +149,26 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // Quản lý profile chữ ký
         Route::get('/sign-profile', [SignProfileController::class, 'show']);
         Route::post('/sign-profile', [SignProfileController::class, 'upsert']);
+
+        Route::prefix('classes/{classId}/students')->group(function () {
+            // GET    /api/lecturer/classes/{classId}/students
+            Route::get('/', [ClassStudentController::class, 'index']);
+ 
+            // POST   /api/lecturer/classes/{classId}/students
+            // Body: { "student_code": "2251172367" }
+            Route::post('/', [ClassStudentController::class, 'store']);
+ 
+            // POST   /api/lecturer/classes/{classId}/students/import
+            // Body: multipart/form-data — file (xlsx|xls|csv)
+            Route::post('/import', [ClassStudentController::class, 'import']);
+ 
+            // PATCH  /api/lecturer/classes/{classId}/students/{studentId}
+            // Body: { "has_group": true }
+            Route::patch('/{studentId}', [ClassStudentController::class, 'update']);
+ 
+            // DELETE /api/lecturer/classes/{classId}/students/{studentId}
+            Route::delete('/{studentId}', [ClassStudentController::class, 'destroy']);
+        });
     });
 
     // =================================================================
