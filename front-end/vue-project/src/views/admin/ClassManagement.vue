@@ -7,20 +7,6 @@
           <h1 class="text-2xl font-bold text-gray-900">Quản lý lớp học phần</h1>
           <p class="text-sm text-gray-500 mt-1">{{ store.classes.length }} lớp đang hoạt động</p>
         </div>
-        <button
-          @click="openCreate"
-          class="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition shadow-sm"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-          Tạo lớp mới
-        </button>
       </div>
 
       <!-- ── Filters ── -->
@@ -97,9 +83,9 @@
                   <div
                     class="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-xs font-medium text-blue-700"
                   >
-                    {{ cls.teacher?.name?.charAt(0) ?? '?' }}
+                    {{ cls.lecturer?.name?.charAt(0) ?? '?' }}
                   </div>
-                  <span class="text-gray-700 text-xs">{{ cls.teacher?.name }}</span>
+                  <span class="text-gray-700 text-xs">{{ cls.lecturer?.name }}</span>
                 </div>
               </td>
 
@@ -335,15 +321,6 @@
     </div>
 
     <!-- ── Modals ── -->
-    <ClassModal
-      :show="showClassForm"
-      :editing-item="editingClass"
-      :semesters="semesters"
-      :lecturers="lecturers"
-      :subjects="subjects"
-      @close="showClassForm = false"
-      @save="handleClassSubmit"
-    />
 
     <ModalAddStudent
       :show="showAddStudent"
@@ -359,41 +336,19 @@
       @close="showImport = false"
       @import="handleImport"
     />
-
-    <!-- Toast notification -->
-    <transition name="toast">
-      <div
-        v-if="toast.show"
-        class="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-lg text-white text-sm font-medium"
-        :class="toast.type === 'success' ? 'bg-gray-900' : 'bg-red-600'"
-      >
-        <svg
-          v-if="toast.type === 'success'"
-          class="w-4 h-4 text-green-400"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-            clip-rule="evenodd"
-          />
-        </svg>
-        {{ toast.message }}
-      </div>
-    </transition>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAdminClassStore } from '@/stores/admin/classes'
-import ClassModal from './components/ClassModal.vue'
+import { useToastStore } from '@/stores/toast'
 import ModalAddStudent from '@/components/admin/classes/ModalAddStudent.vue'
 import ModalImportStudent from '@/components/admin/classes/ModalImportStudent.vue'
 import axiosClient from '@/api/axiosClient'
 
 const store = useAdminClassStore()
+const toast = useToastStore() // ← thêm
 
 // ── UI State ──────────────────────────────────────────────
 const search = ref('')
@@ -405,12 +360,9 @@ const showImport = ref(false)
 const editingClass = ref(null)
 const importModal = ref(null)
 
-// Data cho dropdowns trong form
 const semesters = ref([])
 const lecturers = ref([])
 const subjects = ref([])
-
-const toast = ref({ show: false, type: 'success', message: '' })
 
 // ── Computed ──────────────────────────────────────────────
 const filteredClasses = computed(() => {
@@ -460,17 +412,16 @@ function getMaxMembers(cls) {
 
 async function handleClassSubmit(payload) {
   try {
-    // Modal mới emit { id, code, name, ... } — dùng payload.id để phân biệt create/edit
     if (payload.id) {
       await store.editClass(payload.id, payload)
-      showToast('Cập nhật lớp thành công')
+      toast.success('Cập nhật lớp thành công') // ← đổi
     } else {
       await store.addClass(payload)
-      showToast('Tạo lớp thành công')
+      toast.success('Tạo lớp thành công') // ← đổi
     }
     showClassForm.value = false
   } catch (e) {
-    showToast(e.response?.data?.message ?? 'Có lỗi xảy ra', 'error')
+    toast.error(e.response?.data?.message ?? 'Có lỗi xảy ra') // ← đổi
   }
 }
 
@@ -479,9 +430,9 @@ async function confirmDelete(cls) {
   try {
     await store.removeClass(cls.id)
     if (selectedClass.value?.id === cls.id) selectedClass.value = null
-    showToast('Đã xóa lớp')
+    toast.success('Đã xóa lớp') // ← đổi
   } catch (e) {
-    showToast('Lỗi khi xóa lớp', 'error')
+    toast.error('Lỗi khi xóa lớp') // ← đổi
   }
 }
 
@@ -495,9 +446,9 @@ async function handleAddStudent(code) {
   try {
     await store.addStudent(selectedClass.value.id, code)
     showAddStudent.value = false
-    showToast('Đã thêm sinh viên')
+    toast.success('Đã thêm sinh viên') // ← đổi
   } catch (e) {
-    showToast(e.response?.data?.message ?? 'Lỗi thêm sinh viên', 'error')
+    toast.error(e.response?.data?.message ?? 'Lỗi thêm sinh viên') // ← đổi
   }
 }
 
@@ -505,9 +456,9 @@ async function handleRemoveStudent(studentId) {
   if (!confirm('Xóa sinh viên khỏi lớp?')) return
   try {
     await store.removeStudent(selectedClass.value.id, studentId)
-    showToast('Đã xóa sinh viên')
+    toast.success('Đã xóa sinh viên') // ← đổi
   } catch {
-    showToast('Lỗi khi xóa', 'error')
+    toast.error('Lỗi khi xóa') // ← đổi
   }
 }
 
@@ -515,9 +466,9 @@ async function handleImport(file) {
   try {
     const result = await store.importStudents(selectedClass.value.id, file)
     importModal.value?.setResult(result)
-    showToast(`Đã thêm ${result.added} sinh viên`)
+    toast.success(`Đã thêm ${result.added} sinh viên`) // ← đổi
   } catch (e) {
-    showToast(e.response?.data?.message ?? 'Lỗi import', 'error')
+    toast.error(e.response?.data?.message ?? 'Lỗi import') // ← đổi
   }
 }
 
@@ -533,32 +484,4 @@ function progressColor(current, max) {
   if (pct >= 0.7) return 'bg-amber-500'
   return 'bg-green-500'
 }
-
-function showToast(message, type = 'success') {
-  toast.value = { show: true, type, message }
-  setTimeout(() => {
-    toast.value.show = false
-  }, 3000)
-}
 </script>
-
-<style scoped>
-.slide-enter-active,
-.slide-leave-active {
-  transition: transform 0.3s ease;
-}
-.slide-enter-from,
-.slide-leave-to {
-  transform: translateX(100%);
-}
-
-.toast-enter-active,
-.toast-leave-active {
-  transition: all 0.3s ease;
-}
-.toast-enter-from,
-.toast-leave-to {
-  opacity: 0;
-  transform: translateY(12px);
-}
-</style>

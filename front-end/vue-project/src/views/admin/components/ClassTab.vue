@@ -191,8 +191,8 @@ const handleDelete = async (id) => {
               </div>
             </td>
             <td class="p-3">
-              <div v-if="c.teacher" class="flex items-center">
-                <span class="font-medium text-gray-800">{{ c.teacher.name }}</span>
+              <div v-if="c.lecturer" class="flex items-center">
+                <span class="font-medium text-gray-800">{{ c.lecturer.name }}</span>
               </div>
               <span v-else class="text-gray-400 italic">Chưa phân công</span>
             </td>

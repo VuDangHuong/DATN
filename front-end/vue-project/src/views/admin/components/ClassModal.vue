@@ -65,32 +65,29 @@ const updateMemberForSubject = (subjectId, val) => {
 watch(
   () => props.show,
   (newVal) => {
-    if (newVal) {
-      if (props.editingItem) {
-        // --- EDIT ---
-        Object.assign(form, {
-          id: props.editingItem.id,
-          code: props.editingItem.code,
-          name: props.editingItem.name,
-          semester_id: props.editingItem.semester_id,
-          lecturer_id: props.editingItem.lecturer_id,
-          default_max_members: props.editingItem.max_members || 60,
-
-          // Convert dữ liệu từ server (nếu server trả về pivot)
-          subject_details: props.editingItem.subjects
-            ? props.editingItem.subjects.map((s) => ({
-                subject_id: s.id,
-                // Lấy sĩ số từ bảng trung gian (pivot) nếu có, nếu không lấy của lớp
-                max_members: s.pivot?.max_members || props.editingItem.max_members || 60,
-              }))
-            : [],
-        })
-      } else {
-        // --- CREATE ---
-        Object.assign(form, defaultForm)
-        form.subject_details = []
-        if (props.semesters.length > 0) form.semester_id = props.semesters[0].id
-      }
+    if (!newVal) return
+    if (props.editingItem) {
+      Object.assign(form, {
+        id: props.editingItem.id,
+        code: props.editingItem.code,
+        name: props.editingItem.name,
+        semester_id: props.editingItem.semester_id ?? props.editingItem.semester?.id,
+        lecturer_id: props.editingItem.lecturer_id ?? props.editingItem.lecturer?.id,
+        // Lấy max_members từ pivot của môn đầu tiên làm default
+        default_max_members:
+          props.editingItem.subjects?.[0]?.pivot?.max_members ??
+          props.editingItem.max_members ??
+          60,
+        subject_details:
+          props.editingItem.subjects?.map((s) => ({
+            subject_id: s.id,
+            // ✅ Lấy đúng từ pivot của từng môn
+            max_members: s.pivot?.max_members ?? props.editingItem.max_members ?? 60,
+          })) ?? [],
+      })
+    } else {
+      Object.assign(form, { ...defaultForm, subject_details: [] })
+      if (props.semesters.length > 0) form.semester_id = props.semesters[0].id
     }
   },
 )
