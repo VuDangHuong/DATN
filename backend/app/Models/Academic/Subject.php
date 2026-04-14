@@ -18,11 +18,13 @@ class Subject extends Model
 
     public function major()
     {
-        return $this->belongsTo(Major::class, 'major_id');
+        return $this->belongsTo(Major::class);
     }
 
-    public function moduleClasses()
+    public function classes()
     {
-        return $this->belongsToMany(Classes::class, 'class_subject', 'subject_id', 'class_id');
+        return $this->belongsToMany(Classes::class, 'class_subject', 'subject_id', 'class_id')
+                    ->withPivot('max_members')
+                    ->withTimestamps();
     }
 }

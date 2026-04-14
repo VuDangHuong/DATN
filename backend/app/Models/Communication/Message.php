@@ -20,7 +20,7 @@ class Message extends Model
         return $this->belongsTo(Group::class);
     }
 
-    public function sender(): BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }

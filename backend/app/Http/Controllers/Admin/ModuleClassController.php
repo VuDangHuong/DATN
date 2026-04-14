@@ -12,7 +12,7 @@ class ModuleClassController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Classes::with(['subjects', 'semester', 'teacher']);
+        $query = Classes::with(['subjects', 'semester', 'lecturer']);
 
         if (!$request->has('include_inactive')) {
             $query->whereHas('semester', function($q) {
@@ -67,7 +67,7 @@ class ModuleClassController extends Controller
 
     public function show($id)
     {
-        $class = Classes::with(['subjects', 'semester', 'teacher', 'students'])->find($id);
+        $class = Classes::with(['subjects', 'semester', 'lecturer', 'students'])->find($id);
         if (!$class) return response()->json(['message' => 'Lớp không tồn tại'], 404);
         
         return response()->json($class);

@@ -110,7 +110,7 @@ class SubjectController extends Controller
             return response()->json(['message' => 'Môn học không tồn tại'], 404);
         }
 
-        if ($subject->moduleClasses()->exists()) {
+        if ($subject->classes()->exists()) {
             return response()->json([
                 'message' => 'Không thể xóa môn này vì đã có Lớp học phần đang mở.'
             ], 400);

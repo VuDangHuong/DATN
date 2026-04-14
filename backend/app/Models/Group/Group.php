@@ -26,7 +26,7 @@ class Group extends Model
     protected $casts = [
         'is_locked' => 'boolean',
     ];
-    public function class(): BelongsTo
+    public function classRoom(): BelongsTo
     {
         return $this->belongsTo(Classes::class, 'class_id');
     }
@@ -40,7 +40,12 @@ class Group extends Model
     {
         return $this->hasMany(GroupMember::class);
     }
-
+     public function users()
+    {
+        return $this->belongsToMany(User::class, 'group_members')
+                    ->withPivot('role', 'joined_at')
+                    ->withTimestamps();
+    }
     public function topic(): HasOne
     {
         return $this->hasOne(Topic::class);
@@ -123,11 +128,14 @@ class Group extends Model
     {
         return $this->leader_id === $userId;
     }
-
+    public function isMember(int $userId): bool
+    {
+        return $this->members()->where('user_id', $userId)->exists();
+    }
     /**
      * Số thành viên hiện tại
      */
-    public function getMemberCountAttribute(): int
+    public function memberCount(): int
     {
         return $this->members()->count();
     }

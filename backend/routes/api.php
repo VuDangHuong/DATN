@@ -1,6 +1,10 @@
 <?php
 
 use App\Http\Controllers\Shared\ClassStudentController;
+use App\Http\Controllers\Student\GroupController;
+use App\Http\Controllers\Student\MessageController;
+use App\Http\Controllers\Student\StudentDashboardController;
+use App\Http\Controllers\Student\TaskController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Admin\UserController;
@@ -174,7 +178,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // =================================================================
     // D. STUDENT AREA (Khu vực Sinh viên)
     // =================================================================
-        Route::prefix('student')->middleware('role:student,admin')->group(function () {
+        Route::prefix('student')->middleware('role:student')->group(function () {
             // Tạo yêu cầu số hóa
         Route::post('/sign-requests', [SignRequestController::class, 'store']);
         // Xem trạng thái yêu cầu của mình
@@ -182,6 +186,39 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/sign-requests/{id}', [SignRequestController::class, 'show']);
         // Tải file đã ký
         Route::get('/sign-requests/{id}/download', [SignRequestController::class, 'download']);
+
+        // ─────────────────────────────────────────
+        // Dashboard — Sinh viên xem lớp/môn/GV
+        // ─────────────────────────────────────────
+        Route::get('my-classes', [StudentDashboardController::class, 'myClasses']);
+ 
+        // ─────────────────────────────────────────
+        // Quản lý nhóm
+        // ─────────────────────────────────────────
+        Route::get('classes/{classId}/groups', [GroupController::class, 'index']);       // DS nhóm trong lớp
+        Route::post('groups',                  [GroupController::class, 'store']);        // Tạo nhóm
+        Route::get('groups/{groupId}',         [GroupController::class, 'show']);         // Chi tiết nhóm
+ 
+        // Quản lý thành viên (chỉ leader)
+        Route::post('groups/{groupId}/members',              [GroupController::class, 'addMember']);     // Thêm TV
+        Route::delete('groups/{groupId}/members/{memberId}', [GroupController::class, 'removeMember']); // Xóa TV
+ 
+        // ─────────────────────────────────────────
+        // Chat nhóm
+        // ─────────────────────────────────────────
+        Route::get('groups/{groupId}/messages',  [MessageController::class, 'index']);   // Lấy tin nhắn
+        Route::post('groups/{groupId}/messages', [MessageController::class, 'store']);   // Gửi tin nhắn
+ 
+        // ─────────────────────────────────────────
+        // Quản lý công việc (Task Management)
+        // ─────────────────────────────────────────
+        Route::get('groups/{groupId}/tasks',  [TaskController::class, 'index']);         // DS task trong nhóm
+        Route::post('groups/{groupId}/tasks', [TaskController::class, 'store']);         // Tạo task (leader)
+ 
+        Route::get('tasks/{taskId}',          [TaskController::class, 'show']);          // Chi tiết task
+        Route::put('tasks/{taskId}',          [TaskController::class, 'update']);        // Sửa task (leader)
+        Route::patch('tasks/{taskId}/status', [TaskController::class, 'updateStatus']); // Đổi status
+        Route::delete('tasks/{taskId}',       [TaskController::class, 'destroy']);       // Xóa task (leader)
     });
 
 });
