@@ -4,6 +4,7 @@ use App\Http\Controllers\Shared\ClassStudentController;
 use App\Http\Controllers\Student\GroupController;
 use App\Http\Controllers\Student\MessageController;
 use App\Http\Controllers\Student\StudentDashboardController;
+use App\Http\Controllers\Student\TaskCommentController;
 use App\Http\Controllers\Student\TaskController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
@@ -223,6 +224,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('tasks/{taskId}',          [TaskController::class, 'update']);        // Sửa task (leader)
         Route::patch('tasks/{taskId}/status', [TaskController::class, 'updateStatus']); // Đổi status
         Route::delete('tasks/{taskId}',       [TaskController::class, 'destroy']);       // Xóa task (leader)
+
+        Route::get('tasks/{taskId}/comments',    [TaskCommentController::class, 'index']);   // DS bình luận
+        Route::post('tasks/{taskId}/comments',   [TaskCommentController::class, 'store']);   // Thêm bình luận
+        Route::put('comments/{commentId}',       [TaskCommentController::class, 'update']);  // Sửa bình luận
+        Route::delete('comments/{commentId}',    [TaskCommentController::class, 'destroy']); // Xóa bình luận
     });
 
 });
