@@ -84,3 +84,16 @@ export const taskApi = {
   // Xóa task
   delete: (taskId) => axiosClient.delete(`${BASE}/tasks/${taskId}`),
 }
+export const commentApi = {
+  // Lấy DS bình luận trong task
+  getByTask: (taskId) => axiosClient.get(`/student/tasks/${taskId}/comments`),
+
+  // Thêm bình luận
+  create: (taskId, data) => axiosClient.post(`/student/tasks/${taskId}/comments`, data),
+
+  // Sửa bình luận
+  update: (commentId, data) => axiosClient.put(`/student/comments/${commentId}`, data),
+
+  // Xóa bình luận
+  delete: (commentId) => axiosClient.delete(`/student/comments/${commentId}`),
+}

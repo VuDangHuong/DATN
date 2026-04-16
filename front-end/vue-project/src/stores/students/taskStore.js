@@ -1,8 +1,8 @@
 // src/stores/taskStore.js
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { commentApi } from '@/api/students/studentApi'
 import { taskApi } from '@/api/students/studentApi'
-
 export const useTaskStore = defineStore('task', () => {
   const tasks = ref([])
   const stats = ref({ total: 0, todo: 0, doing: 0, done: 0, late: 0 })
@@ -107,6 +107,68 @@ export const useTaskStore = defineStore('task', () => {
     filters.value = { ...filters.value, ...newFilters }
   }
 
+  // ── Task Comments ────────────────────────────
+
+  // Lấy bình luận của task
+  async function fetchComments(taskId) {
+    try {
+      const { data } = await commentApi.getByTask(taskId)
+      // Cập nhật comments trong currentTask
+      if (currentTask.value && currentTask.value.id === taskId) {
+        currentTask.value.comments = data.comments || []
+      }
+      return { success: true, comments: data.comments }
+    } catch (err) {
+      return { success: false, message: err.response?.data?.message || 'Lỗi tải bình luận' }
+    }
+  }
+
+  // Thêm bình luận
+  async function addComment(taskId, content) {
+    try {
+      const { data } = await commentApi.create(taskId, { content })
+      // Thêm comment mới vào cuối
+      if (currentTask.value && currentTask.value.id === taskId) {
+        if (!currentTask.value.comments) currentTask.value.comments = []
+        currentTask.value.comments.push(data.comment)
+      }
+      return { success: true, comment: data.comment }
+    } catch (err) {
+      return { success: false, message: err.response?.data?.message || 'Lỗi thêm bình luận' }
+    }
+  }
+
+  // Sửa bình luận
+  async function updateComment(commentId, content) {
+    try {
+      const { data } = await commentApi.update(commentId, { content })
+      // Cập nhật comment trong danh sách
+      if (currentTask.value?.comments) {
+        const idx = currentTask.value.comments.findIndex((c) => c.id === commentId)
+        if (idx !== -1) {
+          currentTask.value.comments[idx] = data.comment
+        }
+      }
+      return { success: true }
+    } catch (err) {
+      return { success: false, message: err.response?.data?.message || 'Lỗi sửa bình luận' }
+    }
+  }
+
+  // Xóa bình luận
+  async function deleteComment(commentId) {
+    try {
+      await commentApi.delete(commentId)
+      // Xóa khỏi danh sách
+      if (currentTask.value?.comments) {
+        currentTask.value.comments = currentTask.value.comments.filter((c) => c.id !== commentId)
+      }
+      return { success: true }
+    } catch (err) {
+      return { success: false, message: err.response?.data?.message || 'Lỗi xóa bình luận' }
+    }
+  }
+
   return {
     tasks,
     stats,
@@ -125,5 +187,9 @@ export const useTaskStore = defineStore('task', () => {
     changeStatus,
     deleteTask,
     setFilters,
+    fetchComments,
+    addComment,
+    updateComment,
+    deleteComment,
   }
 })
