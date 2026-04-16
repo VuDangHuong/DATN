@@ -199,7 +199,127 @@ class GroupService
             ->map([$this, 'formatGroup']);
         return $this->success('Danh sách nhóm', ['groups' => $groups]);
     }
+    
+    /**
+     * Nhóm trưởng chỉnh sửa thông tin nhóm (tên, khóa/mở nhóm).
+     */
+    public function updateGroup(User $leader, int $groupId, array $data): array
+    {
+        $group = Group::findOrFail($groupId);
  
+        if (!$group->isLeader($leader->id)) {
+            return $this->error('Chỉ nhóm trưởng mới có quyền chỉnh sửa nhóm', 403);
+        }
+ 
+        $group->update(array_filter([
+            'name'      => $data['name'] ?? null,
+            'is_locked' => array_key_exists('is_locked', $data) ? $data['is_locked'] : null,
+        ], fn($v) => $v !== null));
+ 
+        return $this->success('Cập nhật nhóm thành công', [
+            'group' => $this->formatGroup($group->fresh(['leader', 'members.user'])),
+        ]);
+    }
+ 
+    /**
+     * Nhóm trưởng xóa nhóm.
+     *
+     * Khi xóa:
+     *   - Xóa tất cả group_members
+     *   - Reset class_students.has_group = false cho tất cả TV
+     *   - Xóa group (cascade xóa messages, tasks, join_requests)
+     */
+    public function deleteGroup(User $leader, int $groupId): array
+    {
+        $group = Group::with(['classRoom', 'members'])->findOrFail($groupId);
+ 
+        if (!$group->isLeader($leader->id)) {
+            return $this->error('Chỉ nhóm trưởng mới có quyền xóa nhóm', 403);
+        }
+ 
+        DB::transaction(function () use ($group) {
+            // Reset has_group cho tất cả TV
+            $memberIds = $group->members->pluck('user_id')->toArray();
+            if (!empty($memberIds) && $group->classRoom) {
+                foreach ($memberIds as $uid) {
+                    $group->classRoom->students()->updateExistingPivot($uid, [
+                        'has_group'  => false,
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+ 
+            // Cascade delete (messages, tasks, join_requests theo FK ON DELETE CASCADE)
+            $group->delete();
+        });
+ 
+        return $this->success('Đã xóa nhóm thành công');
+    }
+ 
+    /**
+     * Thành viên rời nhóm (không phải leader).
+     *
+     * Nếu leader muốn rời → phải chuyển leader trước hoặc xóa nhóm.
+     */
+    public function leaveGroup(User $user, int $groupId): array
+    {
+        $group = Group::with('classRoom')->findOrFail($groupId);
+ 
+        if (!$group->isMember($user->id)) {
+            return $this->error('Bạn không phải thành viên của nhóm này', 404);
+        }
+ 
+        if ($group->isLeader($user->id)) {
+            return $this->error('Nhóm trưởng không thể rời nhóm. Hãy chuyển quyền trưởng nhóm hoặc xóa nhóm.', 422);
+        }
+ 
+        DB::transaction(function () use ($group, $user) {
+            $group->members()->where('user_id', $user->id)->delete();
+ 
+            // Reset has_group
+            if ($group->classRoom) {
+                $group->classRoom->students()->updateExistingPivot($user->id, [
+                    'has_group'  => false,
+                    'updated_at' => now(),
+                ]);
+            }
+        });
+ 
+        return $this->success('Bạn đã rời nhóm thành công');
+    }
+ 
+    /**
+     * Nhóm trưởng chuyển quyền leader cho thành viên khác.
+     */
+    public function transferLeader(User $leader, int $groupId, int $newLeaderId): array
+    {
+        $group = Group::findOrFail($groupId);
+ 
+        if (!$group->isLeader($leader->id)) {
+            return $this->error('Chỉ nhóm trưởng mới có quyền chuyển quyền', 403);
+        }
+ 
+        if ($leader->id === $newLeaderId) {
+            return $this->error('Bạn đã là nhóm trưởng rồi', 422);
+        }
+ 
+        if (!$group->isMember($newLeaderId)) {
+            return $this->error('Người được chuyển quyền không phải thành viên nhóm', 422);
+        }
+ 
+        DB::transaction(function () use ($group, $leader, $newLeaderId) {
+            // Đổi leader_id
+            $group->update(['leader_id' => $newLeaderId]);
+ 
+            // Đổi role trong group_members
+            $group->members()->where('user_id', $leader->id)->update(['role' => 'member']);
+            $group->members()->where('user_id', $newLeaderId)->update(['role' => 'leader']);
+        });
+ 
+        return $this->success('Đã chuyển quyền nhóm trưởng', [
+            'group' => $this->formatGroup($group->fresh(['leader', 'members.user'])),
+        ]);
+    }
     // ─────────────────────────────────────────────
     // Format helpers
     // ─────────────────────────────────────────────

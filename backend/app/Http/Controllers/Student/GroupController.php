@@ -54,7 +54,33 @@ class GroupController extends Controller
         $result = $this->service->getGroupDetail(auth()->user(), $groupId);
         return $this->toResponse($result);
     }
+    /**
+     * PUT /student/groups/{groupId}
+     * Body: { "name": "Tên mới", "is_locked": true }
+     *
+     * Nhóm trưởng chỉnh sửa tên nhóm, khóa/mở nhóm.
+     */
+    public function update(Request $request, int $groupId): JsonResponse
+    {
+        $data = $request->validate([
+            'name'      => 'nullable|string|max:255',
+            'is_locked' => 'nullable|boolean',
+        ]);
  
+        $result = $this->service->updateGroup(auth()->user(), $groupId, $data);
+        return $this->toResponse($result);
+    }
+ 
+    /**
+     * DELETE /student/groups/{groupId}
+     *
+     * Nhóm trưởng xóa nhóm. Xóa hết thành viên, messages, tasks.
+     */
+    public function destroy(int $groupId): JsonResponse
+    {
+        $result = $this->service->deleteGroup(auth()->user(), $groupId);
+        return $this->toResponse($result);
+    }
     /**
      * POST /student/groups/{groupId}/members
      *
@@ -87,7 +113,32 @@ class GroupController extends Controller
         $result = $this->service->removeMember(auth()->user(), $groupId, $memberId);
         return $this->toResponse($result);
     }
+    public function leave(int $groupId): JsonResponse
+    {
+        $result = $this->service->leaveGroup(auth()->user(), $groupId);
+        return $this->toResponse($result);
+    }
  
+    /**
+     * POST /student/groups/{groupId}/transfer-leader
+     * Body: { "new_leader_id": 3 }
+     *
+     * Nhóm trưởng chuyển quyền cho thành viên khác.
+     */
+    public function transferLeader(Request $request, int $groupId): JsonResponse
+    {
+        $request->validate([
+            'new_leader_id' => 'required|integer|exists:users,id',
+        ]);
+ 
+        $result = $this->service->transferLeader(
+            auth()->user(),
+            $groupId,
+            $request->new_leader_id
+        );
+ 
+        return $this->toResponse($result);
+    }
     // ─────────────────────────────────────────────
  
     private function toResponse(array $result, int $successCode = 200): JsonResponse
