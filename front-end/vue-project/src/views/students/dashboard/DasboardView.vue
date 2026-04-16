@@ -235,7 +235,7 @@
 </template>
 
 <script setup>
-import { useDashboardStore } from './stores/students/dashboardStore'
+import { useDashboardStore } from '@/stores/dashboardStore'
 import { storeToRefs } from 'pinia'
 
 const dashboardStore = useDashboardStore()

@@ -29,6 +29,7 @@ const handleLogin = async () => {
       email: email.value,
       password: password.value,
     })
+    localStorage.setItem('user', JSON.stringify(userData))
     if (userData.role === 'admin') {
       router.push('/admin/dashboard')
     } else if (userData.role === 'lecturer') {
@@ -232,5 +233,4 @@ const handleLogin = async () => {
   </div>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>
