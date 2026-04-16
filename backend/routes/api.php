@@ -198,10 +198,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('classes/{classId}/groups', [GroupController::class, 'index']);       // DS nhóm trong lớp
         Route::post('groups',                  [GroupController::class, 'store']);        // Tạo nhóm
         Route::get('groups/{groupId}',         [GroupController::class, 'show']);         // Chi tiết nhóm
+        Route::put('groups/{groupId}',         [GroupController::class, 'update']);       // Sửa nhóm (leader)
+        Route::delete('groups/{groupId}',      [GroupController::class, 'destroy']);      // Xóa nhóm (leader)
  
         // Quản lý thành viên (chỉ leader)
         Route::post('groups/{groupId}/members',              [GroupController::class, 'addMember']);     // Thêm TV
         Route::delete('groups/{groupId}/members/{memberId}', [GroupController::class, 'removeMember']); // Xóa TV
+        Route::post('groups/{groupId}/leave',                [GroupController::class, 'leave']);           // Rời nhóm (member)
+        Route::post('groups/{groupId}/transfer-leader',      [GroupController::class, 'transferLeader']); // Chuyển quyền (leader)
  
         // ─────────────────────────────────────────
         // Chat nhóm
