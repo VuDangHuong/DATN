@@ -28,8 +28,9 @@ export const useTaskStore = defineStore('task', () => {
         if (!params[key]) delete params[key]
       })
       const { data } = await taskApi.getByGroup(groupId, params)
-      tasks.value = data.tasks || []
-      stats.value = data.stats || stats.value
+      console.log('API raw response:', data)
+      tasks.value = data.tasks || data.data?.tasks || data.data || []
+      stats.value = data.stats || data.data?.stats || stats.value
     } catch (err) {
       error.value = err.response?.data?.message || 'Lỗi tải task'
     } finally {

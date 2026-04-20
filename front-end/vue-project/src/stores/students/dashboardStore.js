@@ -10,6 +10,14 @@ export const useDashboardStore = defineStore('dashboard', () => {
   const error = ref(null)
   const selectedClassId = ref(null)
 
+  function selectClass(id) {
+    selectedClassId.value = id
+  }
+  const filteredClasses = computed(() =>
+    selectedClassId.value
+      ? classes.value.filter((c) => c.class.id == selectedClassId.value) // == thay vì ===
+      : classes.value,
+  )
   // Lớp đang chọn
   const selectedClass = computed(
     () => classes.value.find((c) => c.class.id === selectedClassId.value) || null,
@@ -24,22 +32,22 @@ export const useDashboardStore = defineStore('dashboard', () => {
     error.value = null
     try {
       const { data } = await dashboardApi.getMyClasses()
+      console.log('API response:', data)
       student.value = data.data.student
       classes.value = data.data.classes
+      console.log('classes sau khi set:', classes.value)
+      console.log('classes[0].class.id:', classes.value[0]?.class?.id)
 
       // Tự chọn lớp đầu tiên nếu chưa chọn
       if (!selectedClassId.value && classes.value.length > 0) {
         selectedClassId.value = classes.value[0].class.id
+        console.log('selectedClassId sau khi set:', selectedClassId.value)
       }
     } catch (err) {
       error.value = err.response?.data?.message || 'Không thể tải dữ liệu'
     } finally {
       loading.value = false
     }
-  }
-
-  function selectClass(classId) {
-    selectedClassId.value = classId
   }
 
   return {
@@ -51,6 +59,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     selectedClass,
     myGroup,
     fetchMyClasses,
+    filteredClasses,
     selectClass,
   }
 })

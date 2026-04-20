@@ -1,4 +1,3 @@
-<!-- src/views/tasks/TaskView.vue -->
 <template>
   <div>
     <!-- Header -->
@@ -42,25 +41,19 @@
         </div>
       </div>
 
-      <!-- Kanban Board -->
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <KanbanColumn
-          v-for="col in columns"
-          :key="col.key"
-          :title="col.title"
-          :color="col.color"
-          :icon="col.icon"
-          :tasks="getColumnTasks(col.key)"
-          :is-leader="isLeader"
-          :current-user-id="user.id"
-          @change-status="handleChangeStatus"
-          @click-task="openTaskDetail"
-          @delete-task="handleDeleteTask"
-        />
-      </div>
+      <!-- ✅ Dùng KanbanBoard — truyền tasks reactive từ store -->
+      <KanbanboardView
+        :tasks="tasks"
+        :is-leader="isLeader"
+        :current-user-id="user.id"
+        @click-task="openTaskDetail"
+        @change-status="handleChangeStatus"
+        @delete-task="handleDeleteTask"
+        @task-moved="handleTaskMoved"
+      />
     </template>
 
-    <!-- ── Modal: Tạo / Sửa Task ──────────── -->
+    <!-- Modal: Tạo / Sửa Task -->
     <Teleport to="body">
       <div v-if="showTaskModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" @click="showTaskModal = false" />
@@ -70,7 +63,6 @@
           <h3 class="text-lg font-bold text-slate-800 mb-5">
             {{ editingTask ? 'Chỉnh sửa công việc' : 'Tạo công việc mới' }}
           </h3>
-
           <div class="space-y-4">
             <div>
               <label class="block text-sm font-medium text-slate-600 mb-1">Tiêu đề *</label>
@@ -81,7 +73,6 @@
                 placeholder="Nhập tiêu đề..."
               />
             </div>
-
             <div>
               <label class="block text-sm font-medium text-slate-600 mb-1">Mô tả</label>
               <textarea
@@ -91,7 +82,6 @@
                 placeholder="Mô tả chi tiết..."
               />
             </div>
-
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-slate-600 mb-1">Giao cho</label>
@@ -112,7 +102,6 @@
                 </select>
               </div>
             </div>
-
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-slate-600 mb-1">Ngày bắt đầu</label>
@@ -123,7 +112,6 @@
                 <input v-model="taskForm.deadline" type="datetime-local" class="input-field" />
               </div>
             </div>
-
             <div>
               <label class="block text-sm font-medium text-slate-600 mb-1">Trọng số (1-10)</label>
               <input
@@ -135,7 +123,6 @@
               />
             </div>
           </div>
-
           <div class="flex gap-3 mt-6">
             <button
               @click="showTaskModal = false"
@@ -145,17 +132,17 @@
             </button>
             <button
               @click="handleSaveTask"
-              :disabled="!taskForm.title || !taskForm.deadline || taskStore.loading"
+              :disabled="!taskForm.title || !taskForm.deadline || taskLoading"
               class="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50"
             >
-              {{ taskStore.loading ? 'Đang lưu...' : editingTask ? 'Cập nhật' : 'Tạo' }}
+              {{ taskLoading ? 'Đang lưu...' : editingTask ? 'Cập nhật' : 'Tạo' }}
             </button>
           </div>
         </div>
       </div>
     </Teleport>
 
-    <!-- ── Modal: Chi tiết Task ────────────── -->
+    <!-- Modal: Chi tiết Task -->
     <Teleport to="body">
       <div v-if="showDetailModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div
@@ -166,16 +153,14 @@
           class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col"
         >
           <div v-if="currentTask" class="flex flex-col max-h-[90vh]">
-            <!-- Header -->
             <div class="p-6 border-b border-slate-100 flex-shrink-0">
               <div class="flex items-start justify-between">
                 <div>
                   <span
                     :class="priorityClass(currentTask.priority)"
                     class="px-2 py-0.5 rounded-full text-xs font-bold uppercase"
+                    >{{ currentTask.priority }}</span
                   >
-                    {{ currentTask.priority }}
-                  </span>
                   <h3 class="text-lg font-bold text-slate-800 mt-2">{{ currentTask.title }}</h3>
                 </div>
                 <button
@@ -202,9 +187,7 @@
               </p>
             </div>
 
-            <!-- Scrollable content -->
             <div class="flex-1 overflow-y-auto p-6 space-y-6">
-              <!-- Task info -->
               <div class="grid grid-cols-2 gap-3 text-sm">
                 <div class="p-3 bg-slate-50 rounded-xl">
                   <p class="text-slate-400 text-xs mb-1">Trạng thái</p>
@@ -235,12 +218,11 @@
                 </div>
               </div>
 
-              <!-- Actions row -->
               <div class="flex gap-2">
                 <button
                   v-if="isLeader"
                   @click="openEditModal(currentTask)"
-                  class="flex-1 py-2 bg-slate-100 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-200 transition-colors"
+                  class="flex-1 py-2 bg-slate-100 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-200"
                 >
                   ✏️ Sửa
                 </button>
@@ -256,44 +238,36 @@
                 </select>
               </div>
 
-              <!-- ══════════════════════════════════ -->
-              <!-- Comments Section                   -->
-              <!-- ══════════════════════════════════ -->
+              <!-- Comments -->
               <div>
-                <div class="flex items-center justify-between mb-4">
-                  <h4 class="text-sm font-bold text-slate-700 flex items-center gap-2">
-                    <svg
-                      class="w-4 h-4 text-slate-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
-                      />
-                    </svg>
-                    Bình luận ({{ currentTask.comments?.length || 0 }})
-                  </h4>
-                </div>
-
-                <!-- Comments list -->
+                <h4 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
+                  <svg
+                    class="w-4 h-4 text-slate-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+                    />
+                  </svg>
+                  Bình luận ({{ currentTask.comments?.length || 0 }})
+                </h4>
                 <div class="space-y-3 max-h-60 overflow-y-auto mb-4">
                   <div
                     v-if="!currentTask.comments?.length"
                     class="text-center py-6 text-sm text-slate-400"
                   >
-                    Chưa có bình luận. Hãy là người đầu tiên nhận xét!
+                    Chưa có bình luận.
                   </div>
-
                   <div
                     v-for="comment in currentTask.comments"
                     :key="comment.id"
                     class="flex gap-3 group"
                   >
-                    <!-- Avatar -->
                     <div
                       class="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold text-white"
                       :class="
@@ -304,8 +278,6 @@
                     >
                       {{ comment.user?.name?.charAt(0) || '?' }}
                     </div>
-
-                    <!-- Content -->
                     <div class="flex-1 min-w-0">
                       <div class="flex items-center gap-2 mb-0.5">
                         <span class="text-xs font-semibold text-slate-700">{{
@@ -314,8 +286,6 @@
                         <span class="text-[10px] text-slate-400">{{
                           formatTime(comment.created_at)
                         }}</span>
-
-                        <!-- Edit / Delete (hiện khi hover) -->
                         <div
                           class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity flex gap-1"
                         >
@@ -323,7 +293,6 @@
                             v-if="comment.user?.id === user.id"
                             @click="startEditComment(comment)"
                             class="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-indigo-600"
-                            title="Sửa"
                           >
                             <svg
                               class="w-3.5 h-3.5"
@@ -343,7 +312,6 @@
                             v-if="comment.user?.id === user.id || isLeader"
                             @click="handleDeleteComment(comment.id)"
                             class="p-1 rounded hover:bg-red-50 text-slate-400 hover:text-red-500"
-                            title="Xóa"
                           >
                             <svg
                               class="w-3.5 h-3.5"
@@ -361,24 +329,22 @@
                           </button>
                         </div>
                       </div>
-
-                      <!-- Nội dung hoặc form sửa -->
                       <div v-if="editingCommentId === comment.id" class="flex gap-2">
                         <input
                           v-model="editCommentContent"
-                          class="flex-1 px-3 py-1.5 border border-indigo-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          class="flex-1 px-3 py-1.5 border border-indigo-300 rounded-lg text-sm"
                           @keyup.enter="handleUpdateComment"
                           @keyup.escape="cancelEditComment"
                         />
                         <button
                           @click="handleUpdateComment"
-                          class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-semibold hover:bg-indigo-700"
+                          class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-semibold"
                         >
                           Lưu
                         </button>
                         <button
                           @click="cancelEditComment"
-                          class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs text-slate-500 hover:bg-slate-50"
+                          class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs text-slate-500"
                         >
                           Hủy
                         </button>
@@ -389,22 +355,18 @@
                     </div>
                   </div>
                 </div>
-
-                <!-- Input thêm bình luận -->
                 <div class="flex gap-2 items-end">
-                  <div class="flex-1 relative">
-                    <textarea
-                      v-model="newComment"
-                      @keydown.enter.exact.prevent="handleAddComment"
-                      placeholder="Viết bình luận... (Enter để gửi)"
-                      rows="2"
-                      class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm resize-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-slate-400"
-                    />
-                  </div>
+                  <textarea
+                    v-model="newComment"
+                    @keydown.enter.exact.prevent="handleAddComment"
+                    placeholder="Viết bình luận... (Enter để gửi)"
+                    rows="2"
+                    class="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-sm resize-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-slate-400"
+                  />
                   <button
                     @click="handleAddComment"
                     :disabled="!newComment.trim() || commentSending"
-                    class="px-4 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-colors flex-shrink-0"
+                    class="px-4 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:opacity-50 flex-shrink-0"
                   >
                     <svg
                       v-if="!commentSending"
@@ -430,22 +392,7 @@
 
               <!-- Activities -->
               <div v-if="currentTask.activities?.length">
-                <h4 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
-                  <svg
-                    class="w-4 h-4 text-slate-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  Lịch sử hoạt động
-                </h4>
+                <h4 class="text-sm font-bold text-slate-700 mb-3">Lịch sử hoạt động</h4>
                 <div class="space-y-2 max-h-40 overflow-y-auto">
                   <div
                     v-for="a in currentTask.activities"
@@ -477,20 +424,20 @@ import { storeToRefs } from 'pinia'
 import { useDashboardStore } from '@/stores/students/dashboardStore'
 import { useTaskStore } from '@/stores/students/taskStore'
 import { useGroupStore } from '@/stores/students/groupStore'
-import KanbanColumn from '@/components/students/KanbanColumn.vue'
-
+import KanbanboardView from './KanbanboardView.vue'
 const route = useRoute()
 const dashboardStore = useDashboardStore()
 const taskStore = useTaskStore()
 const groupStore = useGroupStore()
-const { stats, currentTask, loading: taskLoading } = storeToRefs(taskStore)
+
+// ✅ Một dòng storeToRefs duy nhất — lấy tasks reactive
+const { stats, currentTask, loading: taskLoading, tasks } = storeToRefs(taskStore)
 
 const user = JSON.parse(localStorage.getItem('user') || '{}')
+
 const showTaskModal = ref(false)
 const showDetailModal = ref(false)
 const editingTask = ref(null)
-
-// Comment state
 const newComment = ref('')
 const commentSending = ref(false)
 const editingCommentId = ref(null)
@@ -506,6 +453,7 @@ const taskForm = ref({
   weight: 1,
 })
 
+// ── Computed ──────────────────────────────────────────────
 const groupId = computed(() => {
   const fromRoute = route.query.group_id
   if (fromRoute) return Number(fromRoute)
@@ -515,15 +463,8 @@ const groupId = computed(() => {
 const groupName = computed(() => dashboardStore.myGroup?.name || '')
 const isLeader = computed(() => dashboardStore.myGroup?.leader?.id === user.id)
 const members = computed(
-  () => groupStore.currentGroup?.members?.map((m) => m) || dashboardStore.myGroup?.members || [],
+  () => groupStore.currentGroup?.members || dashboardStore.myGroup?.members || [],
 )
-
-const columns = [
-  { key: 'todo', title: 'Cần làm', color: 'bg-slate-500', icon: '📋' },
-  { key: 'doing', title: 'Đang làm', color: 'bg-blue-500', icon: '🔄' },
-  { key: 'done', title: 'Hoàn thành', color: 'bg-emerald-500', icon: '✅' },
-  { key: 'late', title: 'Trễ hạn', color: 'bg-red-500', icon: '⚠️' },
-]
 
 const statItems = {
   total: { label: 'Tổng', color: 'text-slate-700' },
@@ -533,22 +474,26 @@ const statItems = {
   late: { label: 'Trễ hạn', color: 'text-red-600' },
 }
 
-function getColumnTasks(status) {
-  return (taskStore.tasks || []).filter((t) => t.status === status)
-}
+// ── Lifecycle ─────────────────────────────────────────────
+onMounted(async () => {
+  if (!dashboardStore.classes.length) {
+    await dashboardStore.fetchMyClasses()
+  }
+})
 
-// Load tasks khi groupId thay đổi
+// ✅ Watch myGroup.id — fetch tasks khi có group
 watch(
-  groupId,
+  () => dashboardStore.myGroup?.id,
   (id) => {
     if (id) {
       taskStore.fetchTasks(id)
-      if (dashboardStore.myGroup?.id) groupStore.fetchGroupDetail(dashboardStore.myGroup.id)
+      groupStore.fetchGroupDetail(id)
     }
   },
   { immediate: true },
 )
 
+// ── Handlers ─────────────────────────────────────────────
 function openCreateModal() {
   editingTask.value = null
   taskForm.value = {
@@ -587,17 +532,10 @@ async function handleSaveTask() {
   const data = { ...taskForm.value }
   if (!data.assignee_id) delete data.assignee_id
   if (!data.start_date) delete data.start_date
-
-  let result
-  if (editingTask.value) {
-    result = await taskStore.updateTask(editingTask.value.id, groupId.value, data)
-  } else {
-    result = await taskStore.createTask(groupId.value, data)
-  }
-
-  if (result.success) {
-    showTaskModal.value = false
-  }
+  const result = editingTask.value
+    ? await taskStore.updateTask(editingTask.value.id, groupId.value, data)
+    : await taskStore.createTask(groupId.value, data)
+  if (result.success) showTaskModal.value = false
 }
 
 async function handleChangeStatus(taskId, status) {
@@ -611,18 +549,21 @@ async function handleDeleteTask(taskId) {
   await taskStore.deleteTask(taskId, groupId.value)
 }
 
+// ✅ Kéo thả sang column khác → đổi status qua API
+async function handleTaskMoved({ taskId, newStatus }) {
+  await taskStore.changeStatus(taskId, groupId.value, newStatus)
+}
+
 function canChangeStatus(task) {
   return task.assignee?.id === user.id || isLeader.value
 }
 
-// ── Comment handlers ─────────────────────────
+// Comments
 async function handleAddComment() {
   if (!newComment.value.trim() || !currentTask.value) return
   commentSending.value = true
   const result = await taskStore.addComment(currentTask.value.id, newComment.value.trim())
-  if (result.success) {
-    newComment.value = ''
-  }
+  if (result.success) newComment.value = ''
   commentSending.value = false
 }
 
@@ -642,9 +583,7 @@ async function handleUpdateComment() {
     editingCommentId.value,
     editCommentContent.value.trim(),
   )
-  if (result.success) {
-    cancelEditComment()
-  }
+  if (result.success) cancelEditComment()
 }
 
 async function handleDeleteComment(commentId) {
@@ -652,7 +591,7 @@ async function handleDeleteComment(commentId) {
   await taskStore.deleteComment(commentId)
 }
 
-// ── Formatters ───────────────────────────────
+// Formatters
 function formatDate(d) {
   if (!d) return ''
   return new Date(d).toLocaleString('vi-VN', {
@@ -675,44 +614,47 @@ function formatTime(d) {
 }
 
 function activityLabel(action) {
-  const map = {
-    created: 'đã tạo task',
-    status_changed: 'đổi trạng thái',
-    updated: 'cập nhật task',
-    commented: 'đã bình luận',
-    comment_updated: 'sửa bình luận',
-    comment_deleted: 'xóa bình luận',
-  }
-  return map[action] || action
+  return (
+    {
+      created: 'đã tạo task',
+      status_changed: 'đổi trạng thái',
+      updated: 'cập nhật task',
+      commented: 'đã bình luận',
+      comment_updated: 'sửa bình luận',
+      comment_deleted: 'xóa bình luận',
+    }[action] || action
+  )
 }
 
 function priorityClass(p) {
-  const map = {
-    urgent: 'bg-red-100 text-red-700',
-    high: 'bg-orange-100 text-orange-700',
-    medium: 'bg-blue-100 text-blue-700',
-    low: 'bg-slate-100 text-slate-600',
-  }
-  return map[p] || ''
+  return (
+    {
+      urgent: 'bg-red-100 text-red-700',
+      high: 'bg-orange-100 text-orange-700',
+      medium: 'bg-blue-100 text-blue-700',
+      low: 'bg-slate-100 text-slate-600',
+    }[p] || ''
+  )
 }
+
 function statusClass(s) {
-  const map = {
-    todo: 'bg-slate-100 text-slate-600',
-    doing: 'bg-blue-100 text-blue-700',
-    done: 'bg-emerald-100 text-emerald-700',
-    late: 'bg-red-100 text-red-700',
-  }
-  return map[s] || ''
+  return (
+    {
+      todo: 'bg-slate-100 text-slate-600',
+      doing: 'bg-blue-100 text-blue-700',
+      done: 'bg-emerald-100 text-emerald-700',
+      late: 'bg-red-100 text-red-700',
+    }[s] || ''
+  )
 }
+
 function statusLabel(s) {
-  const map = { todo: 'Cần làm', doing: 'Đang làm', done: 'Hoàn thành', late: 'Trễ hạn' }
-  return map[s] || s
+  return { todo: 'Cần làm', doing: 'Đang làm', done: 'Hoàn thành', late: 'Trễ hạn' }[s] || s
 }
 </script>
 
 <style scoped>
 .input-field {
-  @apply w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm
-         focus:ring-2 focus:ring-indigo-500 focus:border-transparent;
+  @apply w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent;
 }
 </style>

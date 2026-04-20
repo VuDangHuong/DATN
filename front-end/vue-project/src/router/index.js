@@ -18,11 +18,11 @@ import ChangePasswordForm from '@/views/auth/ChangePasswordForm.vue'
 import ProfileView from '@/components/profile/ProfileView.vue'
 import SemesterManagement from '@/views/admin/SemesterManagement.vue'
 import ChatBotManagement from '@/views/admin/ChatBotManagement.vue'
-import DashboardView from '@/DashboardView.vue'
 import StudentLayout from '@/layouts/StudentLayout.vue'
 import GroupView from '@/views/students/groups/GroupView.vue'
 import ChatView from '@/views/students/chat/ChatView.vue'
 import TaskView from '@/views/students/tasks/TaskView.vue'
+import DasboardStudentView from '@/views/students/dashboard/DasboardStudentView.vue'
 
 // Router config
 const routes = [
@@ -69,7 +69,7 @@ const routes = [
       {
         path: 'dashboard',
         name: 'student-dashboard',
-        component: DashboardView,
+        component: DasboardStudentView,
       },
       {
         path: 'groups',

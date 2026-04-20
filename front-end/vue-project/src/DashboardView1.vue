@@ -1,4 +1,4 @@
-<!-- src/views/dashboard/DashboardView.vue -->
+src/views/dashboard/DashboardView.vue
 <template>
   <div>
     <!-- Page header -->

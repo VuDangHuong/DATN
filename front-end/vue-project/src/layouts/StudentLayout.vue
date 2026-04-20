@@ -162,10 +162,11 @@
           <!-- Class selector -->
           <select
             v-if="classes.length > 1"
-            :value="selectedClassId"
-            @change="selectClass(Number($event.target.value))"
+            :value="selectedClassId ?? ''"
+            @change="selectClass($event.target.value === '' ? null : Number($event.target.value))"
             class="text-sm border border-slate-200 rounded-lg px-3 py-1.5 bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
           >
+            <option value="">Tất cả lớp</option>
             <option v-for="c in classes" :key="c.class.id" :value="c.class.id">
               {{ c.class.code }} - {{ c.class.name }}
             </option>
@@ -195,6 +196,20 @@ const sidebarOpen = ref(false)
 
 onMounted(() => {
   dashboardStore.fetchMyClasses()
+  console.log(
+    'selectedClassId type:',
+    typeof selectedClassId.value,
+    '| value:',
+    selectedClassId.value,
+  )
+  console.log(
+    'class.id type:',
+    typeof classes.value[0]?.class?.id,
+    '| value:',
+    classes.value[0]?.class?.id,
+  )
+  console.log('So sánh ===:', selectedClassId.value === classes.value[0]?.class?.id)
+  console.log('So sánh ==:', selectedClassId.value == classes.value[0]?.class?.id)
 })
 
 function selectClass(id) {
