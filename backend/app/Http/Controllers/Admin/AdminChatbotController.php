@@ -75,7 +75,8 @@ class AdminChatbotController extends Controller
                 $isAnswered = 1;
             }
         }
-
+        $user   = Auth::user();
+        $type   = $user->role ?? 'student'; 
         // Lưu log
         $log = ChatHistory::create([
             'user_id' => $adminId,
@@ -84,7 +85,7 @@ class AdminChatbotController extends Controller
             'file_name' => $fileName,   // ✅ lưu tên file nếu có
             'source_text' => $contexts,
             'is_answered' => $isAnswered,
-            'type' => 'admin',
+            'type' => $type,
         ]);
 
         return response()->json([

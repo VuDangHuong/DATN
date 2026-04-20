@@ -59,6 +59,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/semesters/{id}', [SemesterController::class, 'show']);
     });
 
+    Route::middleware(['auth:sanctum'])->prefix('chatbot')->group(function () {
+        Route::post('ask',                  [AdminChatbotController::class, 'ask']);
+        Route::get ('history',              [AdminChatbotController::class, 'history']);
+        Route::post('suggested-questions',  [AdminChatbotController::class, 'suggestedQuestions']);
+        Route::post('{id}/feedback',        [AdminChatbotController::class, 'feedback']);
+    });
     // =================================================================
     // B. ADMIN AREA (Chỉ Admin - Quản lý hệ thống & Đào tạo)
     // =================================================================
@@ -120,11 +126,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post  ('knowledge/import',     [KnowledgeController::class, 'importCsv']);
 
         // === Admin ChatBot ===
-        Route::post  ('chatbot/ask',              [AdminChatbotController::class, 'ask']);
-        Route::get   ('chatbot/history',          [AdminChatbotController::class, 'history']);
-        Route::post  ('chatbot/{id}/feedback',    [AdminChatbotController::class, 'feedback']);
+        // Route::post  ('chatbot/ask',              [AdminChatbotController::class, 'ask']);
+        // Route::get   ('chatbot/history',          [AdminChatbotController::class, 'history']);
+        // Route::post  ('chatbot/{id}/feedback',    [AdminChatbotController::class, 'feedback']);
 
-        Route::post('chatbot/suggested-questions', [AdminChatbotController::class, 'suggestedQuestions']);
+        // Route::post('chatbot/suggested-questions', [AdminChatbotController::class, 'suggestedQuestions']);
 
         // Xem tất cả yêu cầu + filter theo status
         Route::get('/sign-requests', [AdminSignController::class, 'index']);
