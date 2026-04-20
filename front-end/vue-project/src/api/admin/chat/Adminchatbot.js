@@ -1,6 +1,6 @@
 import axiosInstance from '@/api/axiosClient'
 
-const BASE = '/admin/chatbot'
+const BASE = '/chatbot'
 
 export const adminChatbotApi = {
   // Chỉ text
