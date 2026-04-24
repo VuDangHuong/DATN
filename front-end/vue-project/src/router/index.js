@@ -3,6 +3,7 @@ import { useAuthStore } from '@/stores/auth'
 
 // Layouts
 import AdminLayout from '@/layouts/AdminLayout.vue'
+import LecturerLayout from '@/layouts/LecturerLayout.vue'
 
 // Auth
 import LoginView from '@/views/auth/LoginView.vue'
@@ -18,18 +19,24 @@ import ChangePasswordForm from '@/views/auth/ChangePasswordForm.vue'
 import ProfileView from '@/components/profile/ProfileView.vue'
 import SemesterManagement from '@/views/admin/SemesterManagement.vue'
 import ChatBotManagement from '@/views/admin/ChatBotManagement.vue'
-import StudentLayout from '@/layouts/StudentLayout.vue'
+
+// Student views
 import GroupView from '@/views/students/groups/GroupView.vue'
 import ChatView from '@/views/students/chat/ChatView.vue'
 import TaskView from '@/views/students/tasks/TaskView.vue'
 import DasboardStudentView from '@/views/students/dashboard/DasboardStudentView.vue'
+import StudentSubmisionView from '@/views/students/Assignment/StudentSubmisionView.vue'
 
-// Router config
+// Lecturer views
+import SubmissionReviewView from '@/views/lecturer/assignment/SubmissionReviewView.vue'
+import StudentLayout from '@/layouts/StudentLayout.vue'
+import LecturerAssignmentView from '@/views/lecturer/assignment/LecturerAssignmentView.vue'
+
 const routes = [
   // Redirect mặc định
   { path: '/', redirect: '/login' },
 
-  // ── AUTH ─────────────────────────────────────
+  // ── AUTH ──────────────────────────────────────────────────
   {
     path: '/login',
     name: 'login',
@@ -37,7 +44,7 @@ const routes = [
     meta: { requiresGuest: true },
   },
 
-  // ── ADMIN ────────────────────────────────────
+  // ── ADMIN ─────────────────────────────────────────────────
   {
     path: '/admin',
     component: AdminLayout,
@@ -56,41 +63,52 @@ const routes = [
     ],
   },
 
-  // ── STUDENT ──────────────────────────────────
+  // ── STUDENT ───────────────────────────────────────────────
   {
     path: '/student',
     component: StudentLayout,
     meta: { requiresAuth: true, role: 'student' },
     children: [
+      { path: '', redirect: 'dashboard' },
+      { path: 'dashboard', name: 'student-dashboard', component: DasboardStudentView },
+      { path: 'groups', name: 'groups', component: GroupView },
+      { path: 'groups/:groupId', name: 'group-detail', component: GroupView, props: true },
+      { path: 'chat', name: 'chat', component: ChatView },
+      { path: 'tasks', name: 'tasks', component: TaskView },
+      { path: 'assignments', name: 'assignments', component: StudentSubmisionView },
+    ],
+  },
+
+  // ── LECTURER ──────────────────────────────────────────────
+  {
+    path: '/lecturer',
+    component: LecturerLayout,
+    meta: { requiresAuth: true, role: 'lecturer' },
+    redirect: '/lecturer/assignments',
+    children: [
+      // Đợt nộp bài — danh sách + tạo mới
       {
-        path: '',
-        redirect: 'dashboard',
+        path: 'assignments',
+        name: 'lecturer-assignments',
+        component: LecturerAssignmentView,
+        meta: { title: 'Đợt nộp bài' },
       },
+
+      // Duyệt bài nộp của 1 đợt cụ thể
       {
-        path: 'dashboard',
-        name: 'student-dashboard',
-        component: DasboardStudentView,
+        path: 'assignments/:assignmentId/review',
+        name: 'lecturer-assignment-review',
+        component: SubmissionReviewView,
+        props: (route) => ({ assignmentId: Number(route.params.assignmentId) }),
+        meta: { title: 'Duyệt bài nộp' },
       },
+
+      // Tổng quan duyệt bài (không chọn đợt cụ thể)
       {
-        path: 'groups',
-        name: 'groups',
-        component: GroupView,
-      },
-      {
-        path: 'groups/:groupId',
-        name: 'group-detail',
-        component: GroupView,
-        props: true, // 🔥 nên thêm
-      },
-      {
-        path: 'chat',
-        name: 'chat',
-        component: ChatView,
-      },
-      {
-        path: 'tasks',
-        name: 'tasks',
-        component: TaskView,
+        path: 'reviews',
+        name: 'lecturer-reviews',
+        component: SubmissionReviewView,
+        meta: { title: 'Duyệt bài nộp' },
       },
     ],
   },
@@ -102,23 +120,25 @@ const router = createRouter({
   routes,
 })
 
-// ── GLOBAL GUARD ───────────────────────────────
+// ── GLOBAL GUARD ──────────────────────────────────────────────
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
   const isAuthenticated = authStore.isAuthenticated
-  const userRole = authStore.user?.role // 'admin' | 'student'
+  const userRole = authStore.user?.role // 'admin' | 'lecturer' | 'student'
 
-  // Chưa login
+  // Chưa login → về /login
   if (to.meta.requiresAuth && !isAuthenticated) {
     return next('/login')
   }
 
-  // Đã login mà vào login
+  // Đã login mà vào /login → về đúng dashboard theo role
   if (to.meta.requiresGuest && isAuthenticated) {
-    return next(userRole === 'admin' ? '/admin/dashboard' : '/student/dashboard')
+    if (userRole === 'admin') return next('/admin/dashboard')
+    if (userRole === 'lecturer') return next('/lecturer/assignments')
+    if (userRole === 'student') return next('/student/dashboard')
   }
 
-  // Check role
+  // Sai role → về /login
   if (to.meta.role && to.meta.role !== userRole) {
     return next('/login')
   }

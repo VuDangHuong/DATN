@@ -1,0 +1,250 @@
+<template>
+  <div class="border border-slate-200 rounded-xl overflow-hidden bg-white">
+    <div v-if="submission && !isReuploading" class="p-4">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div
+            class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0"
+          >
+            <svg
+              class="w-5 h-5 text-indigo-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-slate-800 truncate">{{ submission.file_name }}</p>
+            <div class="flex items-center gap-2 mt-0.5">
+              <span class="text-xs text-slate-400">{{ formatSize(submission.file_size) }}</span>
+              <span class="text-xs text-slate-400">·</span>
+              <span
+                class="px-1.5 py-0.5 text-[10px] font-bold rounded"
+                :class="
+                  submission.is_late
+                    ? 'bg-amber-100 text-amber-700'
+                    : 'bg-emerald-100 text-emerald-700'
+                "
+              >
+                {{ submission.is_late ? 'Nộp trễ' : 'Đúng hạn' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <button
+            v-if="canSubmit"
+            @click="openReupload"
+            class="px-3 py-1.5 border border-indigo-200 rounded-lg text-xs font-medium text-indigo-600 hover:bg-indigo-50 transition"
+          >
+            Nộp lại
+          </button>
+          <button
+            @click="$emit('showHistory')"
+            class="px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50 transition"
+          >
+            Lịch sử
+          </button>
+        </div>
+      </div>
+      <p
+        v-if="submission.note"
+        class="text-xs text-slate-500 mt-2 bg-slate-50 p-2 rounded-lg italic"
+      >
+        "{{ submission.note }}"
+      </p>
+    </div>
+
+    <div v-else-if="canSubmit" class="p-4">
+      <div
+        class="border-2 border-dashed rounded-xl p-6 text-center transition cursor-pointer"
+        :class="
+          dragging
+            ? 'border-indigo-400 bg-indigo-50'
+            : 'border-slate-300 hover:border-indigo-400 hover:bg-indigo-50'
+        "
+        @dragover.prevent="dragging = true"
+        @dragleave="dragging = false"
+        @drop.prevent="onDrop"
+        @click="fileInput?.click()"
+      >
+        <input
+          ref="fileInput"
+          type="file"
+          class="hidden"
+          :accept="acceptAttr"
+          @change="onFileChange"
+        />
+
+        <template v-if="!selectedFile">
+          <svg
+            class="w-8 h-8 mx-auto text-slate-400 mb-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+            />
+          </svg>
+          <p class="text-sm text-slate-600 font-medium">Kéo thả hoặc click để chọn file</p>
+          <p class="text-xs text-slate-400 mt-1">
+            {{ assignment.allowed_extensions?.join(', ') || 'Mọi định dạng' }} · Tối đa
+            {{ assignment.max_file_size }}MB
+          </p>
+        </template>
+
+        <template v-else>
+          <svg
+            class="w-8 h-8 mx-auto text-emerald-500 mb-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <p class="text-sm font-medium text-emerald-700 truncate px-4">{{ selectedFile.name }}</p>
+          <button
+            @click.stop="selectedFile = null"
+            class="mt-2 text-xs text-red-500 hover:underline"
+          >
+            Chọn file khác
+          </button>
+        </template>
+      </div>
+
+      <div v-if="selectedFile" class="mt-4 space-y-3">
+        <textarea
+          v-model="note"
+          placeholder="Thêm ghi chú nộp bài..."
+          rows="2"
+          class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+        />
+
+        <div class="flex gap-2">
+          <button
+            @click="cancelUpload"
+            class="flex-1 py-2 border border-slate-300 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50"
+          >
+            Hủy
+          </button>
+          <button
+            @click="handleInternalSubmit"
+            :disabled="submitting"
+            class="flex-1 py-2 rounded-xl text-sm font-bold text-white transition-all flex items-center justify-center gap-2 shadow-sm"
+            :class="[
+              type === 'group'
+                ? 'bg-amber-600 hover:bg-amber-700'
+                : 'bg-indigo-600 hover:bg-indigo-700',
+              submitting ? 'opacity-50 cursor-not-allowed' : '',
+            ]"
+          >
+            <div
+              v-if="submitting"
+              class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"
+            />
+            {{ submitting ? 'Đang gửi...' : type === 'group' ? 'Nộp bài nhóm' : 'Nộp bài cá nhân' }}
+          </button>
+        </div>
+      </div>
+
+      <div v-if="isReuploading && !selectedFile" class="mt-2 text-center">
+        <button @click="isReuploading = false" class="text-xs text-slate-500 hover:underline">
+          Quay lại
+        </button>
+      </div>
+    </div>
+
+    <div v-else class="p-8 text-center bg-slate-50">
+      <p class="text-sm text-slate-500 font-medium">
+        {{
+          type === 'group' && !isLeader
+            ? 'Chỉ trưởng nhóm mới có quyền nộp bài'
+            : 'Đã kết thúc đợt nộp bài'
+        }}
+      </p>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed } from 'vue'
+
+const props = defineProps({
+  submission: { type: Object, default: null },
+  assignment: { type: Object, required: true },
+  type: { type: String, default: 'individual' },
+  isLeader: { type: Boolean, default: true },
+  submitting: { type: Boolean, default: false },
+})
+
+const emit = defineEmits(['submit', 'showHistory'])
+
+const fileInput = ref(null)
+const selectedFile = ref(null)
+const dragging = ref(false)
+const note = ref('')
+const isReuploading = ref(false)
+
+const canSubmit = computed(() => {
+  if (props.type === 'group' && !props.isLeader) return false
+  if (!props.assignment.allow_late && props.assignment.is_expired) return false
+  return true
+})
+
+const acceptAttr = computed(
+  () => props.assignment.allowed_extensions?.map((e) => `.${e}`).join(',') || '*',
+)
+
+function openReupload() {
+  isReuploading.value = true
+  selectedFile.value = null
+  note.value = ''
+}
+
+function cancelUpload() {
+  selectedFile.value = null
+  note.value = ''
+  isReuploading.value = false
+}
+
+function onFileChange(e) {
+  selectedFile.value = e.target.files[0] ?? null
+}
+
+function onDrop(e) {
+  dragging.value = false
+  if (!canSubmit.value) return
+  selectedFile.value = e.dataTransfer.files[0] ?? null
+}
+
+async function handleInternalSubmit() {
+  if (!selectedFile.value) return
+  emit('submit', selectedFile.value, note.value)
+  // Lưu ý: isReuploading sẽ được reset từ component cha khi fetch lại data
+  // Hoặc bạn có thể reset ở đây sau khi nộp thành công
+  isReuploading.value = false
+}
+
+function formatSize(bytes) {
+  if (!bytes) return '0 KB'
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`
+}
+</script>
