@@ -1,6 +1,11 @@
 <?php
 
+use App\Http\Controllers\Lecturers\AssignmentController;
+use App\Http\Controllers\Lecturers\ClassController;
 use App\Http\Controllers\Shared\ClassStudentController;
+use App\Http\Controllers\Shared\LecturerAssignmentController;
+use App\Http\Controllers\Shared\StudentSubmissionController;
+use App\Http\Controllers\Shared\SubmissionReviewController;
 use App\Http\Controllers\Student\GroupController;
 use App\Http\Controllers\Student\MessageController;
 use App\Http\Controllers\Student\StudentDashboardController;
@@ -148,38 +153,60 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // =================================================================
     // Admin cũng có thể vào đây nếu cần (role:lecturer,admin)
         Route::prefix('lecturer')->middleware('role:lecturer,admin')->group(function () {
-            // Xem danh sách yêu cầu được giao
+        // Ký số
         Route::get('/sign-requests', [LecturerSignController::class, 'index']);
         Route::get('/sign-requests/{id}', [LecturerSignController::class, 'show']);
-        // Preview file trước khi ký
         Route::get('/sign-requests/{id}/preview', [LecturerSignController::class, 'preview']);
-        // Upload file đã ký số (GV ký offline rồi upload)
         Route::post('/sign-requests/{id}/sign', [LecturerSignController::class, 'sign']);
-        // Từ chối ký
         Route::post('/sign-requests/{id}/reject', [LecturerSignController::class, 'reject']);
-        // Quản lý profile chữ ký
         Route::get('/sign-profile', [SignProfileController::class, 'show']);
         Route::post('/sign-profile', [SignProfileController::class, 'upsert']);
 
+        Route::get('/classes', [ClassController::class, 'index']);
+        Route::get('assignments/pending-count', [AssignmentController::class, 'pendingCount']);
+        // Sinh viên trong lớp
         Route::prefix('classes/{classId}/students')->group(function () {
-            // GET    /api/lecturer/classes/{classId}/students
-            Route::get('/', [ClassStudentController::class, 'index']);
- 
-            // POST   /api/lecturer/classes/{classId}/students
-            // Body: { "student_code": "2251172367" }
-            Route::post('/', [ClassStudentController::class, 'store']);
- 
-            // POST   /api/lecturer/classes/{classId}/students/import
-            // Body: multipart/form-data — file (xlsx|xls|csv)
-            Route::post('/import', [ClassStudentController::class, 'import']);
- 
-            // PATCH  /api/lecturer/classes/{classId}/students/{studentId}
-            // Body: { "has_group": true }
+            Route::get('/',              [ClassStudentController::class, 'index']);
+            Route::post('/',             [ClassStudentController::class, 'store']);
+            Route::post('/import',       [ClassStudentController::class, 'import']);
             Route::patch('/{studentId}', [ClassStudentController::class, 'update']);
- 
-            // DELETE /api/lecturer/classes/{classId}/students/{studentId}
-            Route::delete('/{studentId}', [ClassStudentController::class, 'destroy']);
+            Route::delete('/{studentId}',[ClassStudentController::class, 'destroy']);
+        }); // ← đóng students ở đây
+
+        // ✅ Assignments nằm NGANG cấp với students, không lồng bên trong
+        Route::prefix('classes/{classId}/assignments')->group(function () {
+            Route::get('/',  [LecturerAssignmentController::class, 'index']);
+            Route::post('/', [LecturerAssignmentController::class, 'store']);
         });
+
+        Route::prefix('assignments/{id}')->group(function () {
+            Route::get('/',    [LecturerAssignmentController::class, 'show']);
+            Route::patch('/',  [LecturerAssignmentController::class, 'update']);
+            Route::delete('/', [LecturerAssignmentController::class, 'destroy']);
+        });
+
+        Route::get('submissions/{id}/download', [LecturerAssignmentController::class, 'download']);
+
+        Route::patch('submissions/{id}/review', [SubmissionReviewController::class, 'review']);
+ 
+        // Duyệt toàn bộ bài đang pending của 1 đợt nộp
+        // POST /api/lecturer/assignments/{id}/review-all
+        // Body: { "status": "approved|rejected", "feedback": "Nhận xét chung" }
+        Route::post('assignments/{id}/review-all', [SubmissionReviewController::class, 'reviewAll']);
+        
+        // Danh sách bài nộp kèm trạng thái duyệt
+        // GET /api/lecturer/assignments/{id}/submissions?status=pending&type=group
+        Route::get('assignments/{id}/submissions', [SubmissionReviewController::class, 'submissionList']);
+    });
+
+    // Student routes
+    Route::middleware(['auth:sanctum', 'role:student,admin'])
+        ->prefix('student')
+        ->group(function () {
+            Route::get('classes/{classId}/assignments',        [StudentSubmissionController::class, 'index']);
+            Route::post('assignments/{id}/submit',             [StudentSubmissionController::class, 'submitIndividual']);
+            Route::post('assignments/{id}/submit-group',       [StudentSubmissionController::class, 'submitGroup']);
+            Route::get('assignments/{id}/submission/history',  [StudentSubmissionController::class, 'history']);
     });
 
     // =================================================================

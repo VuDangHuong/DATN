@@ -2,6 +2,7 @@
 
 namespace App\Models\Academic;
 use App\Models\Communication\Group;
+use App\Models\Evaluation\Assignment;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Auth\User;
@@ -24,7 +25,11 @@ class Classes extends Model
         'is_active'                   => 'boolean',
         'group_registration_deadline' => 'datetime',
     ];
- 
+
+    public function assignments()
+    {
+        return $this->hasMany(Assignment::class, 'class_id');
+    }
     /**
      * Quan hệ: Lớp thuộc về một Môn học
      */
