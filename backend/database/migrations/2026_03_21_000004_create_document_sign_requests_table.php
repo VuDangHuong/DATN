@@ -13,9 +13,7 @@ return new class extends Migration
     {
         Schema::create('document_sign_requests', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('submission_id')
-                  ->constrained()
-                  ->cascadeOnDelete();
+            $table->unsignedBigInteger('submission_id')->nullable();
 
             $table->foreignId('requester_id')
                   ->constrained('users');
