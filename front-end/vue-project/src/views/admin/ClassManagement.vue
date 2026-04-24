@@ -328,7 +328,16 @@
       @close="showAddStudent = false"
       @submit="handleAddStudent"
     />
-
+    <ModalUpdateClass
+      :show="showClassForm"
+      :editing-class="editingClass"
+      :semesters="semesters"
+      :lecturers="lecturers"
+      :subjects="subjects"
+      :loading="store.loading"
+      @close="showClassForm = false"
+      @submit="handleClassSubmit"
+    />
     <ModalImportStudent
       ref="importModal"
       :show="showImport"
@@ -346,7 +355,7 @@ import { useToastStore } from '@/stores/toast'
 import ModalAddStudent from '@/components/admin/classes/ModalAddStudent.vue'
 import ModalImportStudent from '@/components/admin/classes/ModalImportStudent.vue'
 import axiosClient from '@/api/axiosClient'
-
+import ModalUpdateClass from '@/components/admin/classes/ModalUpdateClass.vue'
 const store = useAdminClassStore()
 const toast = useToastStore() // ← thêm
 
@@ -392,7 +401,7 @@ async function loadDropdowns() {
   ])
   semesters.value = semRes.data
   lecturers.value = lecRes.data?.data ?? lecRes.data
-  subjects.value = subRes.data?.data ?? subRes.data
+  subjects.value = subRes.data
 }
 
 // ── Class CRUD ────────────────────────────────────────────
