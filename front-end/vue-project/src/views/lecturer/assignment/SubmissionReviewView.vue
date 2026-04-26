@@ -76,7 +76,6 @@
 
     <!-- ── Khi có assignmentId → hiển thị danh sách bài nộp ── -->
     <div v-else>
-      <!-- Header -->
       <div class="flex items-center justify-between mb-6">
         <div>
           <h2 class="text-2xl font-bold text-slate-800">Duyệt bài nộp</h2>
@@ -124,7 +123,6 @@
 
       <!-- Toolbar -->
       <div class="flex flex-wrap items-center gap-3 mb-4">
-        <!-- ✅ Chỉ 1 filter status -->
         <div class="flex gap-1 bg-slate-100 rounded-xl p-1">
           <button
             v-for="f in statusFilters"
@@ -140,8 +138,6 @@
             {{ f.label }}
           </button>
         </div>
-
-        <!-- Filter type -->
         <div class="flex gap-1 bg-slate-100 rounded-xl p-1">
           <button
             v-for="f in typeFilters"
@@ -157,9 +153,7 @@
             {{ f.label }}
           </button>
         </div>
-
         <div class="flex-1" />
-
         <button
           v-if="stats?.pending > 0"
           @click="openBulkReview('approved')"
@@ -267,13 +261,18 @@
               </div>
             </div>
             <div class="flex items-center gap-2 flex-shrink-0">
-              <a
-                :href="downloadUrl(sub.id)"
-                target="_blank"
+              <!-- ✅ Fix download: dùng button + gọi hàm thay vì <a href> -->
+              <button
+                @click="handleDownload(sub)"
+                :disabled="downloadingId === sub.id"
                 class="p-2 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition"
                 title="Tải file"
               >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div
+                  v-if="downloadingId === sub.id"
+                  class="w-4 h-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"
+                />
+                <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -281,7 +280,7 @@
                     d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                   />
                 </svg>
-              </a>
+              </button>
               <button
                 v-if="sub.status === 'pending'"
                 @click="openReview(sub, 'approved')"
@@ -449,17 +448,6 @@
         </div>
       </div>
     </Teleport>
-
-    <!-- Toast -->
-    <transition name="toast">
-      <div
-        v-if="toast.show"
-        class="fixed bottom-6 right-6 z-50 px-5 py-3.5 rounded-2xl shadow-lg text-white text-sm font-medium"
-        :class="toast.type === 'success' ? 'bg-gray-900' : 'bg-red-600'"
-      >
-        {{ toast.message }}
-      </div>
-    </transition>
   </div>
 </template>
 
@@ -469,6 +457,7 @@ import { useRouter } from 'vue-router'
 import { useLecturerStore } from '@/stores/lecturer/lecturerStore'
 import { useLecturerAssignmentStore } from '@/stores/lecturer/lecturerAssignmentStore'
 import { lecturerAssignmentApi } from '@/api/lecturer/lecturerAssignmentApi'
+import { useToastStore } from '@/stores/toast' // ✅ import toast store
 import axiosClient from '@/api/axiosClient'
 
 const props = defineProps({
@@ -478,17 +467,16 @@ const props = defineProps({
 const router = useRouter()
 const lecturerStore = useLecturerStore()
 const assignmentStore = useLecturerAssignmentStore()
+const toast = useToastStore() // ✅ dùng store thay vì ref cục bộ
 
-// ── State cho màn danh sách (khi không có assignmentId) ──
 const assignmentList = ref([])
 const loadingList = ref(false)
-
-// ── State cho màn duyệt ──
 const assignment = ref(null)
 const submissions = ref([])
 const stats = ref(null)
 const loading = ref(false)
 const reviewing = ref(false)
+const downloadingId = ref(null) // ✅ track download đang chạy
 const filterStatus = ref('')
 const filterType = ref('')
 const showReviewModal = ref(false)
@@ -496,7 +484,6 @@ const showBulkModal = ref(false)
 const reviewingSubmission = ref(null)
 const reviewForm = ref({ status: 'approved', score: null, feedback: '' })
 const bulkForm = ref({ status: 'approved', feedback: '' })
-const toast = ref({ show: false, type: 'success', message: '' })
 
 const statusFilters = [
   { value: '', label: 'Tất cả' },
@@ -511,35 +498,26 @@ const typeFilters = [
 ]
 
 onMounted(() => {
-  if (props.assignmentId) {
-    loadSubmissions()
-  } else {
-    loadAssignmentList()
-  }
+  if (props.assignmentId) loadSubmissions()
+  else loadAssignmentList()
 })
 
-// Reload khi classId thay đổi (chọn lớp khác ở topbar)
 watch(
   () => props.assignmentId,
   (id) => {
-    if (id) {
-      loadSubmissions()
-    } else {
-      loadAssignmentList()
-    }
+    if (id) loadSubmissions()
+    else loadAssignmentList()
   },
-  { immediate: true }, // ← immediate thay thế onMounted
+  { immediate: true },
 )
+
 watch(
   () => lecturerStore.selectedClassId,
   (classId) => {
-    // Chỉ reload danh sách khi đang ở màn chọn đợt nộp (không có assignmentId)
-    if (!props.assignmentId && classId) {
-      loadAssignmentList()
-    }
+    if (!props.assignmentId && classId) loadAssignmentList()
   },
 )
-// ── Load danh sách đợt nộp (màn chọn) ──
+
 async function loadAssignmentList() {
   const classId = lecturerStore.selectedClassId
   if (!classId) {
@@ -550,7 +528,7 @@ async function loadAssignmentList() {
   try {
     const { data } = await lecturerAssignmentApi.getByClass(classId)
     assignmentList.value = data
-  } catch (e) {
+  } catch {
     assignmentList.value = []
   } finally {
     loadingList.value = false
@@ -561,7 +539,6 @@ function selectAssignment(a) {
   router.push({ name: 'lecturer-assignment-review', params: { assignmentId: a.id } })
 }
 
-// ── Load danh sách bài nộp của đợt ──
 async function loadSubmissions() {
   if (!props.assignmentId) return
   loading.value = true
@@ -569,7 +546,6 @@ async function loadSubmissions() {
     const params = {}
     if (filterStatus.value) params.status = filterStatus.value
     if (filterType.value) params.type = filterType.value
-
     const { data } = await axiosClient.get(
       `/lecturer/assignments/${props.assignmentId}/submissions`,
       { params },
@@ -607,12 +583,13 @@ async function submitReview() {
       reviewForm.value,
     )
     showReviewModal.value = false
-    showToast(
+    // ✅ dùng toast store
+    toast.success(
       reviewForm.value.status === 'approved' ? 'Đã chấp nhận bài nộp' : 'Đã từ chối bài nộp',
     )
     await loadSubmissions()
   } catch (e) {
-    showToast(e.response?.data?.message ?? 'Có lỗi xảy ra', 'error')
+    toast.error(e.response?.data?.message ?? 'Có lỗi xảy ra')
   } finally {
     reviewing.value = false
   }
@@ -626,17 +603,36 @@ async function submitBulkReview() {
       bulkForm.value,
     )
     showBulkModal.value = false
-    showToast(data.message)
+    toast.success(data.message) // ✅
     await loadSubmissions()
   } catch (e) {
-    showToast(e.response?.data?.message ?? 'Có lỗi xảy ra', 'error')
+    toast.error(e.response?.data?.message ?? 'Có lỗi xảy ra') // ✅
   } finally {
     reviewing.value = false
   }
 }
 
-function downloadUrl(submissionId) {
-  return lecturerAssignmentApi.downloadUrl(submissionId)
+// ✅ Fix download: fetch blob rồi tạo link tạm thay vì dùng <a href> trực tiếp
+async function handleDownload(sub) {
+  downloadingId.value = sub.id
+  try {
+    const response = await axiosClient.get(`/lecturer/submissions/${sub.id}/download`, {
+      responseType: 'blob',
+    })
+    const url = URL.createObjectURL(response.data)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = sub.file_name ?? 'download'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+    toast.success(`Đã tải: ${sub.file_name}`)
+  } catch (e) {
+    toast.error('Không thể tải file, vui lòng thử lại')
+  } finally {
+    downloadingId.value = null
+  }
 }
 
 function formatDate(d) {
@@ -648,23 +644,4 @@ function formatDate(d) {
     minute: '2-digit',
   })
 }
-
-function showToast(message, type = 'success') {
-  toast.value = { show: true, type, message }
-  setTimeout(() => {
-    toast.value.show = false
-  }, 3000)
-}
 </script>
-
-<style scoped>
-.toast-enter-active,
-.toast-leave-active {
-  transition: all 0.3s;
-}
-.toast-enter-from,
-.toast-leave-to {
-  opacity: 0;
-  transform: translateY(8px);
-}
-</style>

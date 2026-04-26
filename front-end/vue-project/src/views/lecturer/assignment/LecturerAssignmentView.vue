@@ -369,6 +369,7 @@ import { useLecturerAssignmentStore } from '@/stores/lecturer/lecturerAssignment
 import { lecturerAssignmentApi } from '@/api/lecturer/lecturerAssignmentApi'
 import { watch, onMounted, computed } from 'vue'
 import { useLecturerStore } from '@/stores/lecturer/lecturerStore'
+import { useToastStore } from '@/stores/toast'
 // const props = defineProps({ classId: { type: Number, required: true } })
 
 const store = useLecturerAssignmentStore()
@@ -378,6 +379,7 @@ const activeTab = ref('submitted')
 const showForm = ref(false)
 const editingId = ref(null)
 const extensionsInput = ref('pdf,docx,zip')
+const toast = useToastStore()
 
 const lecturerStore = useLecturerStore()
 const classId = computed(() => lecturerStore.selectedClassId)
@@ -445,12 +447,22 @@ async function handleSave() {
     ? await store.updateAssignment(editingId.value, payload)
     : await store.createAssignment(classId.value, payload)
 
-  if (result.success) showForm.value = false
+  if (result.success) {
+    showForm.value = false
+    toast.success(editingId.value ? 'Cập nhật đợt nộp thành công' : 'Tạo đợt nộp thành công') // ← thêm
+  } else {
+    toast.error(result.message ?? 'Có lỗi xảy ra') // ← thêm
+  }
 }
 
 async function handleDelete(id) {
   if (!confirm('Xóa đợt nộp này?')) return
-  await store.deleteAssignment(id)
+  const result = await store.deleteAssignment(id)
+  if (result.success) {
+    toast.success('Đã xóa đợt nộp bài') // ← thêm
+  } else {
+    toast.error(result.message ?? 'Lỗi khi xóa') // ← thêm
+  }
 }
 
 function downloadUrl(submissionId) {

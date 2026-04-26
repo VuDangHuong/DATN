@@ -31,6 +31,7 @@ import StudentSubmisionView from '@/views/students/Assignment/StudentSubmisionVi
 import SubmissionReviewView from '@/views/lecturer/assignment/SubmissionReviewView.vue'
 import StudentLayout from '@/layouts/StudentLayout.vue'
 import LecturerAssignmentView from '@/views/lecturer/assignment/LecturerAssignmentView.vue'
+import LecturerClassView from '@/views/lecturer/class/LecturerClassView.vue'
 
 const routes = [
   // Redirect mặc định
@@ -109,6 +110,12 @@ const routes = [
         name: 'lecturer-reviews',
         component: SubmissionReviewView,
         meta: { title: 'Duyệt bài nộp' },
+      },
+      {
+        path: 'classes',
+        name: 'lecturer-classes',
+        component: LecturerClassView,
+        meta: { title: 'Quản lý lớp' },
       },
     ],
   },
