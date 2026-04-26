@@ -196,7 +196,7 @@ class GroupService
         $groups = Group::where('class_id', $classId)
             ->with(['leader:id,code,name', 'members.user:id,code,name'])
             ->get()
-            ->map([$this, 'formatGroup']);
+            ->map(fn($group) => $this->formatGroup($group));
         return $this->success('Danh sách nhóm', ['groups' => $groups]);
     }
     

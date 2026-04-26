@@ -185,6 +185,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::delete('/', [LecturerAssignmentController::class, 'destroy']);
         });
 
+        Route::get('classes/{classId}/groups', [GroupController::class, 'index']);
         Route::get('submissions/{id}/download', [LecturerAssignmentController::class, 'download']);
 
         Route::patch('submissions/{id}/review', [SubmissionReviewController::class, 'review']);
@@ -197,6 +198,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // Danh sách bài nộp kèm trạng thái duyệt
         // GET /api/lecturer/assignments/{id}/submissions?status=pending&type=group
         Route::get('assignments/{id}/submissions', [SubmissionReviewController::class, 'submissionList']);
+
+        Route::post('groups/{groupId}/members',              [GroupController::class, 'addMember']);     // Thêm TV
+        Route::delete('groups/{groupId}/members/{memberId}', [GroupController::class, 'removeMember']); // Xóa TV
     });
 
     // Student routes

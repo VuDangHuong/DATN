@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\Academic\Classes;
 use App\Services\GroupService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -17,10 +18,23 @@ class GroupController extends Controller
      */
     public function index(int $classId): JsonResponse
     {
+        $this->resolveClass($classId);
         $result = $this->service->getGroupsByClass($classId);
         return response()->json($result['data']);
     }
- 
+     private function resolveClass($classId): Classes
+    {
+        $user = auth()->user();
+
+        if ($user->role === 'admin') {
+            // Admin xem được tất cả lớp
+            return Classes::findOrFail($classId);
+        }
+
+        // Lecturer chỉ xem lớp mình quản lý
+        return Classes::where('lecturer_id', $user->id)
+            ->findOrFail($classId);
+    }
     /**
      * POST /student/groups
      *
@@ -73,7 +87,7 @@ class GroupController extends Controller
  
     /**
      * DELETE /student/groups/{groupId}
-     *
+     
      * Nhóm trưởng xóa nhóm. Xóa hết thành viên, messages, tasks.
      */
     public function destroy(int $groupId): JsonResponse
@@ -93,24 +107,23 @@ class GroupController extends Controller
         $request->validate([
             'student_code' => 'required|string|max:50',
         ]);
- 
-        $result = $this->service->addMember(
-            auth()->user(),
-            $groupId,
-            $request->student_code
-        );
- 
+
+        $user = auth()->user();
+
+        // ✅ Lecturer bypass isLeader check — truyền leader của nhóm thay vì user thật
+        $actor = $this->resolveActor($groupId, $user);
+
+        $result = $this->service->addMember($actor, $groupId, $request->student_code);
         return $this->toResponse($result);
     }
- 
-    /**
-     * DELETE /student/groups/{groupId}/members/{memberId}
-     *
-     * Nhóm trưởng xóa thành viên.
-     */
+
+    // ── Xóa thành viên ───────────────────────────────────
     public function removeMember(int $groupId, int $memberId): JsonResponse
     {
-        $result = $this->service->removeMember(auth()->user(), $groupId, $memberId);
+        $user  = auth()->user();
+        $actor = $this->resolveActor($groupId, $user);
+
+        $result = $this->service->removeMember($actor, $groupId, $memberId);
         return $this->toResponse($result);
     }
     public function leave(int $groupId): JsonResponse
@@ -118,7 +131,20 @@ class GroupController extends Controller
         $result = $this->service->leaveGroup(auth()->user(), $groupId);
         return $this->toResponse($result);
     }
- 
+    private function resolveActor(int $groupId, $user)
+    {
+        if ($user->role === 'lecturer' || $user->role === 'admin') {
+            // Kiểm tra nhóm thuộc lớp của giảng viên
+            $group = \App\Models\Group\Group::whereHas('classRoom', fn($q) =>
+                $q->where('lecturer_id', $user->id)
+            )->findOrFail($groupId);
+
+            // Trả về leader để service không báo lỗi "chỉ leader mới được"
+            return $group->leader;
+        }
+
+        return $user;
+    }
     /**
      * POST /student/groups/{groupId}/transfer-leader
      * Body: { "new_leader_id": 3 }
