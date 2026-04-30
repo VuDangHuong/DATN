@@ -138,6 +138,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // Route::post('chatbot/suggested-questions', [AdminChatbotController::class, 'suggestedQuestions']);
 
         // Xem tất cả yêu cầu + filter theo status
+        Route::get('/sign-requests/stats',          [AdminSignController::class, 'stats']);    // ← trước {id}
         Route::get('/sign-requests', [AdminSignController::class, 'index']);
         Route::get('/sign-requests/{id}', [AdminSignController::class, 'show']);
         // Duyệt & chuyển cho GV
@@ -154,13 +155,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Admin cũng có thể vào đây nếu cần (role:lecturer,admin)
         Route::prefix('lecturer')->middleware('role:lecturer,admin')->group(function () {
         // Ký số
-        Route::get('/sign-requests', [LecturerSignController::class, 'index']);
-        Route::get('/sign-requests/{id}', [LecturerSignController::class, 'show']);
-        Route::get('/sign-requests/{id}/preview', [LecturerSignController::class, 'preview']);
-        Route::post('/sign-requests/{id}/sign', [LecturerSignController::class, 'sign']);
-        Route::post('/sign-requests/{id}/reject', [LecturerSignController::class, 'reject']);
-        Route::get('/sign-profile', [SignProfileController::class, 'show']);
-        Route::post('/sign-profile', [SignProfileController::class, 'upsert']);
+        Route::get('/sign-profile/categories',      [SignProfileController::class, 'categories']); // ← trước sign-profile
+        Route::get('/sign-profile',                 [SignProfileController::class, 'show']);
+        Route::post('/sign-profile',                [SignProfileController::class, 'upsert']);
+        Route::delete('/sign-profile',              [SignProfileController::class, 'deactivate']); // ← thêm
+
+        Route::get('/sign-requests',                [LecturerSignController::class, 'index']);
+        Route::get('/sign-requests/{id}',           [LecturerSignController::class, 'show']);
+        Route::get('/sign-requests/{id}/preview',   [LecturerSignController::class, 'preview']);
+        Route::post('/sign-requests/{id}/sign',     [LecturerSignController::class, 'sign']);
+        Route::post('/sign-requests/{id}/reject',   [LecturerSignController::class, 'reject']);
 
         Route::get('/classes', [ClassController::class, 'index']);
         Route::get('assignments/pending-count', [AssignmentController::class, 'pendingCount']);

@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Http\JsonResponse;
 class LecturerSignController extends Controller
 {
     public function __construct(protected DocumentSignService $signService) {}
@@ -18,30 +18,44 @@ class LecturerSignController extends Controller
     /**
      * GET /api/lecturer/sign-requests
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $requests = DocumentSignRequest::where('lecturer_id', Auth::id())
-            ->with(['requester:id,name,code', 'submission.group:id,name', 'classModel:id,name,code'])
+            ->with([
+                'requester:id,name,code',
+                'submission.assignment:id,title,document_category_label',
+                'submission.group:id,name',
+                'submission.student:id,name,code',
+                'classModel:id,name,code',
+            ])
             ->when($request->status, fn($q) => $q->where('status', $request->status))
-            ->latest('forwarded_at')
-            ->paginate(10);
-
+            ->latest()
+            ->paginate(15);
+ 
         return response()->json($requests);
     }
 
     /**
      * GET /api/lecturer/sign-requests/{id}
      */
-    public function show(int $id)
+    public function show(int $id): JsonResponse
     {
         $signRequest = DocumentSignRequest::where('lecturer_id', Auth::id())
-            ->with(['requester:id,name,code', 'submission.group', 'logs.actor:id,name,role'])
+            ->with([
+                'requester:id,name,code,email',
+                'submission.assignment:id,title,deadline,document_category_label',
+                'submission.group:id,name',
+                'submission.group.members:id,name,code',
+                'submission.student:id,name,code',
+                'classModel:id,name,code',
+                'logs.actor:id,name,role',
+            ])
             ->findOrFail($id);
-
-        // Đánh dấu GV đang xem
+ 
+        // GV xem → chuyển forwarded sang lecturer_reviewing
         if ($signRequest->status === DocumentSignRequest::STATUS_FORWARDED) {
             $signRequest->update(['status' => DocumentSignRequest::STATUS_LECTURER_REVIEWING]);
-            $this->signService->log($signRequest->id, Auth::id(), 'lecturer_viewed');
+            $this->signService->log($signRequest->id, Auth::id(), 'lecturer_reviewing');
         }
 
         return response()->json(['data' => $signRequest]);
@@ -49,9 +63,9 @@ class LecturerSignController extends Controller
 
     /**
      * GET /api/lecturer/sign-requests/{id}/preview
-     * Trả về URL tạm để xem file gốc trước khi ký
+     * Lấy URL xem trước file gốc (temporary URL 30 phút)
      */
-    public function preview(int $id)
+    public function preview(int $id): JsonResponse
     {
         $signRequest = DocumentSignRequest::where('lecturer_id', Auth::id())
             ->findOrFail($id);
@@ -59,24 +73,25 @@ class LecturerSignController extends Controller
         if (!Storage::exists($signRequest->original_file)) {
             return response()->json(['message' => 'File không tồn tại.'], 404);
         }
-
-        // Tạo URL tạm thời có hiệu lực 30 phút
-        $url = Storage::temporaryUrl($signRequest->original_file, now()->addMinutes(30));
-
-        return response()->json(['preview_url' => $url, 'expires_in' => 1800]);
+ 
+        return response()->json([
+            'url'           => Storage::temporaryUrl($signRequest->original_file, now()->addMinutes(30)),
+            'file_name'     => basename($signRequest->original_file),
+            'document_type' => $signRequest->document_type,          // pdf/docx
+            'category'      => $signRequest->document_category_label, // "Báo cáo thực tập"
+        ]);
     }
 
     /**
      * POST /api/lecturer/sign-requests/{id}/sign
-     * GV upload file PDF đã ký
+     * GV upload file đã ký
      */
-    public function sign(Request $request, int $id)
+    public function sign(Request $request, int $id): JsonResponse
     {
-        $data = $request->validate([
-            'signed_file'       => 'required|file|mimes:pdf|max:20480', // 20MB
-            'sign_hash'         => 'required|string|size:64',            // SHA-256 hex
-            'sign_certificate'  => 'nullable|string|max:255',
-            'note'              => 'nullable|string|max:500',
+        $request->validate([
+            'signed_file'      => 'required|file|mimes:pdf,docx|max:20480',
+            'sign_hash'        => 'nullable|string|size:64', // SHA256 = 64 hex chars
+            'sign_certificate' => 'nullable|string',
         ]);
 
         $signRequest = DocumentSignRequest::where('lecturer_id', Auth::id())
@@ -85,25 +100,26 @@ class LecturerSignController extends Controller
                 DocumentSignRequest::STATUS_LECTURER_REVIEWING,
             ])
             ->findOrFail($id);
-
-        // Xác minh hash file upload
-        if (!$this->signService->verifyFileHash($request->file('signed_file'), $data['sign_hash'])) {
-            return response()->json([
-                'message' => 'Hash không khớp. File có thể bị lỗi trong quá trình upload.',
-            ], 422);
+ 
+        $file     = $request->file('signed_file');
+        $filePath = $file->store("signed_documents/{$signRequest->id}", 'private');
+ 
+        // Verify hash nếu client gửi lên
+        if ($request->sign_hash) {
+            if (!$this->signService->verifyFileHash($file, $request->sign_hash)) {
+                Storage::delete($filePath);
+                return response()->json(['message' => 'Hash file không khớp. Vui lòng kiểm tra lại.'], 422);
+            }
         }
-
-        DB::transaction(function () use ($request, $signRequest, $data) {
-            // Lưu file đã ký vào storage
-            $path = $request->file('signed_file')->store(
-                'signed_documents/' . date('Y/m'),
-                'private'
-            );
-
+ 
+        // Tạo hash từ file server để lưu
+        $serverHash = $this->signService->generateFileHash($file->getRealPath());
+ 
+        DB::transaction(function () use ($signRequest, $filePath, $serverHash, $request) {
             $signRequest->update([
-                'signed_file'      => $path,
-                'sign_hash'        => $data['sign_hash'],
-                'sign_certificate' => $data['sign_certificate'] ?? null,
+                'signed_file'      => $filePath,
+                'sign_hash'        => $serverHash,
+                'sign_certificate' => $request->sign_certificate,
                 'status'           => DocumentSignRequest::STATUS_SIGNED,
                 'signed_at'        => now(),
             ]);
@@ -111,17 +127,18 @@ class LecturerSignController extends Controller
             $this->signService->log(
                 $signRequest->id,
                 Auth::id(),
-                'lecturer_signed',
-                $data['note'] ?? null
+                'signed',
+                'GV đã upload file đã ký số.'
             );
         });
 
         return response()->json([
-            'message' => 'Ký số thành công. Admin sẽ phát hành tài liệu cho sinh viên.',
+            'message' => 'Đã ký số thành công. Admin sẽ phát hành tài liệu cho sinh viên.',
             'data'    => [
                 'id'        => $signRequest->id,
-                'status'    => $signRequest->fresh()->status,
-                'signed_at' => $signRequest->signed_at,
+                'status'    => DocumentSignRequest::STATUS_SIGNED,
+                'sign_hash' => $serverHash,
+                'signed_at' => now(),
             ],
         ]);
     }
@@ -129,30 +146,30 @@ class LecturerSignController extends Controller
     /**
      * POST /api/lecturer/sign-requests/{id}/reject
      */
-    public function reject(Request $request, int $id)
+    public function reject(Request $request, int $id): JsonResponse
     {
-        $data = $request->validate([
+        $request->validate([
             'reason' => 'required|string|max:1000',
         ]);
-
+ 
         $signRequest = DocumentSignRequest::where('lecturer_id', Auth::id())
             ->whereIn('status', [
                 DocumentSignRequest::STATUS_FORWARDED,
                 DocumentSignRequest::STATUS_LECTURER_REVIEWING,
             ])
             ->findOrFail($id);
-
-        DB::transaction(function () use ($signRequest, $data) {
+ 
+        DB::transaction(function () use ($signRequest, $request) {
             $signRequest->update([
                 'status'        => DocumentSignRequest::STATUS_REJECTED_BY_LECTURER,
-                'reject_reason' => $data['reason'],
+                'reject_reason' => $request->reason,
             ]);
 
             $this->signService->log(
                 $signRequest->id,
                 Auth::id(),
                 'lecturer_rejected',
-                $data['reason']
+                $request->reason
             );
         });
 

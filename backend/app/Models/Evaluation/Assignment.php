@@ -9,6 +9,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 class Assignment extends Model
 {
+    const DOCUMENT_CATEGORIES = [
+        'bao_cao_thuc_tap'  => 'Báo cáo thực tập',
+        'nckh'              => 'Nghiên cứu khoa học',
+        'do_an_tot_nghiep'  => 'Đồ án tốt nghiệp',
+        'bao_cao_du_an'     => 'Báo cáo dự án',
+        'khoa_luan'         => 'Khóa luận',
+    ];
     protected $fillable = [
         'class_id',
         'created_by',
@@ -20,6 +27,9 @@ class Assignment extends Model
         'max_file_size',
         'allowed_extensions',
         'is_active',
+        'requires_signing',        // ← mới: đợt nộp này có cần ký số không
+        'document_category',       // ← mới: bao_cao_thuc_tap | nckh | ...
+        'document_category_label', // ← mới: label hiển thị
     ];
  
     protected $casts = [

@@ -3,46 +3,58 @@
 namespace App\Http\Controllers\Students;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Sign\DocumentSignRequest;
+use App\Models\Evaluation\Submission;
 use App\Services\DocumentSignService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use App\Models\Evaluation\Submission;
+
 class SignRequestController extends Controller
 {
     public function __construct(protected DocumentSignService $signService) {}
 
     /**
      * POST /api/sign-requests
-     * SV tạo yêu cầu số hóa cho một submission của nhóm mình
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
             'submission_id' => 'required|exists:submissions,id',
-            'document_type' => 'required|in:report,slide',
         ]);
-        // dd(Auth::id());
-        $submission = Submission::findOrFail($data['submission_id']);
-        // Kiểm tra SV có thuộc nhóm của submission này không
-        $isMember = $submission->group->members()
-            ->where('user_id', Auth::id())
-            ->exists();
 
-        if (!$isMember) {
-            return response()->json(['message' => 'Bạn không thuộc nhóm này.'], 403);
+        $submission = Submission::with(['assignment', 'group.members', 'student'])
+            ->findOrFail($data['submission_id']);
+
+        $assignment = $submission->assignment;
+
+        // 1. Đợt nộp có yêu cầu ký số không
+        if (!$assignment->requires_signing) {
+            return response()->json([
+                'message' => 'Đợt nộp bài này không yêu cầu ký số tài liệu.',
+            ], 422);
         }
 
-        // Kiểm tra file tương ứng có tồn tại không
-        $fileField = $data['document_type'] === 'report' ? 'report_file' : 'slide_file';
-        if (empty($submission->$fileField)) {
-            return response()->json(['message' => 'Nhóm chưa nộp tài liệu loại này.'], 422);
+        // 2. Kiểm tra quyền
+        if (!$this->canAccessSubmission($submission)) {
+            return response()->json(['message' => 'Bạn không có quyền truy cập bài nộp này.'], 403);
         }
 
-        // Không cho tạo trùng yêu cầu đang xử lý
-        $existing = DocumentSignRequest::where('submission_id', $data['submission_id'])
-            ->where('document_type', $data['document_type'])
+        // 3. Phải được duyệt trước
+        if (!$submission->isApproved()) {
+            return response()->json([
+                'message' => 'Bài nộp chưa được giảng viên chấp nhận. Vui lòng chờ duyệt trước khi yêu cầu số hóa.',
+            ], 422);
+        }
+
+        // 4. Có file không
+        if (empty($submission->file_path)) {
+            return response()->json(['message' => 'Bài nộp chưa có file tài liệu.'], 422);
+        }
+
+        // 5. Không trùng yêu cầu đang xử lý
+        $existing = DocumentSignRequest::where('submission_id', $submission->id)
             ->whereNotIn('status', [
                 DocumentSignRequest::STATUS_REJECTED_BY_ADMIN,
                 DocumentSignRequest::STATUS_REJECTED_BY_LECTURER,
@@ -54,31 +66,38 @@ class SignRequestController extends Controller
             return response()->json(['message' => 'Đã có yêu cầu đang xử lý cho tài liệu này.'], 409);
         }
 
+        // 6. Tạo yêu cầu
         $signRequest = DocumentSignRequest::create([
-            'submission_id' => $submission->id,
-            'requester_id'  => Auth::id(),
-            'class_id'      => $submission->group->class_id,
-            'document_type' => $data['document_type'],
-            'original_file' => $submission->$fileField,
-            'status'        => DocumentSignRequest::STATUS_PENDING,
+            'submission_id'           => $submission->id,
+            'requester_id'            => Auth::id(),
+            'class_id'                => $assignment->class_id,
+            'document_type'           => pathinfo($submission->file_name, PATHINFO_EXTENSION), // ← sửa dòng này
+            'document_category'       => $assignment->document_category,
+            'document_category_label' => $assignment->document_category_label,
+            'original_file'           => $submission->file_path,
+            'status'                  => DocumentSignRequest::STATUS_PENDING,
         ]);
 
         $this->signService->log($signRequest->id, Auth::id(), 'created');
 
         return response()->json([
-            'message' => 'Yêu cầu số hóa đã được gửi.',
-            'data'    => $signRequest->load('submission'),
+            'message' => 'Yêu cầu số hóa đã được gửi thành công.',
+            'data'    => $signRequest->load(['submission.assignment:id,title']),
         ], 201);
     }
 
     /**
      * GET /api/sign-requests
-     * SV xem danh sách yêu cầu của mình
      */
-    public function myRequests(Request $request)
+    public function myRequests(Request $request): JsonResponse
     {
         $requests = DocumentSignRequest::where('requester_id', Auth::id())
-            ->with(['submission.group', 'lecturer:id,name'])
+            ->with([
+                'submission.assignment:id,title,document_category_label',
+                'submission.group:id,name',
+                'submission.student:id,name,code',
+                'lecturer:id,name',
+            ])
             ->when($request->status, fn($q) => $q->where('status', $request->status))
             ->latest()
             ->paginate(10);
@@ -88,12 +107,18 @@ class SignRequestController extends Controller
 
     /**
      * GET /api/sign-requests/{id}
-     * SV xem chi tiết một yêu cầu
      */
-    public function show(int $id)
+    public function show(int $id): JsonResponse
     {
         $signRequest = DocumentSignRequest::where('requester_id', Auth::id())
-            ->with(['submission.group', 'lecturer:id,name,email', 'logs.actor:id,name,role'])
+            ->with([
+                'submission.assignment:id,title,deadline,document_category_label',
+                'submission.group:id,name',
+                'submission.group.members:id,name,code',
+                'submission.student:id,name,code',
+                'lecturer:id,name,email',
+                'logs.actor:id,name,role',
+            ])
             ->findOrFail($id);
 
         return response()->json(['data' => $signRequest]);
@@ -101,7 +126,6 @@ class SignRequestController extends Controller
 
     /**
      * GET /api/sign-requests/{id}/download
-     * SV tải file đã ký (chỉ khi status = completed)
      */
     public function download(int $id)
     {
@@ -117,5 +141,16 @@ class SignRequestController extends Controller
             $signRequest->signed_file,
             'signed_' . basename($signRequest->original_file)
         );
+    }
+
+    private function canAccessSubmission(Submission $submission): bool
+    {
+        $userId = Auth::id();
+        if ($submission->submitter_type === 'group') {
+            return $submission->group?->members()
+                ->where('user_id', $userId)
+                ->exists() ?? false;
+        }
+        return $submission->student_id === $userId;
     }
 }
