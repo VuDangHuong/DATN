@@ -222,28 +222,27 @@ import { ref, onMounted } from 'vue'
 import { useDashboardStore } from '@/stores/students/dashboardStore'
 import SubmissionCard from '@/components/students/SubmissionCard.vue'
 import { useStudentAssignmentStore } from '@/stores/students/studentAssignmentStore'
-
+import { useToastStore } from '@/stores/toast'
 const dashboardStore = useDashboardStore()
 const store = useStudentAssignmentStore()
-
+const toast = useToastStore()
 const showHistoryModal = ref(false)
-const toast = ref({ show: false, type: 'success', message: '' })
 
 onMounted(async () => {
   const classId = dashboardStore.selectedClass?.class?.id
   if (classId) await store.fetchByClass(classId)
 })
 
-async function handleSubmit(assignment, type, file, note) {
+async function handleSubmit(assignment, type, file, note, documentCategory) {
   const result =
     type === 'group'
-      ? await store.submitGroup(assignment.id, file, note)
-      : await store.submitIndividual(assignment.id, file, note)
+      ? await store.submitGroup(assignment.id, file, note, documentCategory)
+      : await store.submitIndividual(assignment.id, file, note, documentCategory)
 
   if (result.success) {
-    showToast(result.data.message, 'success')
+    toast.success(result.data.message, 'success')
   } else {
-    showToast(result.message, 'error')
+    toast.error(result.message, 'error')
   }
 }
 
@@ -261,13 +260,6 @@ function formatDate(d) {
     hour: '2-digit',
     minute: '2-digit',
   })
-}
-
-function showToast(message, type = 'success') {
-  toast.value = { show: true, type, message }
-  setTimeout(() => {
-    toast.value.show = false
-  }, 3000)
 }
 </script>
 

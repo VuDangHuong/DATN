@@ -1,5 +1,6 @@
 <template>
   <div class="border border-slate-200 rounded-xl overflow-hidden bg-white">
+    <!-- ── Đã có bài nộp ── -->
     <div v-if="submission && !isReuploading" class="p-4">
       <div class="flex items-center justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
@@ -22,7 +23,7 @@
           </div>
           <div class="min-w-0">
             <p class="text-sm font-medium text-slate-800 truncate">{{ submission.file_name }}</p>
-            <div class="flex items-center gap-2 mt-0.5">
+            <div class="flex items-center gap-2 mt-0.5 flex-wrap">
               <span class="text-xs text-slate-400">{{ formatSize(submission.file_size) }}</span>
               <span class="text-xs text-slate-400">·</span>
               <span
@@ -34,6 +35,18 @@
                 "
               >
                 {{ submission.is_late ? 'Nộp trễ' : 'Đúng hạn' }}
+              </span>
+              <!-- Badge trạng thái duyệt -->
+              <span
+                v-if="submission.status"
+                class="px-1.5 py-0.5 text-[10px] font-bold rounded"
+                :class="{
+                  'bg-amber-100 text-amber-700': submission.status === 'pending',
+                  'bg-emerald-100 text-emerald-700': submission.status === 'approved',
+                  'bg-red-100 text-red-700': submission.status === 'rejected',
+                }"
+              >
+                {{ statusLabel(submission.status) }}
               </span>
             </div>
           </div>
@@ -55,14 +68,47 @@
           </button>
         </div>
       </div>
+
       <p
         v-if="submission.note"
         class="text-xs text-slate-500 mt-2 bg-slate-50 p-2 rounded-lg italic"
       >
         "{{ submission.note }}"
       </p>
+
+      <!-- Feedback bị từ chối -->
+      <div
+        v-if="submission.status === 'rejected' && submission.feedback"
+        class="mt-2 p-2.5 bg-red-50 rounded-lg"
+      >
+        <p class="text-xs text-red-700 font-medium">Nhận xét của giảng viên:</p>
+        <p class="text-xs text-red-600 mt-0.5 italic">"{{ submission.feedback }}"</p>
+      </div>
+
+      <!-- Feedback approved + điểm -->
+      <div
+        v-if="submission.status === 'approved' && (submission.feedback || submission.score)"
+        class="mt-2 p-2.5 bg-emerald-50 rounded-lg"
+      >
+        <div class="flex items-center gap-2 flex-wrap">
+          <span v-if="submission.score" class="text-lg font-bold text-emerald-700">
+            {{ submission.score }}/10
+          </span>
+          <p v-if="submission.feedback" class="text-xs text-emerald-600 italic">
+            "{{ submission.feedback }}"
+          </p>
+        </div>
+      </div>
+
+      <!-- ✅ Khu vực ký số — chỉ hiện khi approved + requires_signing = true -->
+      <SignRequestSectionView
+        v-if="submission.status === 'approved' && assignment.requires_signing"
+        :submission-id="submission.id"
+        :assignment="assignment"
+      />
     </div>
 
+    <!-- ── Chưa có bài nộp / đang nộp lại ── -->
     <div v-else-if="canSubmit" class="p-4">
       <div
         class="border-2 border-dashed rounded-xl p-6 text-center transition cursor-pointer"
@@ -136,7 +182,38 @@
           rows="2"
           class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
         />
+        <!-- ✅ Chọn loại tài liệu -->
+        <div>
+          <label class="block text-xs font-medium text-slate-500 mb-1">
+            Loại tài liệu
+            <span class="text-slate-400">(chọn nếu cần ký số)</span>
+          </label>
+          <select
+            v-model="documentCategory"
+            class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+          >
+            <option value="">-- Tài liệu thông thường (không cần ký số) --</option>
+            <option v-for="cat in documentCategories" :key="cat.value" :value="cat.value">
+              {{ cat.label }}
+            </option>
+          </select>
 
+          <!-- Badge thông báo nếu chọn loại cần ký số -->
+          <div
+            v-if="documentCategory"
+            class="mt-1.5 flex items-center gap-1.5 text-xs text-violet-600"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+              />
+            </svg>
+            Tài liệu này sẽ được gửi lên để ký số sau khi nộp
+          </div>
+        </div>
         <div class="flex gap-2">
           <button
             @click="cancelUpload"
@@ -171,6 +248,7 @@
       </div>
     </div>
 
+    <!-- ── Không thể nộp ── -->
     <div v-else class="p-8 text-center bg-slate-50">
       <p class="text-sm text-slate-500 font-medium">
         {{
@@ -184,8 +262,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-
+import axiosClient from '@/api/axiosClient'
+import SignRequestSectionView from '@/views/students/Assignment/SignRequestSectionView.vue'
+import { ref, computed, onMounted } from 'vue'
 const props = defineProps({
   submission: { type: Object, default: null },
   assignment: { type: Object, required: true },
@@ -201,7 +280,8 @@ const selectedFile = ref(null)
 const dragging = ref(false)
 const note = ref('')
 const isReuploading = ref(false)
-
+const documentCategory = ref('')
+const documentCategories = ref([])
 const canSubmit = computed(() => {
   if (props.type === 'group' && !props.isLeader) return false
   if (!props.assignment.allow_late && props.assignment.is_expired) return false
@@ -212,17 +292,35 @@ const acceptAttr = computed(
   () => props.assignment.allowed_extensions?.map((e) => `.${e}`).join(',') || '*',
 )
 
+function statusLabel(status) {
+  return (
+    { pending: 'Chờ duyệt', approved: 'Đã chấp nhận', rejected: 'Bị từ chối' }[status] ?? status
+  )
+}
+function cancelUpload() {
+  selectedFile.value = null
+  note.value = ''
+  documentCategory.value = ''
+  isReuploading.value = false
+}
+
+// Emit thêm documentCategory
+async function handleInternalSubmit() {
+  if (!selectedFile.value) return
+  emit('submit', selectedFile.value, note.value, documentCategory.value) // ← thêm
+  isReuploading.value = false
+}
 function openReupload() {
   isReuploading.value = true
   selectedFile.value = null
   note.value = ''
 }
 
-function cancelUpload() {
-  selectedFile.value = null
-  note.value = ''
-  isReuploading.value = false
-}
+// function cancelUpload() {
+//   selectedFile.value = null
+//   note.value = ''
+//   isReuploading.value = false
+// }
 
 function onFileChange(e) {
   selectedFile.value = e.target.files[0] ?? null
@@ -234,17 +332,30 @@ function onDrop(e) {
   selectedFile.value = e.dataTransfer.files[0] ?? null
 }
 
-async function handleInternalSubmit() {
-  if (!selectedFile.value) return
-  emit('submit', selectedFile.value, note.value)
-  // Lưu ý: isReuploading sẽ được reset từ component cha khi fetch lại data
-  // Hoặc bạn có thể reset ở đây sau khi nộp thành công
-  isReuploading.value = false
-}
+// async function handleInternalSubmit() {
+//   if (!selectedFile.value) return
+//   emit('submit', selectedFile.value, note.value)
+//   isReuploading.value = false
+// }
 
 function formatSize(bytes) {
   if (!bytes) return '0 KB'
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`
 }
+onMounted(async () => {
+  try {
+    const { data } = await axiosClient.get('/general/document-categories')
+    documentCategories.value = data
+  } catch {
+    // fallback hardcode nếu API lỗi
+    documentCategories.value = [
+      { value: 'bao_cao_thuc_tap', label: 'Báo cáo thực tập' },
+      { value: 'nckh', label: 'Nghiên cứu khoa học' },
+      { value: 'do_an_tot_nghiep', label: 'Đồ án tốt nghiệp' },
+      { value: 'bao_cao_du_an', label: 'Báo cáo dự án' },
+      { value: 'khoa_luan', label: 'Khóa luận' },
+    ]
+  }
+})
 </script>

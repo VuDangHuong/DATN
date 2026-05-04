@@ -64,12 +64,25 @@
                 class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full"
                 >Đang mở</span
               >
+              <!-- ✅ Badge loại tài liệu ký số -->
+              <span
+                v-if="a.document_category_label"
+                class="px-2 py-0.5 bg-violet-100 text-violet-700 text-xs font-bold rounded-full flex items-center gap-1"
+              >
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                  />
+                </svg>
+                {{ a.document_category_label }}
+              </span>
             </div>
             <p class="text-xs text-slate-500 mb-3">
               Hạn: {{ formatDate(a.deadline) }} · {{ submissionTypeLabel(a.submission_type) }}
             </p>
-
-            <!-- Stats -->
             <div class="flex items-center gap-4 text-xs">
               <div class="flex items-center gap-1.5">
                 <div class="w-2 h-2 rounded-full bg-emerald-500" />
@@ -79,8 +92,6 @@
               </div>
             </div>
           </div>
-
-          <!-- Actions -->
           <div
             class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition"
             @click.stop
@@ -116,7 +127,7 @@
       </div>
     </div>
 
-    <!-- Detail view: danh sách bài nộp -->
+    <!-- Detail view -->
     <div v-else>
       <button
         @click="selectedAssignment = null"
@@ -141,7 +152,6 @@
               Hạn: {{ formatDate(store.currentAssignment?.deadline) }}
             </p>
           </div>
-          <!-- Stats -->
           <div class="flex gap-4 text-center">
             <div>
               <p class="text-2xl font-bold text-emerald-600">{{ store.stats.submitted || 0 }}</p>
@@ -159,7 +169,6 @@
         </div>
       </div>
 
-      <!-- Tabs -->
       <div class="flex gap-1 mb-4 bg-slate-100 rounded-xl p-1 w-fit">
         <button
           v-for="tab in ['submitted', 'missing']"
@@ -180,7 +189,6 @@
         </button>
       </div>
 
-      <!-- Submitted list -->
       <div v-if="activeTab === 'submitted'" class="space-y-3">
         <div v-if="store.loading" class="flex justify-center py-10">
           <div
@@ -239,7 +247,6 @@
         </div>
       </div>
 
-      <!-- Missing list -->
       <div v-else class="space-y-2">
         <div
           v-for="m in store.missing"
@@ -333,6 +340,7 @@
                 />
               </div>
             </div>
+
             <label class="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
               <input
                 v-model="form.allow_late"
@@ -341,7 +349,74 @@
               />
               Cho phép nộp trễ hạn
             </label>
+
+            <!-- ✅ Loại tài liệu cần ký số -->
+            <div class="border border-slate-200 rounded-xl p-4 space-y-3">
+              <p class="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                <svg
+                  class="w-4 h-4 text-violet-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                  />
+                </svg>
+                Phân loại tài liệu
+              </p>
+
+              <div>
+                <label class="block text-xs font-medium text-slate-500 mb-1">
+                  Loại tài liệu
+                  <span class="text-slate-400">(để trống nếu không cần ký số)</span>
+                </label>
+
+                <!-- Loading categories -->
+                <div
+                  v-if="loadingCategories"
+                  class="flex items-center gap-2 text-xs text-slate-400 py-2"
+                >
+                  <div
+                    class="w-3.5 h-3.5 border-2 border-slate-300 border-t-slate-500 rounded-full animate-spin"
+                  />
+                  Đang tải danh mục...
+                </div>
+
+                <select v-else v-model="form.document_category" class="input-field">
+                  <option value="">-- Tài liệu thông thường (không cần ký số) --</option>
+                  <option v-for="cat in documentCategories" :key="cat.value" :value="cat.value">
+                    {{ cat.label }}
+                  </option>
+                </select>
+
+                <!-- Thông báo khi chọn loại cần ký số -->
+                <div
+                  v-if="form.document_category"
+                  class="mt-2 flex items-center gap-2 text-xs text-violet-600 bg-violet-50 px-3 py-2 rounded-lg"
+                >
+                  <svg
+                    class="w-3.5 h-3.5 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  Sinh viên nộp bài sẽ có tùy chọn gửi yêu cầu ký số tài liệu này lên Admin
+                </div>
+              </div>
+            </div>
           </div>
+
           <div class="flex gap-3 mt-6">
             <button
               @click="showForm = false"
@@ -364,25 +439,29 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useLecturerAssignmentStore } from '@/stores/lecturer/lecturerAssignmentStore'
 import { lecturerAssignmentApi } from '@/api/lecturer/lecturerAssignmentApi'
-import { watch, onMounted, computed } from 'vue'
 import { useLecturerStore } from '@/stores/lecturer/lecturerStore'
 import { useToastStore } from '@/stores/toast'
-// const props = defineProps({ classId: { type: Number, required: true } })
+import axiosClient from '@/api/axiosClient'
 
 const store = useLecturerAssignmentStore()
+const lecturerStore = useLecturerStore()
+const toast = useToastStore()
 
 const selectedAssignment = ref(null)
 const activeTab = ref('submitted')
 const showForm = ref(false)
 const editingId = ref(null)
 const extensionsInput = ref('pdf,docx,zip')
-const toast = useToastStore()
 
-const lecturerStore = useLecturerStore()
+//Document categories từ API
+const documentCategories = ref([])
+const loadingCategories = ref(false)
+
 const classId = computed(() => lecturerStore.selectedClassId)
+
 const form = ref({
   title: '',
   description: '',
@@ -391,15 +470,38 @@ const form = ref({
   submission_type: 'both',
   max_file_size: 50,
   allowed_extensions: [],
+  document_category: '', // ← thêm
 })
 
-onMounted(() => {
+onMounted(async () => {
   if (classId.value) store.fetchByClass(classId.value)
+  await loadDocumentCategories()
 })
 
 watch(classId, (id) => {
   if (id) store.fetchByClass(id)
 })
+
+// Load categories từ API /general/document-categories
+async function loadDocumentCategories() {
+  loadingCategories.value = true
+  try {
+    const { data } = await axiosClient.get('/general/document-categories')
+    documentCategories.value = data
+  } catch {
+    // Fallback hardcode nếu API lỗi
+    documentCategories.value = [
+      { value: 'bao_cao_thuc_tap', label: 'Báo cáo thực tập' },
+      { value: 'nckh', label: 'Nghiên cứu khoa học' },
+      { value: 'do_an_tot_nghiep', label: 'Đồ án tốt nghiệp' },
+      { value: 'bao_cao_du_an', label: 'Báo cáo dự án' },
+      { value: 'khoa_luan', label: 'Khóa luận' },
+    ]
+  } finally {
+    loadingCategories.value = false
+  }
+}
+
 function openCreate() {
   editingId.value = null
   form.value = {
@@ -409,6 +511,7 @@ function openCreate() {
     allow_late: true,
     submission_type: 'both',
     max_file_size: 50,
+    document_category: '',
   }
   extensionsInput.value = 'pdf,docx,zip'
   showForm.value = true
@@ -423,6 +526,7 @@ function openEdit(a) {
     allow_late: a.allow_late,
     submission_type: a.submission_type,
     max_file_size: a.max_file_size,
+    document_category: a.document_category ?? '', // ← thêm
   }
   extensionsInput.value = a.allowed_extensions?.join(',') || ''
   showForm.value = true
@@ -435,12 +539,17 @@ async function openDetail(a) {
 }
 
 async function handleSave() {
+  // Resolve label từ categories
+  const selectedCat = documentCategories.value.find((c) => c.value === form.value.document_category)
+
   const payload = {
     ...form.value,
     allowed_extensions: extensionsInput.value
       .split(',')
       .map((e) => e.trim())
       .filter(Boolean),
+    document_category: form.value.document_category || null,
+    document_category_label: selectedCat?.label ?? null, // ← resolve label
   }
 
   const result = editingId.value
@@ -449,9 +558,9 @@ async function handleSave() {
 
   if (result.success) {
     showForm.value = false
-    toast.success(editingId.value ? 'Cập nhật đợt nộp thành công' : 'Tạo đợt nộp thành công') // ← thêm
+    toast.success(editingId.value ? 'Cập nhật đợt nộp thành công' : 'Tạo đợt nộp thành công')
   } else {
-    toast.error(result.message ?? 'Có lỗi xảy ra') // ← thêm
+    toast.error(result.message ?? 'Có lỗi xảy ra')
   }
 }
 
@@ -459,9 +568,9 @@ async function handleDelete(id) {
   if (!confirm('Xóa đợt nộp này?')) return
   const result = await store.deleteAssignment(id)
   if (result.success) {
-    toast.success('Đã xóa đợt nộp bài') // ← thêm
+    toast.success('Đã xóa đợt nộp bài')
   } else {
-    toast.error(result.message ?? 'Lỗi khi xóa') // ← thêm
+    toast.error(result.message ?? 'Lỗi khi xóa')
   }
 }
 

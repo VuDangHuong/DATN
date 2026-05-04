@@ -30,6 +30,7 @@ const menuItems = [
   { name: 'Quản lý Chat', path: '/admin/chatBot', icon: 'master-data' },
   { name: 'Cấu hình hệ thống', path: '/admin/settings', icon: 'settings' },
   { name: 'Giám sát & Báo cáo', path: '/admin/reports', icon: 'reports' },
+  { name: 'Ký số tài liệu', path: '/admin/sign-requests', icon: 'sign' },
 ]
 </script>
 

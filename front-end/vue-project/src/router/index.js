@@ -19,7 +19,6 @@ import ChangePasswordForm from '@/views/auth/ChangePasswordForm.vue'
 import ProfileView from '@/components/profile/ProfileView.vue'
 import SemesterManagement from '@/views/admin/SemesterManagement.vue'
 import ChatBotManagement from '@/views/admin/ChatBotManagement.vue'
-
 // Student views
 import GroupView from '@/views/students/groups/GroupView.vue'
 import ChatView from '@/views/students/chat/ChatView.vue'
@@ -32,6 +31,8 @@ import SubmissionReviewView from '@/views/lecturer/assignment/SubmissionReviewVi
 import StudentLayout from '@/layouts/StudentLayout.vue'
 import LecturerAssignmentView from '@/views/lecturer/assignment/LecturerAssignmentView.vue'
 import LecturerClassView from '@/views/lecturer/class/LecturerClassView.vue'
+import AdminSignView from '@/views/admin/sign/AdminSignView.vue'
+import LecturerSignView from '@/views/lecturer/sign/LecturerSignView.vue'
 
 const routes = [
   // Redirect mặc định
@@ -61,6 +62,7 @@ const routes = [
       { path: 'change-password', name: 'admin.change-password', component: ChangePasswordForm },
       { path: 'profile', name: 'admin-profile', component: ProfileView },
       { path: 'chatBot', name: 'chatBot', component: ChatBotManagement },
+      { path: 'sign-requests', name: 'admin-sign-requests', component: AdminSignView },
     ],
   },
 
@@ -116,6 +118,12 @@ const routes = [
         name: 'lecturer-classes',
         component: LecturerClassView,
         meta: { title: 'Quản lý lớp' },
+      },
+      {
+        path: 'sign-requests',
+        name: 'lecturer-sign-requests',
+        component: LecturerSignView,
+        meta: { title: 'Ký số' },
       },
     ],
   },

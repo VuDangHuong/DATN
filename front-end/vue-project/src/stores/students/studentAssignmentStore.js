@@ -9,6 +9,7 @@ export const useStudentAssignmentStore = defineStore('studentAssignment', () => 
   const loading = ref(false)
   const submitting = ref(false)
   const error = ref(null)
+  const signRequests = ref([])
 
   async function fetchByClass(classId) {
     loading.value = true
@@ -37,6 +38,45 @@ export const useStudentAssignmentStore = defineStore('studentAssignment', () => 
       return { success: false, message: error.value }
     } finally {
       submitting.value = false
+    }
+  }
+
+  async function fetchSignRequest(submissionId) {
+    try {
+      const { data } = await studentAssignmentApi.getSignRequests()
+      const list = data.data?.data ?? data.data ?? []
+      return list.find((r) => r.submission_id === submissionId) ?? null
+    } catch {
+      return null
+    }
+  }
+
+  // Tạo yêu cầu ký số
+  async function createSignRequest(submissionId) {
+    try {
+      const { data } = await studentAssignmentApi.createSignRequest(submissionId)
+      return { success: true, data: data.data }
+    } catch (e) {
+      return { success: false, message: e.response?.data?.message ?? 'Lỗi gửi yêu cầu' }
+    }
+  }
+
+  // Tải file đã ký
+  async function downloadSignedFile(signRequestId, fileName = 'signed_document') {
+    try {
+      const response = await studentAssignmentApi.downloadSigned(signRequestId)
+      const blob = new Blob([response.data], { type: 'application/pdf' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = fileName
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+      return { success: true }
+    } catch (e) {
+      return { success: false, message: e.response?.data?.message ?? 'Lỗi tải file' }
     }
   }
 
@@ -75,5 +115,9 @@ export const useStudentAssignmentStore = defineStore('studentAssignment', () => 
     submitIndividual,
     submitGroup,
     fetchHistory,
+    signRequests,
+    fetchSignRequest,
+    createSignRequest,
+    downloadSignedFile,
   }
 })
