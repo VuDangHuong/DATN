@@ -10,7 +10,7 @@ export const useLecturerAssignmentStore = defineStore('lecturerAssignment', () =
   const stats = ref({})
   const loading = ref(false)
   const error = ref(null)
-
+  const documentCategories = ref([])
   async function fetchByClass(classId) {
     loading.value = true
     error.value = null
@@ -71,6 +71,22 @@ export const useLecturerAssignmentStore = defineStore('lecturerAssignment', () =
     }
   }
 
+  async function loadDocumentCategories() {
+    try {
+      const { data } = await lecturerAssignmentApi.getDocumentCategories()
+      documentCategories.value = data
+    } catch {
+      // Fallback hardcode
+      documentCategories.value = [
+        { value: 'bao_cao_thuc_tap', label: 'Báo cáo thực tập' },
+        { value: 'nckh', label: 'Nghiên cứu khoa học' },
+        { value: 'do_an_tot_nghiep', label: 'Đồ án tốt nghiệp' },
+        { value: 'bao_cao_du_an', label: 'Báo cáo dự án' },
+        { value: 'khoa_luan', label: 'Khóa luận' },
+      ]
+    }
+  }
+
   return {
     assignments,
     currentAssignment,
@@ -84,5 +100,7 @@ export const useLecturerAssignmentStore = defineStore('lecturerAssignment', () =
     createAssignment,
     updateAssignment,
     deleteAssignment,
+    documentCategories,
+    loadDocumentCategories,
   }
 })

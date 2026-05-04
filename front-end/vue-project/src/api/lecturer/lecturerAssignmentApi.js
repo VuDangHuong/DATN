@@ -18,4 +18,6 @@ export const lecturerAssignmentApi = {
   // URL download file
   downloadUrl: (submissionId) =>
     `${import.meta.env.VITE_API_URL}/lecturer/submissions/${submissionId}/download`,
+
+  getDocumentCategories: () => axiosClient.get('/general/document-categories'),
 }
