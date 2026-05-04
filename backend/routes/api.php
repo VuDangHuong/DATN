@@ -62,6 +62,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/majors', [MajorController::class, 'index']);
         Route::get('/semesters', [SemesterController::class, 'index']);
         Route::get('/semesters/{id}', [SemesterController::class, 'show']);
+        Route::get('/document-categories', [LecturerSignController::class, 'getDocumentCategories']);
     });
 
     Route::middleware(['auth:sanctum'])->prefix('chatbot')->group(function () {

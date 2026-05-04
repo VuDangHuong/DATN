@@ -31,6 +31,7 @@ class AdminSignController extends Controller
                 'classModel:id,name,code',
                 'lecturer:id,name',
             ])
+            ->whereNotNull('document_category')
             ->when($request->status,   fn($q) => $q->where('status', $request->status))
             ->when($request->class_id, fn($q) => $q->where('class_id', $request->class_id))
             ->when($request->category, fn($q) => $q->where('document_category', $request->category))
@@ -202,6 +203,7 @@ class AdminSignController extends Controller
     public function stats(): JsonResponse
     {
         $byStatus = DocumentSignRequest::selectRaw('status, count(*) as total')
+            ->whereNotNull('document_category')
             ->groupBy('status')
             ->get()
             ->map(fn($r) => [

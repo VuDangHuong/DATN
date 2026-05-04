@@ -136,10 +136,11 @@ class SignRequestController extends Controller
         if (!$signRequest->signed_file || !Storage::exists($signRequest->signed_file)) {
             return response()->json(['message' => 'File chưa sẵn sàng.'], 404);
         }
-
+        $fileName = "PhieuXacNhanKySo_{$signRequest->id}_{$signRequest->requester->code}.pdf";
         return Storage::download(
             $signRequest->signed_file,
-            'signed_' . basename($signRequest->original_file)
+            $fileName,
+            ['Content-Type' => 'application/pdf']
         );
     }
 

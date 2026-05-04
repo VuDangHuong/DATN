@@ -40,8 +40,11 @@ class LecturerAssignmentController extends Controller
             'max_file_size'       => 'integer|min:1|max:500',
             'allowed_extensions'  => 'nullable|array',
             'allowed_extensions.*'=> 'string',
+            'document_category'       => 'nullable|string|in:' . implode(',', array_keys(Assignment::DOCUMENT_CATEGORIES)),
+            'document_category_label' => 'nullable|string|max:100',
         ]);
- 
+        //Tự động set requires_signing dựa vào document_category
+        $data['requires_signing'] = !empty($data['document_category']);
         $assignment = $class->assignments()->create([
             ...$data,
             'created_by' => auth()->id(),
@@ -93,8 +96,12 @@ class LecturerAssignmentController extends Controller
             'max_file_size'       => 'integer|min:1|max:500',
             'allowed_extensions'  => 'nullable|array',
             'is_active'           => 'boolean',
+            'document_category'       => 'nullable|string|in:' . implode(',', array_keys(Assignment::DOCUMENT_CATEGORIES)),
+            'document_category_label' => 'nullable|string|max:100',
         ]);
- 
+        if (array_key_exists('document_category', $data)) {
+            $data['requires_signing'] = !empty($data['document_category']);
+        }
         $assignment->update($data);
  
         return response()->json([
