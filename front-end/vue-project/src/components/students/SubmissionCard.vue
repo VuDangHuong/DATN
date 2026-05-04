@@ -54,7 +54,15 @@
 
         <div class="flex items-center gap-2 flex-shrink-0">
           <button
-            v-if="canSubmit"
+            v-if="props.submission?.status === 'approved'"
+            disabled
+            class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-400 bg-slate-50 cursor-not-allowed"
+            title="Bài đã được chấp nhận, không thể nộp lại"
+          >
+            Đã chấp nhận
+          </button>
+          <button
+            v-else-if="canSubmit"
             @click="openReupload"
             class="px-3 py-1.5 border border-indigo-200 rounded-lg text-xs font-medium text-indigo-600 hover:bg-indigo-50 transition"
           >
@@ -182,38 +190,7 @@
           rows="2"
           class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
         />
-        <!-- ✅ Chọn loại tài liệu -->
-        <div>
-          <label class="block text-xs font-medium text-slate-500 mb-1">
-            Loại tài liệu
-            <span class="text-slate-400">(chọn nếu cần ký số)</span>
-          </label>
-          <select
-            v-model="documentCategory"
-            class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-          >
-            <option value="">-- Tài liệu thông thường (không cần ký số) --</option>
-            <option v-for="cat in documentCategories" :key="cat.value" :value="cat.value">
-              {{ cat.label }}
-            </option>
-          </select>
 
-          <!-- Badge thông báo nếu chọn loại cần ký số -->
-          <div
-            v-if="documentCategory"
-            class="mt-1.5 flex items-center gap-1.5 text-xs text-violet-600"
-          >
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-              />
-            </svg>
-            Tài liệu này sẽ được gửi lên để ký số sau khi nộp
-          </div>
-        </div>
         <div class="flex gap-2">
           <button
             @click="cancelUpload"
@@ -280,11 +257,11 @@ const selectedFile = ref(null)
 const dragging = ref(false)
 const note = ref('')
 const isReuploading = ref(false)
-const documentCategory = ref('')
 const documentCategories = ref([])
 const canSubmit = computed(() => {
   if (props.type === 'group' && !props.isLeader) return false
   if (!props.assignment.allow_late && props.assignment.is_expired) return false
+  if (props.submission?.status === 'approved') return false
   return true
 })
 
@@ -300,14 +277,14 @@ function statusLabel(status) {
 function cancelUpload() {
   selectedFile.value = null
   note.value = ''
-  documentCategory.value = ''
+  // documentCategory.value = ''
   isReuploading.value = false
 }
 
 // Emit thêm documentCategory
 async function handleInternalSubmit() {
   if (!selectedFile.value) return
-  emit('submit', selectedFile.value, note.value, documentCategory.value) // ← thêm
+  emit('submit', selectedFile.value, note.value)
   isReuploading.value = false
 }
 function openReupload() {
@@ -315,12 +292,6 @@ function openReupload() {
   selectedFile.value = null
   note.value = ''
 }
-
-// function cancelUpload() {
-//   selectedFile.value = null
-//   note.value = ''
-//   isReuploading.value = false
-// }
 
 function onFileChange(e) {
   selectedFile.value = e.target.files[0] ?? null
@@ -332,30 +303,9 @@ function onDrop(e) {
   selectedFile.value = e.dataTransfer.files[0] ?? null
 }
 
-// async function handleInternalSubmit() {
-//   if (!selectedFile.value) return
-//   emit('submit', selectedFile.value, note.value)
-//   isReuploading.value = false
-// }
-
 function formatSize(bytes) {
   if (!bytes) return '0 KB'
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`
 }
-onMounted(async () => {
-  try {
-    const { data } = await axiosClient.get('/general/document-categories')
-    documentCategories.value = data
-  } catch {
-    // fallback hardcode nếu API lỗi
-    documentCategories.value = [
-      { value: 'bao_cao_thuc_tap', label: 'Báo cáo thực tập' },
-      { value: 'nckh', label: 'Nghiên cứu khoa học' },
-      { value: 'do_an_tot_nghiep', label: 'Đồ án tốt nghiệp' },
-      { value: 'bao_cao_du_an', label: 'Báo cáo dự án' },
-      { value: 'khoa_luan', label: 'Khóa luận' },
-    ]
-  }
-})
 </script>
