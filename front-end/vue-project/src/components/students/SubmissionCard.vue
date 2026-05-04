@@ -190,7 +190,6 @@
           rows="2"
           class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
         />
-
         <div class="flex gap-2">
           <button
             @click="cancelUpload"
