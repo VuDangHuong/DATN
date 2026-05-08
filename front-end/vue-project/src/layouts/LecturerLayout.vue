@@ -124,7 +124,7 @@
           <span>Yêu cầu ký số</span>
         </router-link>
 
-        <router-link to="/lecturer/sign-profile" class="nav-link" active-class="nav-active">
+        <router-link to="/lecturer/sign-history" class="nav-link" active-class="nav-active">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
@@ -133,10 +133,14 @@
               d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
             />
           </svg>
-          <span>Hồ sơ chữ ký</span>
+          <span>Lịch sử ký số</span>
         </router-link>
       </nav>
-
+      <!-- Sidebar — trong section Lớp học -->
+      <router-link to="/lecturer/tasks" class="nav-link" active-class="nav-active">
+        <!-- icon checklist -->
+        <span>Công việc nhóm</span>
+      </router-link>
       <!-- Logout -->
       <div class="p-3 border-t border-stone-100">
         <button
@@ -238,7 +242,7 @@ const pageMap = {
   '/lecturer/assignments': 'Đợt nộp bài',
   '/lecturer/reviews': 'Duyệt bài nộp',
   '/lecturer/sign-requests': 'Yêu cầu ký số',
-  '/lecturer/sign-profile': 'Hồ sơ chữ ký',
+  '/lecturer/sign-history': 'Hồ sơ chữ ký',
 }
 
 const currentPageTitle = computed(() => {

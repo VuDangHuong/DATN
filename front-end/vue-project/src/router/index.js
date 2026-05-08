@@ -33,6 +33,8 @@ import LecturerAssignmentView from '@/views/lecturer/assignment/LecturerAssignme
 import LecturerClassView from '@/views/lecturer/class/LecturerClassView.vue'
 import AdminSignView from '@/views/admin/sign/AdminSignView.vue'
 import LecturerSignView from '@/views/lecturer/sign/LecturerSignView.vue'
+import LecturerSignHistoryView from '@/views/lecturer/sign/LecturerSignHistoryView.vue'
+import LecturerTaskView from '@/views/lecturer/tasks/LecturerTaskView.vue'
 
 const routes = [
   // Redirect mặc định
@@ -124,6 +126,18 @@ const routes = [
         name: 'lecturer-sign-requests',
         component: LecturerSignView,
         meta: { title: 'Ký số' },
+      },
+      {
+        path: 'sign-history',
+        name: 'lecturer-sign-history',
+        component: LecturerSignHistoryView,
+        meta: { title: 'Ký số' },
+      },
+      {
+        path: 'tasks',
+        name: 'lecturer-tasks',
+        component: LecturerTaskView,
+        meta: { title: 'Công việc nhóm' },
       },
     ],
   },
