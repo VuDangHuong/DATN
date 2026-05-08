@@ -1,6 +1,6 @@
 <template>
   <div>
-    <!-- ── Khi chưa có assignmentId → hiển thị danh sách đợt nộp để chọn ── -->
+    <!-- ── Chưa có assignmentId → danh sách đợt nộp ── -->
     <div v-if="!props.assignmentId">
       <div class="mb-6">
         <h2 class="text-2xl font-bold text-slate-800">Duyệt bài nộp</h2>
@@ -74,7 +74,7 @@
       </div>
     </div>
 
-    <!-- ── Khi có assignmentId → hiển thị danh sách bài nộp ── -->
+    <!-- ── Có assignmentId → danh sách bài nộp ── -->
     <div v-else>
       <div class="flex items-center justify-between mb-6">
         <div>
@@ -208,17 +208,27 @@
           class="bg-white rounded-2xl border border-slate-200 overflow-hidden"
         >
           <div class="p-5 flex items-start gap-4">
+            <!-- Avatar -->
             <div
               class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-sm font-bold text-indigo-700 flex-shrink-0"
             >
               {{ sub.submitter_name?.charAt(0) }}
             </div>
+
             <div class="flex-1 min-w-0">
+              <!-- Tên + badges -->
               <div class="flex items-center gap-2 flex-wrap mb-1">
                 <span class="font-semibold text-slate-800">{{ sub.submitter_name }}</span>
                 <span v-if="sub.student?.code" class="text-xs text-slate-400 font-mono">{{
                   sub.student.code
                 }}</span>
+                <!-- Badge nhóm -->
+                <span
+                  v-if="sub.submitter_type === 'group'"
+                  class="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded"
+                >
+                  Nhóm
+                </span>
                 <span
                   class="px-2 py-0.5 text-xs font-bold rounded-full"
                   :class="{
@@ -235,13 +245,17 @@
                   >Trễ</span
                 >
               </div>
+
+              <!-- File info -->
               <div class="flex items-center gap-3 text-xs text-slate-400">
                 <span>📎 {{ sub.file_name }}</span>
                 <span>{{ sub.file_size }}</span>
                 <span>{{ formatDate(sub.submitted_at) }}</span>
               </div>
+
+              <!-- Kết quả duyệt cá nhân -->
               <div
-                v-if="sub.status !== 'pending'"
+                v-if="sub.status !== 'pending' && sub.submitter_type !== 'group'"
                 class="mt-3 p-3 rounded-xl text-sm"
                 :class="sub.status === 'approved' ? 'bg-emerald-50' : 'bg-red-50'"
               >
@@ -259,9 +273,53 @@
                 </div>
                 <p v-if="sub.feedback" class="mt-1.5 text-slate-600 italic">{{ sub.feedback }}</p>
               </div>
+
+              <!--Kết quả duyệt nhóm — hiện điểm từng thành viên -->
+              <div
+                v-if="sub.status !== 'pending' && sub.submitter_type === 'group'"
+                class="mt-3 p-3 rounded-xl"
+                :class="sub.status === 'approved' ? 'bg-emerald-50' : 'bg-red-50'"
+              >
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-semibold text-slate-600">Điểm từng thành viên</span>
+                  <span class="text-xs text-slate-400">Duyệt bởi {{ sub.reviewer }}</span>
+                </div>
+                <div v-if="sub.member_grades?.length" class="space-y-1.5">
+                  <div
+                    v-for="g in sub.member_grades"
+                    :key="g.student_id"
+                    class="flex items-center justify-between bg-white/70 rounded-lg px-3 py-1.5"
+                  >
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs font-medium text-slate-700">{{ g.student_name }}</span>
+                      <span class="text-[10px] text-slate-400 font-mono">{{ g.student_code }}</span>
+                      <span
+                        v-if="g.role === 'leader'"
+                        class="px-1 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold rounded"
+                      >
+                        Trưởng nhóm
+                      </span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span
+                        v-if="g.score !== null"
+                        class="text-sm font-bold"
+                        :class="sub.status === 'approved' ? 'text-emerald-700' : 'text-red-700'"
+                      >
+                        {{ g.score }}/10
+                      </span>
+                      <span v-else class="text-xs text-slate-400 italic">Chưa có điểm</span>
+                    </div>
+                  </div>
+                </div>
+                <p v-if="sub.feedback" class="mt-2 text-xs text-slate-600 italic">
+                  {{ sub.feedback }}
+                </p>
+              </div>
             </div>
+
+            <!-- Action buttons -->
             <div class="flex items-center gap-2 flex-shrink-0">
-              <!-- ✅ Fix download: dùng button + gọi hàm thay vì <a href> -->
               <button
                 @click="handleDownload(sub)"
                 :disabled="downloadingId === sub.id"
@@ -308,98 +366,16 @@
       </div>
     </div>
 
-    <!-- Modal: Duyệt 1 bài -->
-    <Teleport to="body">
-      <div v-if="showReviewModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div
-          class="absolute inset-0 bg-black/30 backdrop-blur-sm"
-          @click="showReviewModal = false"
-        />
-        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-          <h3 class="text-lg font-bold text-slate-800 mb-1">
-            {{ reviewForm.status === 'approved' ? '✅ Chấp nhận bài nộp' : '❌ Từ chối bài nộp' }}
-          </h3>
-          <p class="text-sm text-slate-500 mb-5">{{ reviewingSubmission?.submitter_name }}</p>
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-slate-600 mb-1"
-                >Điểm số <span class="text-slate-400">(0–10, tuỳ chọn)</span></label
-              >
-              <input
-                v-model.number="reviewForm.score"
-                type="number"
-                min="0"
-                max="10"
-                step="0.5"
-                placeholder="VD: 8.5"
-                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-600 mb-1"
-                >Nhận xét <span class="text-slate-400">(tuỳ chọn)</span></label
-              >
-              <textarea
-                v-model="reviewForm.feedback"
-                rows="4"
-                placeholder="Nhận xét chi tiết..."
-                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm resize-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              />
-            </div>
-            <div
-              class="flex items-center gap-2 text-xs text-slate-400 bg-slate-50 rounded-xl px-3 py-2"
-            >
-              <svg
-                class="w-4 h-4 flex-shrink-0"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                />
-              </svg>
-              Sinh viên sẽ nhận email thông báo kết quả
-            </div>
-          </div>
-          <div class="flex gap-3 mt-6">
-            <button
-              @click="showReviewModal = false"
-              class="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50"
-            >
-              Hủy
-            </button>
-            <button
-              @click="submitReview"
-              :disabled="reviewing"
-              class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 flex items-center justify-center gap-2 transition"
-              :class="
-                reviewForm.status === 'approved'
-                  ? 'bg-emerald-600 hover:bg-emerald-700'
-                  : 'bg-red-600 hover:bg-red-700'
-              "
-            >
-              <div
-                v-if="reviewing"
-                class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"
-              />
-              {{
-                reviewing
-                  ? 'Đang xử lý...'
-                  : reviewForm.status === 'approved'
-                    ? 'Xác nhận chấp nhận'
-                    : 'Xác nhận từ chối'
-              }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
+    <!-- ── Modal: Duyệt 1 bài (dùng ReviewModal component) ── -->
+    <ReviewModal
+      :show="showReviewModal"
+      :submission="reviewingSubmission"
+      :status="reviewStatus"
+      @close="showReviewModal = false"
+      @saved="onReviewSaved"
+    />
 
-    <!-- Modal: Duyệt tất cả -->
+    <!-- ── Modal: Duyệt tất cả ── -->
     <Teleport to="body">
       <div v-if="showBulkModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" @click="showBulkModal = false" />
@@ -411,9 +387,9 @@
             Áp dụng cho {{ stats?.pending }} bài đang chờ duyệt
           </p>
           <div>
-            <label class="block text-sm font-medium text-slate-600 mb-1"
-              >Nhận xét chung <span class="text-slate-400">(tuỳ chọn)</span></label
-            >
+            <label class="block text-sm font-medium text-slate-600 mb-1">
+              Nhận xét chung <span class="text-slate-400">(tuỳ chọn)</span>
+            </label>
             <textarea
               v-model="bulkForm.feedback"
               rows="3"
@@ -455,10 +431,10 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useLecturerStore } from '@/stores/lecturer/lecturerStore'
-import { useLecturerAssignmentStore } from '@/stores/lecturer/lecturerAssignmentStore'
 import { lecturerAssignmentApi } from '@/api/lecturer/lecturerAssignmentApi'
-import { useToastStore } from '@/stores/toast' // ✅ import toast store
+import { useToastStore } from '@/stores/toast'
 import axiosClient from '@/api/axiosClient'
+import ReviewModal from '../components/review/ReviewModal.vue'
 
 const props = defineProps({
   assignmentId: { type: Number, default: null },
@@ -466,8 +442,7 @@ const props = defineProps({
 
 const router = useRouter()
 const lecturerStore = useLecturerStore()
-const assignmentStore = useLecturerAssignmentStore()
-const toast = useToastStore() // ✅ dùng store thay vì ref cục bộ
+const toast = useToastStore()
 
 const assignmentList = ref([])
 const loadingList = ref(false)
@@ -476,13 +451,13 @@ const submissions = ref([])
 const stats = ref(null)
 const loading = ref(false)
 const reviewing = ref(false)
-const downloadingId = ref(null) // ✅ track download đang chạy
+const downloadingId = ref(null)
 const filterStatus = ref('')
 const filterType = ref('')
 const showReviewModal = ref(false)
 const showBulkModal = ref(false)
 const reviewingSubmission = ref(null)
-const reviewForm = ref({ status: 'approved', score: null, feedback: '' })
+const reviewStatus = ref('approved')
 const bulkForm = ref({ status: 'approved', feedback: '' })
 
 const statusFilters = [
@@ -564,35 +539,25 @@ function handleFilter(field, value) {
   loadSubmissions()
 }
 
+// ✅ Mở ReviewModal — truyền submission + status
 function openReview(sub, status) {
   reviewingSubmission.value = sub
-  reviewForm.value = { status, score: sub.score ?? null, feedback: sub.feedback ?? '' }
+  reviewStatus.value = status
   showReviewModal.value = true
+}
+
+// ✅ Callback khi ReviewModal lưu thành công
+function onReviewSaved(updatedSub) {
+  // Cập nhật submission trong list ngay không cần reload toàn bộ
+  const idx = submissions.value.findIndex((s) => s.id === updatedSub.id)
+  if (idx !== -1) submissions.value[idx] = updatedSub
+  // Reload stats
+  loadSubmissions()
 }
 
 function openBulkReview(status) {
   bulkForm.value = { status, feedback: '' }
   showBulkModal.value = true
-}
-
-async function submitReview() {
-  reviewing.value = true
-  try {
-    await axiosClient.patch(
-      `/lecturer/submissions/${reviewingSubmission.value.id}/review`,
-      reviewForm.value,
-    )
-    showReviewModal.value = false
-    // ✅ dùng toast store
-    toast.success(
-      reviewForm.value.status === 'approved' ? 'Đã chấp nhận bài nộp' : 'Đã từ chối bài nộp',
-    )
-    await loadSubmissions()
-  } catch (e) {
-    toast.error(e.response?.data?.message ?? 'Có lỗi xảy ra')
-  } finally {
-    reviewing.value = false
-  }
 }
 
 async function submitBulkReview() {
@@ -603,16 +568,15 @@ async function submitBulkReview() {
       bulkForm.value,
     )
     showBulkModal.value = false
-    toast.success(data.message) // ✅
+    toast.success(data.message)
     await loadSubmissions()
   } catch (e) {
-    toast.error(e.response?.data?.message ?? 'Có lỗi xảy ra') // ✅
+    toast.error(e.response?.data?.message ?? 'Có lỗi xảy ra')
   } finally {
     reviewing.value = false
   }
 }
 
-// ✅ Fix download: fetch blob rồi tạo link tạm thay vì dùng <a href> trực tiếp
 async function handleDownload(sub) {
   downloadingId.value = sub.id
   try {
@@ -628,7 +592,7 @@ async function handleDownload(sub) {
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
     toast.success(`Đã tải: ${sub.file_name}`)
-  } catch (e) {
+  } catch {
     toast.error('Không thể tải file, vui lòng thử lại')
   } finally {
     downloadingId.value = null
