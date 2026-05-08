@@ -67,6 +67,11 @@
         <div class="flex-1 overflow-y-auto p-6">
           <!-- ── Tab: Thành viên ── -->
           <div v-if="activeTab === 'members'" class="space-y-2">
+            <div v-if="loadingMembers" class="flex justify-center py-8">
+              <div
+                class="w-6 h-6 border-4 border-teal-200 border-t-teal-600 rounded-full animate-spin"
+              />
+            </div>
             <div
               v-for="(member, idx) in localMembers"
               :key="member.id"
@@ -323,17 +328,32 @@ const addModes = [
   { key: 'code', label: 'Nhập mã SV' },
   { key: 'list', label: 'Chọn từ danh sách' },
 ]
-
+const loadingMembers = ref(false)
 // Sync members khi group thay đổi
 watch(
   () => props.group,
-  (g) => {
-    if (g) {
-      localMembers.value = g.members ? [...g.members] : []
-      activeTab.value = 'members'
-      addError.value = ''
-      addSuccess.value = ''
-      inputCode.value = ''
+  async (g) => {
+    if (!g) return
+    activeTab.value = 'members'
+    addError.value = ''
+    addSuccess.value = ''
+    inputCode.value = ''
+
+    //Nếu group đã có members → dùng luôn
+    if (g.members?.length) {
+      localMembers.value = [...g.members]
+      return
+    }
+
+    //Nếu chưa có → load từ API
+    loadingMembers.value = true
+    try {
+      const { data } = await axiosClient.get(`/lecturer/groups/${g.id}/members`)
+      localMembers.value = data.members ?? data.data ?? []
+    } catch {
+      localMembers.value = []
+    } finally {
+      loadingMembers.value = false
     }
   },
   { immediate: true },

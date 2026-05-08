@@ -334,8 +334,28 @@ async function loadGroups(classId) {
   loadingGroups.value = true
   try {
     const { data } = await axiosClient.get(`/lecturer/classes/${classId}/groups`)
-    groups.value = data.groups ?? []
+    const rawGroups = data.groups ?? data.data ?? data ?? []
+
+    //Load members cho từng group song song
+    const groupsWithMembers = await Promise.all(
+      rawGroups.map(async (g) => {
+        try {
+          const { data: mData } = await axiosClient.get(`/lecturer/groups/${g.id}/members`)
+          const members = mData.members ?? mData.data ?? []
+          return {
+            ...g,
+            members,
+            leader: members.find((m) => m.role === 'leader') ?? g.leader ?? null,
+            member_count: members.length,
+          }
+        } catch {
+          return { ...g, members: [], member_count: 0 }
+        }
+      }),
+    )
+    groups.value = groupsWithMembers
   } catch (e) {
+    console.error('loadGroups error:', e.response?.data)
     groups.value = []
   } finally {
     loadingGroups.value = false
