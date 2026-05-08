@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Lecturers\AssignmentController;
 use App\Http\Controllers\Lecturers\ClassController;
+use App\Http\Controllers\Lecturers\LecturerGroupController;
 use App\Http\Controllers\Shared\ClassStudentController;
 use App\Http\Controllers\Shared\LecturerAssignmentController;
 use App\Http\Controllers\Shared\StudentSubmissionController;
@@ -192,9 +193,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         Route::get('classes/{classId}/groups', [GroupController::class, 'index']);
         Route::get('submissions/{id}/download', [LecturerAssignmentController::class, 'download']);
+        Route::get('/submissions/{id}/member-grades', [SubmissionReviewController::class, 'getMemberGrades']);
 
         Route::patch('submissions/{id}/review', [SubmissionReviewController::class, 'review']);
- 
         // Duyệt toàn bộ bài đang pending của 1 đợt nộp
         // POST /api/lecturer/assignments/{id}/review-all
         // Body: { "status": "approved|rejected", "feedback": "Nhận xét chung" }
@@ -206,6 +207,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         Route::post('groups/{groupId}/members',              [GroupController::class, 'addMember']);     // Thêm TV
         Route::delete('groups/{groupId}/members/{memberId}', [GroupController::class, 'removeMember']); // Xóa TV
+
+        // Danh sách nhóm theo lớp
+        Route::get('/classes/{classId}/groups', [ClassController::class, 'groups']);
+        
+        // Danh sách thành viên nhóm
+        Route::get('/groups/{groupId}/members', [LecturerGroupController::class, 'members']);
+        Route::get('/groups/{groupId}/tasks', [LecturerGroupController::class, 'tasks']);
+        Route::get('/tasks/{taskId}',         [LecturerGroupController::class, 'taskDetail']);
     });
 
     // Student routes
