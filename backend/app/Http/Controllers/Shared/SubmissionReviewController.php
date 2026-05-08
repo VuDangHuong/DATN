@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Shared;
 use App\Http\Controllers\Controller;
 use App\Mail\SubmissionReviewed;
 use App\Models\Evaluation\Assignment;
+use App\Models\Evaluation\StudentGrade;
+use Illuminate\Support\Facades\DB;
 use App\Models\Evaluation\Submission;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,54 +16,116 @@ class SubmissionReviewController extends Controller
     /**
      * PATCH /api/lecturer/submissions/{id}/review
      *
-     * Duyệt hoặc từ chối 1 bài nộp cụ thể.
-     *
-     * Body: {
-     *   "status":   "approved" | "rejected",
-     *   "score":    8.5,           // nullable, 0-10
-     *   "feedback": "Làm tốt!"    // nullable
-     * }
+     * Cá nhân: { status, score, feedback }
+     * Nhóm:   { status, feedback, member_grades: [{ student_id, score, note }] }
      */
     public function review(Request $request, $id): JsonResponse
     {
         $submission = $this->resolveSubmission($id);
+        $isGroup    = $submission->submitter_type === 'group';
  
-        $data = $request->validate([
+        // ── Validate ─────────────────────────────────────
+        $rules = [
             'status'   => 'required|in:approved,rejected',
-            'score'    => 'nullable|numeric|min:0|max:10',
             'feedback' => 'nullable|string|max:2000',
-        ]);
+        ];
  
-        $submission->update([
-            'status'      => $data['status'],
-            'score'       => $data['score'] ?? null,
-            'feedback'    => $data['feedback'] ?? null,
-            'reviewed_by' => auth()->id(),
-            'reviewed_at' => now(),
-        ]);
+        if ($isGroup) {
+            $rules['member_grades']              = 'nullable|array';
+            $rules['member_grades.*.student_id'] = 'required|integer|exists:users,id';
+            $rules['member_grades.*.score']      = 'nullable|numeric|min:0|max:10';
+            $rules['member_grades.*.note']       = 'nullable|string|max:500';
+        } else {
+            $rules['score'] = 'nullable|numeric|min:0|max:10';
+        }
  
-        // Gửi email thông báo
-        $this->sendNotification($submission->fresh(['assignment', 'reviewer', 'student', 'group.members']));
+        $data = $request->validate($rules);
+ 
+        DB::transaction(function () use ($submission, $data, $isGroup) {
+            // 1. Cập nhật submission
+            $submission->update([
+                'status'      => $data['status'],
+                'feedback'    => $data['feedback'] ?? null,
+                'score'       => $isGroup ? null : ($data['score'] ?? null),
+                'reviewed_by' => auth()->id(),
+                'reviewed_at' => now(),
+            ]);
+ 
+            // 2. Nếu là nhóm → lưu điểm riêng từng thành viên vào student_grades
+            if ($isGroup && !empty($data['member_grades'])) {
+                $classId = $submission->assignment->class_id;
+ 
+                foreach ($data['member_grades'] as $grade) {
+                    StudentGrade::updateOrCreate(
+                        [
+                            'student_id' => $grade['student_id'],
+                            'group_id'   => $submission->group_id,
+                            'class_id'   => $classId,
+                        ],
+                        [
+                            'score'        => $grade['score'] ?? null,
+                            'lecturer_note' => $grade['note'] ?? null,
+                            'is_final'     => $data['status'] === 'approved',
+                        ]
+                    );
+                }
+            }
+        });
+ 
+        // 3. Gửi email thông báo
+        $this->sendNotification(
+            $submission->fresh(['assignment', 'reviewer', 'student', 'group.members'])
+        );
  
         $label = $data['status'] === 'approved' ? 'Đã chấp nhận' : 'Đã từ chối';
  
         return response()->json([
             'message'    => "{$label} bài nộp thành công",
-            'submission' => $this->formatSubmission($submission),
+            'submission' => $this->formatSubmission(
+                $submission->fresh(['group.members.user', 'student', 'reviewer'])
+            ),
         ]);
     }
  
     /**
-     * POST /api/lecturer/assignments/{id}/review-all
-     *
-     * Duyệt toàn bộ bài nộp của 1 đợt cùng lúc.
-     *
-     * Body: {
-     *   "status":   "approved" | "rejected",
-     *   "feedback": "Nhận xét chung"   // áp dụng cho tất cả
-     * }
+     * GET /api/lecturer/submissions/{id}/member-grades
+     * Lấy điểm từng thành viên nhóm để pre-fill khi mở modal chấm lại
      */
-    public function reviewAll(Request $request,$assignmentId): JsonResponse
+    public function getMemberGrades(int $id): JsonResponse
+    {
+        $submission = $this->resolveSubmission($id);
+ 
+        if ($submission->submitter_type !== 'group') {
+            return response()->json(['grades' => []]);
+        }
+ 
+        $submission->load(['group.members.user', 'assignment']);
+        $classId = $submission->assignment->class_id;
+ 
+        $grades = $submission->group->members->map(function ($member) use ($submission, $classId) {
+            $grade = StudentGrade::where('student_id', $member->user_id)
+                ->where('group_id', $submission->group_id)
+                ->where('class_id', $classId)
+                ->first();
+ 
+            return [
+                'student_id'   => $member->user_id,
+                'student_name' => $member->user->name ?? '—',
+                'student_code' => $member->user->code ?? '—',
+                'role'         => $member->role,
+                'score'        => $grade?->score,
+                'note'         => $grade?->lecturer_note,
+            ];
+        })->values();
+ 
+        return response()->json(['grades' => $grades]);
+    }
+ 
+    /**
+     * POST /api/lecturer/assignments/{id}/review-all
+     * Duyệt toàn bộ bài nộp đang pending (không chấm điểm từng thành viên)
+     */
+    public function reviewAll(Request $request, $assignmentId): JsonResponse
     {
         $assignment = $this->resolveAssignment($assignmentId);
  
@@ -88,7 +152,9 @@ class SubmissionReviewController extends Controller
                 'reviewed_at' => now(),
             ]);
  
-            $this->sendNotification($submission->load(['assignment', 'reviewer', 'student', 'group.members']));
+            $this->sendNotification(
+                $submission->load(['assignment', 'reviewer', 'student', 'group.members'])
+            );
             $count++;
         }
  
@@ -102,16 +168,13 @@ class SubmissionReviewController extends Controller
  
     /**
      * GET /api/lecturer/assignments/{id}/submissions
-     *
-     * Danh sách bài nộp kèm trạng thái duyệt — có filter.
-     * Query: ?status=pending|approved|rejected&type=group|individual
      */
     public function submissionList(Request $request, $assignmentId): JsonResponse
     {
         $assignment = $this->resolveAssignment($assignmentId);
  
         $query = $assignment->submissions()
-            ->with(['group', 'student', 'reviewer'])
+            ->with(['group.members.user', 'student', 'reviewer'])
             ->latest('submitted_at');
  
         if ($request->status) {
@@ -140,7 +203,7 @@ class SubmissionReviewController extends Controller
  
     // ── Private helpers ───────────────────────────────────
  
-    private function resolveSubmission( $id): Submission
+    private function resolveSubmission($id): Submission
     {
         return Submission::whereHas('assignment.class', fn($q) =>
             $q->where('lecturer_id', auth()->id())
@@ -160,7 +223,6 @@ class SubmissionReviewController extends Controller
         if (empty($emails)) return;
  
         foreach ($emails as $email) {
-            // Tìm tên người nhận
             $name = $submission->submitter_type === 'group'
                 ? ($submission->group?->members->firstWhere('email', $email)?->name ?? 'Sinh viên')
                 : ($submission->student?->name ?? 'Sinh viên');
@@ -171,18 +233,17 @@ class SubmissionReviewController extends Controller
  
     private function formatSubmission(Submission $s): array
     {
-        return [
+        $base = [
             'id'             => $s->id,
             'submitter_type' => $s->submitter_type,
             'submitter_name' => $s->submitter_name,
-            'group'          => $s->group ? ['id' => $s->group->id, 'name' => $s->group->name] : null,
+            'group'          => $s->group  ? ['id' => $s->group->id,  'name' => $s->group->name]  : null,
             'student'        => $s->student ? ['id' => $s->student->id, 'name' => $s->student->name, 'code' => $s->student->code] : null,
             'file_name'      => $s->file_name,
             'file_size'      => $s->file_size_readable,
             'note'           => $s->note,
             'is_late'        => $s->is_late,
             'submitted_at'   => $s->submitted_at,
-            // Review
             'status'         => $s->status,
             'status_label'   => $s->status_label,
             'score'          => $s->score,
@@ -190,5 +251,30 @@ class SubmissionReviewController extends Controller
             'reviewer'       => $s->reviewer?->name,
             'reviewed_at'    => $s->reviewed_at,
         ];
+ 
+        //Thêm điểm từng thành viên nếu là nhóm
+        if ($s->submitter_type === 'group' && $s->group && $s->group->members->isNotEmpty()) {
+            $classId = $s->assignment?->class_id;
+ 
+            $base['member_grades'] = $s->group->members->map(function ($member) use ($s, $classId) {
+                $grade = $classId
+                    ? StudentGrade::where('student_id', $member->user_id)
+                        ->where('group_id', $s->group_id)
+                        ->where('class_id', $classId)
+                        ->first()
+                    : null;
+ 
+                return [
+                    'student_id'   => $member->user_id,
+                    'student_name' => $member->user->name ?? '—',
+                    'student_code' => $member->user->code ?? '—',
+                    'role'         => $member->role,
+                    'score'        => $grade?->score,
+                    'note'         => $grade?->lecturer_note,
+                ];
+            })->values();
+        }
+ 
+        return $base;
     }
 }
