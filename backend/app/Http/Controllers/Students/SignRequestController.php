@@ -114,7 +114,7 @@ class SignRequestController extends Controller
             ->with([
                 'submission.assignment:id,title,deadline,document_category_label',
                 'submission.group:id,name',
-                'submission.group.members:id,name,code',
+                'submission.group.members.user:id,name,code',
                 'submission.student:id,name,code',
                 'lecturer:id,name,email',
                 'logs.actor:id,name,role',

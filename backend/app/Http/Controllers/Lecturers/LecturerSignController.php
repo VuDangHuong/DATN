@@ -48,14 +48,13 @@ class LecturerSignController extends Controller
                 'requester:id,name,code,email',
                 'submission.assignment:id,title,deadline,document_category_label',
                 'submission.group:id,name',
-                'submission.group.members:id,name,code',
+                'submission.group.members.user:id,name,code',
                 'submission.student:id,name,code',
                 'classModel:id,name,code',
                 'logs.actor:id,name,role',
             ])
             ->findOrFail($id);
- 
-        // GV xem → chuyển forwarded sang lecturer_reviewing
+
         if ($signRequest->status === DocumentSignRequest::STATUS_FORWARDED) {
             $signRequest->update(['status' => DocumentSignRequest::STATUS_LECTURER_REVIEWING]);
             $this->signService->log($signRequest->id, Auth::id(), 'lecturer_reviewing');
