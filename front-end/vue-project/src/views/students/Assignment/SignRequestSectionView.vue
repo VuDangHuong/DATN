@@ -76,7 +76,7 @@
 
           <!-- Status badge -->
           <span class="px-2 py-0.5 text-[10px] font-bold rounded-full" :class="statusClass">
-            {{ signRequest.status_label }}
+            {{ signRequest.status }}
           </span>
         </div>
 
@@ -217,7 +217,7 @@ function isStepDone(stepKey) {
   if (!signRequest.value) return false
   const currentIdx = stepOrder.indexOf(signRequest.value.status)
   const stepIdx = stepOrder.indexOf(stepKey)
-  return stepIdx < currentIdx
+  return stepIdx <= currentIdx
 }
 
 function isCurrentStep(stepKey) {
