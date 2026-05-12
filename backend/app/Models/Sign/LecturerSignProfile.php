@@ -9,14 +9,29 @@ class LecturerSignProfile extends Model
     protected $fillable = [
         'lecturer_id',
         'public_key',
+        'encrypted_private_key',
+        'encryption_salt',
+        'encryption_iv',
+        'signing_password_hash',
         'certificate_serial',
-        'certificate_meta',
+        'subject_cn',
+        'issuer_cn',
+        'algorithm',
+        'cert_valid_from',
         'cert_expires_at',
+        'certificate_meta',
         'is_active',
     ];
- 
+     protected $hidden = [
+        // Không expose private key qua API
+        'encrypted_private_key',
+        'encryption_salt',
+        'encryption_iv',
+        'signing_password_hash',
+    ];
     protected $casts = [
         'certificate_meta' => 'array',
+        'cert_valid_from'  => 'datetime',
         'cert_expires_at'  => 'datetime',
         'is_active'        => 'boolean',
     ];
@@ -51,6 +66,10 @@ class LecturerSignProfile extends Model
     public function getIsValidAttribute(): bool
     {
         return $this->is_active && !$this->is_expired;
+    }
+    public function getHasPrivateKeyAttribute(): bool
+    {
+        return !empty($this->encrypted_private_key);
     }
     // ── Relations ─────────────────────────────────────────
     public function lecturer()

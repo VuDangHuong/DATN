@@ -3,6 +3,7 @@
 use App\Http\Controllers\Lecturers\AssignmentController;
 use App\Http\Controllers\Lecturers\ClassController;
 use App\Http\Controllers\Lecturers\LecturerGroupController;
+use App\Http\Controllers\Public\PublicVerificationController;
 use App\Http\Controllers\Shared\ClassStudentController;
 use App\Http\Controllers\Shared\LecturerAssignmentController;
 use App\Http\Controllers\Shared\StudentSubmissionController;
@@ -31,6 +32,11 @@ use App\Http\Controllers\Lecturers\SignProfileController;
 | 1. PUBLIC ROUTES (Không cần đăng nhập)
 |--------------------------------------------------------------------------
 */
+// ── PUBLIC (không cần auth) ─────────────────────────
+Route::prefix('public/verify')->group(function () {
+    Route::get('/{serial}',       [PublicVerificationController::class, 'lookupBySerial']);
+    Route::post('/file',          [PublicVerificationController::class, 'verifyFile']);
+});
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
@@ -157,10 +163,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Admin cũng có thể vào đây nếu cần (role:lecturer,admin)
         Route::prefix('lecturer')->middleware('role:lecturer,admin')->group(function () {
         // Ký số
-        Route::get('/sign-profile/categories',      [SignProfileController::class, 'categories']); // ← trước sign-profile
-        Route::get('/sign-profile',                 [SignProfileController::class, 'show']);
-        Route::post('/sign-profile',                [SignProfileController::class, 'upsert']);
-        Route::delete('/sign-profile',              [SignProfileController::class, 'deactivate']); // ← thêm
+        // Route::get('/sign-profile/categories',      [SignProfileController::class, 'categories']); // ← trước sign-profile
+        // Route::get('/sign-profile',                 [SignProfileController::class, 'show']);
+        // Route::post('/sign-profile',                [SignProfileController::class, 'upsert']);
+        // Route::delete('/sign-profile',              [SignProfileController::class, 'deactivate']); // ← thêm
 
         Route::get('/sign-requests',                [LecturerSignController::class, 'index']);
         Route::get('/sign-requests/{id}',           [LecturerSignController::class, 'show']);
@@ -217,11 +223,17 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/tasks/{taskId}',         [LecturerGroupController::class, 'taskDetail']);
 
          Route::prefix('sign-profile')->group(function () {
-            Route::get('/categories', [SignProfileController::class, 'categories']);   // ← trước /
-            Route::get('/history',    [SignProfileController::class, 'history']);
-            Route::get('/',           [SignProfileController::class, 'show']);
-            Route::post('/',          [SignProfileController::class, 'upsert']);
-            Route::delete('/',        [SignProfileController::class, 'deactivate']);
+            Route::get('/',                  [SignProfileController::class, 'show']);
+            Route::get('/history',           [SignProfileController::class, 'history']);
+            //NEW: Parse cert preview
+            Route::post('/parse-cert',       [SignProfileController::class, 'parseCertificate']);
+            //Generate test key pair
+            Route::post('/generate-test',    [SignProfileController::class, 'generateTest']);
+            //Verify signing password
+            Route::post('/verify-password',  [SignProfileController::class, 'verifySigningPassword']);
+            // Register thay cho upsert cũ (đổi tên rõ ràng hơn)
+            Route::post('/',                 [SignProfileController::class, 'register']);
+            Route::delete('/',               [SignProfileController::class, 'deactivate']);
         });
     });
 
@@ -289,5 +301,4 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('comments/{commentId}',       [TaskCommentController::class, 'update']);  // Sửa bình luận
         Route::delete('comments/{commentId}',    [TaskCommentController::class, 'destroy']); // Xóa bình luận
     });
-
 });

@@ -16,10 +16,11 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\JsonResponse;
 use Dompdf\Dompdf;
 use Dompdf\Options;
-use Illuminate\Support\Facades\Mail;
+use App\Services\PkiService;
+use Illuminate\Support\Facades\Hash;
 class LecturerSignController extends Controller
 {
-    public function __construct(protected DocumentSignService $signService) {}
+    public function __construct(protected DocumentSignService $signService, protected PkiService $pki) {}
 
     /**
      * GET /api/lecturer/sign-requests
@@ -110,27 +111,57 @@ class LecturerSignController extends Controller
      */
     public function sign(Request $request, int $id): JsonResponse
     {
-        // ✅ E2: Check sign-profile tồn tại + đang active
+        // ── 1. Validate signing password ────────────────
+        $request->validate([
+            'signing_password' => 'required|string',
+        ], [
+            'signing_password.required' => 'Vui lòng nhập mật khẩu ký số',
+        ]);
+ 
+        // ── 2. E2: Check sign-profile tồn tại ───────────
         $signProfile = LecturerSignProfile::where('lecturer_id', Auth::id())
             ->where('is_active', true)
             ->first();
  
         if (!$signProfile) {
             return response()->json([
-                'message' => 'Bạn chưa đăng ký chữ ký số. Vui lòng đăng ký trước khi thực hiện ký.',
+                'message'    => 'Bạn chưa đăng ký chữ ký số.',
                 'error_code' => 'NO_SIGN_PROFILE',
             ], 422);
         }
  
-        // ✅ E3: Check expires_at
+        //E3: Check expires_at
         if ($signProfile->cert_expires_at && $signProfile->cert_expires_at->isPast()) {
             return response()->json([
-                'message' => 'Chữ ký số của bạn đã hết hạn. Vui lòng cập nhật chữ ký mới.',
+                'message' => 'Chữ ký số của bạn đã hết hạn.',
                 'error_code' => 'SIGN_PROFILE_EXPIRED',
-                'expired_at' => $signProfile->cert_expires_at,
             ], 422);
         }
  
+        // ── 4. Verify signing password ──────────────────
+        if (!Hash::check($request->signing_password, $signProfile->signing_password_hash)) {
+            return response()->json([
+                'message'    => 'Mật khẩu ký số không chính xác',
+                'error_code' => 'WRONG_SIGNING_PASSWORD',
+            ], 422);
+        }
+ 
+        // ── 5. Decrypt private key ──────────────────────
+        $privateKeyPem = $this->pki->decryptPrivateKey(
+            $signProfile->encrypted_private_key,
+            $signProfile->encryption_salt,
+            $signProfile->encryption_iv,
+            $request->signing_password
+        );
+ 
+        if (!$privateKeyPem) {
+            return response()->json([
+                'message'    => 'Không thể giải mã private key. Có thể mật khẩu sai hoặc dữ liệu bị hỏng.',
+                'error_code' => 'DECRYPT_FAILED',
+            ], 500);
+        }
+ 
+        // ── 6. Load sign request ────────────────────────
         $signRequest = DocumentSignRequest::where('lecturer_id', Auth::id())
             ->whereIn('status', [
                 DocumentSignRequest::STATUS_PENDING,
@@ -139,45 +170,74 @@ class LecturerSignController extends Controller
             ->with(['requester', 'classModel', 'submission'])
             ->findOrFail($id);
  
-        // Generate PDF + SHA-256
+        // ── 7. Generate PDF + Hash + Sign ───────────────
         $signedFilePath = $this->generateSignedPdf($signRequest, $signProfile);
-        $signHash       = hash_file('sha256', Storage::path($signedFilePath));
+        $fileHash       = $this->pki->hashFile(Storage::path($signedFilePath));
  
-        DB::transaction(function () use ($signRequest, $signedFilePath, $signHash, $signProfile) {
+        // ✅ Ký SHA-256 hash của PDF bằng RSA-SHA256
+        try {
+            $signatureB64 = $this->pki->signData($fileHash, $privateKeyPem);
+        } catch (\Exception $e) {
+            \Log::error('Sign failed: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Ký số thất bại: ' . $e->getMessage(),
+                'error_code' => 'SIGN_FAILED',
+            ], 500);
+        }
+ 
+        // ── 8. Verify ngay (sanity check) ───────────────
+        $verified = $this->pki->verifySignature($fileHash, $signatureB64, $signProfile->public_key);
+        if (!$verified) {
+            return response()->json([
+                'message' => 'Verify chữ ký thất bại sau khi ký. Có lỗi hệ thống.',
+                'error_code' => 'VERIFY_FAILED',
+            ], 500);
+        }
+ 
+        // ── 9. Lưu vào DB ───────────────────────────────
+        DB::transaction(function () use ($signRequest, $signedFilePath, $fileHash, $signatureB64, $signProfile) {
             $signRequest->update([
-                'signed_file'      => $signedFilePath,
-                'sign_hash'        => $signHash,
-                'sign_certificate' => $signProfile->certificate_serial,
-                'status'           => DocumentSignRequest::STATUS_SIGNED,
-                'signed_at'        => now(),
+                'signed_file'         => $signedFilePath,
+                'sign_hash'           => $fileHash,
+                'file_hash'           => $fileHash,
+                'signature'           => $signatureB64,
+                'signer_public_key'   => $signProfile->public_key,
+                'signature_algorithm' => 'sha256WithRSAEncryption',
+                'sign_certificate'    => $signProfile->certificate_serial,
+                'status'              => DocumentSignRequest::STATUS_SIGNED,
+                'signed_at'           => now(),
             ]);
  
             $this->signService->log(
                 $signRequest->id,
                 Auth::id(),
                 'signed',
-                'Giảng viên đã ký số tài liệu bằng chữ ký #' . $signProfile->certificate_serial
+                "Ký số bằng cert #{$signProfile->certificate_serial} ({$signProfile->algorithm})"
             );
         });
  
-        // ✅ Gửi email cho SV
+        // Xóa private key khỏi memory
+        unset($privateKeyPem);
+ 
+        // ── 10. Notify SV ───────────────────────────────
         try {
             $signRequest->requester->notify(
-            new SignRequestSigned(
-                $signRequest->fresh(['requester', 'lecturer'])
-            )
-        );
+                new SignRequestSigned(
+                    $signRequest->fresh(['requester', 'lecturer'])
+                )
+            );
         } catch (\Exception $e) {
-            \Log::warning('Send sign-completed email failed: ' . $e->getMessage());
+            \Log::warning('Send notification failed: ' . $e->getMessage());
         }
  
         return response()->json([
-            'message' => 'Đã ký số tài liệu thành công. Sinh viên sẽ nhận thông báo qua email.',
+            'message' => 'Đã ký số tài liệu thành công',
             'data'    => [
                 'id'        => $signRequest->id,
                 'status'    => DocumentSignRequest::STATUS_SIGNED,
                 'signed_at' => now(),
-                'sign_hash' => $signHash,
+                'file_hash'           => $fileHash,
+                'signature_algorithm' => 'sha256WithRSAEncryption',
             ],
         ]);
     }
