@@ -3,6 +3,7 @@ namespace App\Services;
 
 use App\Models\Chat\KnowledgeBase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 class GeminiService
 {
     private string $apiKey;
@@ -38,53 +39,140 @@ class GeminiService
      * Gọi Gemini sinh câu trả lời từ context (RAG)
      */
     public function generateAnswer(string $question, string $context): string
-{
-    // ✅ Nếu không có context → cho AI trả lời tự do
-    if (empty($context) || $context === 'Không có dữ liệu tri thức liên quan.') {
-        $prompt = <<<PROMPT
-Bạn là trợ lý AI thông minh. Hãy trả lời câu hỏi sau một cách chính xác và hữu ích.
-Lưu ý: Nếu câu hỏi yêu cầu thông tin thời gian thực (giá cả hôm nay, thời tiết...) 
-hãy nói rõ bạn không có dữ liệu thời gian thực và gợi ý nguồn tra cứu.
+    {
+        $currentDate = now()->format('d/m/Y');
+        $currentDay  = now()->locale('vi')->isoFormat('dddd');
 
-=== CÂU HỎI ===
-{$question}
-PROMPT;
-    } else {
-        // Có context → trả lời dựa trên KB
-        $prompt = <<<PROMPT
-Bạn là trợ lý AI chăm sóc khách hàng chuyên nghiệp.
-Dựa vào thông tin bên dưới để trả lời câu hỏi. 
-Nếu không tìm thấy thông tin phù hợp, hãy trả lời: "Tôi chưa có thông tin về vấn đề này."
+        // ========================================================
+        // SYSTEM INSTRUCTION - Nhân cách cố định cho chatbot
+        // ========================================================
+        $systemInstruction = <<<SYSTEM
+    Bạn là "TLU Bot" — trợ lý AI tư vấn tuyển sinh của Trường Đại học Thủy lợi (Thuyloi University - TLU).
+    Ngày hôm nay: {$currentDay}, {$currentDate}.
 
-=== THÔNG TIN ===
-{$context}
+    ## TÍNH CÁCH & GIỌNG ĐIỆU
+    - Thân thiện, nhiệt tình như một anh/chị sinh viên năm cuối đang tư vấn cho em khóa dưới.
+    - Trả lời ngắn gọn, dễ hiểu, tránh văn phong hành chính khô khan.
+    - Dùng emoji vừa phải (1-2 emoji/câu trả lời) để tạo sự gần gũi.
+    - Xưng hô: "mình" hoặc "TLU Bot", gọi người hỏi là "bạn".
 
-=== CÂU HỎI ===
-{$question}
-PROMPT;
-    }
+    ## PHẠM VI CHUYÊN MÔN CHÍNH
+    - Tư vấn tuyển sinh: phương thức xét tuyển, điểm chuẩn, ngành đào tạo, hồ sơ nhập học.
+    - Thông tin trường: lịch sử, cơ sở vật chất, chương trình đào tạo, học phí, học bổng.
+    - Đời sống sinh viên: KTX, CLB, hoạt động ngoại khóa, thủ tục hành chính.
+    - Quy chế: thi cử, đăng ký học, tốt nghiệp, kỷ luật.
 
-    $models = [
-        'gemini-2.0-flash-lite',
-        'gemini-2.0-flash-001',
-        'gemini-2.5-flash',
-    ];
+    ## QUY TẮC TRẢ LỜI
+    1. Ưu tiên dùng dữ liệu trong [THÔNG TIN TRI THỨC] nếu có.
+    2. Nếu dữ liệu tri thức không đủ chi tiết → bổ sung kiến thức chung hợp lý, nhưng ghi chú rõ: "📌 Thông tin này mang tính tham khảo, bạn nên liên hệ Phòng Đào tạo/Tuyển sinh để xác nhận chính xác nhé!"
+    3. Nếu câu hỏi KHÔNG liên quan đến trường/tuyển sinh (tin tức, thời tiết, kiến thức chung...):
+    → Vẫn trả lời hữu ích dựa trên kiến thức của bạn.
+    → Với thông tin thời gian thực (giá vàng, thời tiết, tỷ giá, kết quả bóng đá...):
+        nói rõ bạn không cập nhật real-time và gợi ý nguồn tra cứu cụ thể.
+    4. KHÔNG BAO GIỜ bịa số liệu cụ thể (điểm chuẩn, học phí, SĐT) nếu không có trong dữ liệu.
+    5. Khi trả lời về điểm chuẩn/học phí → luôn nhắc "số liệu có thể thay đổi theo năm" và hướng dẫn xem website chính thức: tlu.edu.vn
+    6. Nếu hoàn toàn không biết → trả lời thật: "Mình chưa có thông tin về vấn đề này. Bạn có thể liên hệ trực tiếp qua hotline tuyển sinh hoặc website tlu.edu.vn để được hỗ trợ nhé! 😊"
 
-    foreach ($models as $model) {
-        $response = Http::post("{$this->baseUrl}/models/{$model}:generateContent?key={$this->apiKey}", [
-            'contents' => [['parts' => [['text' => $prompt]]]],
-        ]);
+    ## ĐỊNH DẠNG
+    - Dùng markdown nhẹ: **in đậm** cho keyword, bullet list khi liệt kê ≥3 mục.
+    - Mỗi câu trả lời nên kết thúc bằng 1 câu mời hỏi thêm hoặc gợi ý liên quan.
+    - Giới hạn trả lời trong 200-400 từ, trừ khi câu hỏi cần giải thích dài.
+    SYSTEM;
 
-        if ($response->successful()) {
-            return $response->json('candidates.0.content.parts.0.text', 'Không thể tạo câu trả lời.');
+        // ========================================================
+        // USER PROMPT - Thay đổi theo có/không có context
+        // ========================================================
+        if (empty($context) || $context === 'Không có dữ liệu tri thức liên quan.') {
+            // Không có context từ Knowledge Base
+            $userPrompt = <<<PROMPT
+    [THÔNG TIN TRI THỨC]
+    Không tìm thấy dữ liệu liên quan trong cơ sở tri thức.
+
+    [CÂU HỎI CỦA NGƯỜI DÙNG]
+    {$question}
+
+    Hãy trả lời dựa trên kiến thức chung của bạn. 
+    - Nếu liên quan đến TLU: trả lời những gì bạn biết + khuyên liên hệ trường để xác nhận.
+    - Nếu là câu hỏi chung (tin tức, kiến thức, giải trí...): trả lời bình thường như một AI assistant thông minh.
+    - Nếu là thông tin thời gian thực: nói rõ giới hạn và gợi ý nguồn tra cứu.
+    PROMPT;
+        } else {
+            // Có context từ Knowledge Base
+            $userPrompt = <<<PROMPT
+    [THÔNG TIN TRI THỨC]
+    {$context}
+
+    [CÂU HỎI CỦA NGƯỜI DÙNG]
+    {$question}
+
+    Trả lời dựa trên [THÔNG TIN TRI THỨC] ở trên. 
+    Nếu thông tin chưa đủ, bạn có thể bổ sung kiến thức hợp lý nhưng phải ghi chú rõ phần nào là từ dữ liệu, phần nào là tham khảo thêm.
+    PROMPT;
         }
 
-        if ($response->status() === 429) continue;
-        break;
-    }
+        // ========================================================
+        // GỌI GEMINI API - Với system instruction tách riêng
+        // ========================================================
+        $models = [
+            'gemini-2.0-flash-lite',
+            'gemini-2.0-flash-001',
+            'gemini-2.5-flash',
+        ];
 
-    return 'Không thể tạo câu trả lời.';
-}
+        foreach ($models as $model) {
+            $response = Http::timeout(30)->post(
+                "{$this->baseUrl}/models/{$model}:generateContent?key={$this->apiKey}",
+                [
+                    // System instruction → giữ nhân cách ổn định
+                    'system_instruction' => [
+                        'parts' => [['text' => $systemInstruction]],
+                    ],
+                    // User message
+                    'contents' => [
+                        [
+                            'role'  => 'user',
+                            'parts' => [['text' => $userPrompt]],
+                        ],
+                    ],
+                    // Tham số sinh text
+                    'generationConfig' => [
+                        'temperature'     => 0.7,   // Cân bằng sáng tạo & chính xác
+                        'topP'            => 0.9,
+                        'topK'            => 40,
+                        'maxOutputTokens' => 1024,
+                    ],
+                    // Chặn nội dung không phù hợp
+                    'safetySettings' => [
+                        ['category' => 'HARM_CATEGORY_HARASSMENT',         'threshold' => 'BLOCK_ONLY_HIGH'],
+                        ['category' => 'HARM_CATEGORY_HATE_SPEECH',        'threshold' => 'BLOCK_ONLY_HIGH'],
+                        ['category' => 'HARM_CATEGORY_SEXUALLY_EXPLICIT',  'threshold' => 'BLOCK_ONLY_HIGH'],
+                        ['category' => 'HARM_CATEGORY_DANGEROUS_CONTENT',  'threshold' => 'BLOCK_ONLY_HIGH'],
+                    ],
+                ]
+            );
+
+            if ($response->successful()) {
+                $answer = $response->json('candidates.0.content.parts.0.text');
+                return $answer ?: 'Xin lỗi, mình chưa thể trả lời lúc này. Bạn thử hỏi lại nhé! 😊';
+            }
+
+            // 429 = rate limit → thử model tiếp theo
+            if ($response->status() === 429) {
+                Log::warning("Gemini rate limit on model: {$model}");
+                continue;
+            }
+
+            // Lỗi khác → log và dừng
+            Log::error("Gemini API error", [
+                'model'  => $model,
+                'status' => $response->status(),
+                'body'   => $response->body(),
+            ]);
+            break;
+        }
+
+        return 'Hệ thống đang bận, bạn vui lòng thử lại sau ít phút nhé! 🙏';
+    }
     /**
      * Cosine similarity — đo độ tương đồng giữa 2 vector
      */
@@ -163,14 +251,14 @@ PROMPT;
                 'contents' => [
                     [
                         'parts' => [
-                            // ✅ Phần file/ảnh base64
+                            //Phần file/ảnh base64
                             [
                                 'inline_data' => [
                                     'mime_type' => $mimeType,
                                     'data' => $fileBase64,
                                 ],
                             ],
-                            // ✅ Phần câu hỏi text
+                            // Phần câu hỏi text
                             ['text' => $prompt],
                         ],
                     ]
@@ -202,21 +290,21 @@ PROMPT;
     public function getSupportedMimeType(string $extension): ?string
     {
         return match (strtolower($extension)) {
-            // ✅ Ảnh
+            //Ảnh
             'jpg', 'jpeg' => 'image/jpeg',
             'png' => 'image/png',
             'gif' => 'image/gif',
             'webp' => 'image/webp',
 
-            // ✅ PDF
+            // PDF
             'pdf' => 'application/pdf',
 
-            // ✅ Excel
+            // Excel
             'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'xls' => 'application/vnd.ms-excel',
             'csv' => 'text/csv',
 
-            // ✅ Word
+            // Word
             'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
             'doc' => 'application/msword',
 
