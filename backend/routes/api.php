@@ -140,15 +140,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // Route::post('chatbot/suggested-questions', [AdminChatbotController::class, 'suggestedQuestions']);
 
         // Xem tất cả yêu cầu + filter theo status
-        Route::get('/sign-requests/stats',          [AdminSignController::class, 'stats']);    // ← trước {id}
-        Route::get('/sign-requests', [AdminSignController::class, 'index']);
-        Route::get('/sign-requests/{id}', [AdminSignController::class, 'show']);
-        // Duyệt & chuyển cho GV
-        Route::post('/sign-requests/{id}/forward', [AdminSignController::class, 'forward']);
-        // Từ chối
-        Route::post('/sign-requests/{id}/reject', [AdminSignController::class, 'reject']);
-        // Phát hành file đã ký về cho SV
-        Route::post('/sign-requests/{id}/complete', [AdminSignController::class, 'complete']);
+        // Route::get('/sign-requests/stats',          [AdminSignController::class, 'stats']);    // ← trước {id}
+        // Route::get('/sign-requests', [AdminSignController::class, 'index']);
+        // Route::get('/sign-requests/{id}', [AdminSignController::class, 'show']);
+        // // Duyệt & chuyển cho GV
+        // Route::post('/sign-requests/{id}/forward', [AdminSignController::class, 'forward']);
+        // // Từ chối
+        // Route::post('/sign-requests/{id}/reject', [AdminSignController::class, 'reject']);
+        // // Phát hành file đã ký về cho SV
+        // Route::post('/sign-requests/{id}/complete', [AdminSignController::class, 'complete']);
     });
 
     // =================================================================
@@ -179,7 +179,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::delete('/{studentId}',[ClassStudentController::class, 'destroy']);
         }); // ← đóng students ở đây
 
-        // ✅ Assignments nằm NGANG cấp với students, không lồng bên trong
+        // Assignments nằm NGANG cấp với students, không lồng bên trong
         Route::prefix('classes/{classId}/assignments')->group(function () {
             Route::get('/',  [LecturerAssignmentController::class, 'index']);
             Route::post('/', [LecturerAssignmentController::class, 'store']);
@@ -215,6 +215,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/groups/{groupId}/members', [LecturerGroupController::class, 'members']);
         Route::get('/groups/{groupId}/tasks', [LecturerGroupController::class, 'tasks']);
         Route::get('/tasks/{taskId}',         [LecturerGroupController::class, 'taskDetail']);
+
+         Route::prefix('sign-profile')->group(function () {
+            Route::get('/categories', [SignProfileController::class, 'categories']);   // ← trước /
+            Route::get('/history',    [SignProfileController::class, 'history']);
+            Route::get('/',           [SignProfileController::class, 'show']);
+            Route::post('/',          [SignProfileController::class, 'upsert']);
+            Route::delete('/',        [SignProfileController::class, 'deactivate']);
+        });
     });
 
     // Student routes

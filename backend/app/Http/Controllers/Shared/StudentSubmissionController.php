@@ -8,6 +8,7 @@ use App\Models\Evaluation\Assignment;
 use App\Models\Evaluation\Submission;
 use App\Models\Evaluation\Submissionhistory;
 use App\Models\Sign\DocumentSignRequest;
+use App\Notifications\SignRequestCreated;
 use App\Services\DocumentSignService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -65,22 +66,21 @@ class StudentSubmissionController extends Controller
     public function submitIndividual(Request $request, int $id): JsonResponse
     {
         $assignment = $this->resolveStudentAssignment($id);
- 
+    
         if (!in_array($assignment->submission_type, ['individual', 'both'])) {
             return response()->json(['message' => 'Đợt nộp này không cho phép nộp cá nhân'], 422);
         }
-
-        // SV có thể tự chọn category (tuỳ chọn), hoặc lấy từ assignment
+    
         $request->validate([
             'document_category' => [
                 'nullable', 'string',
                 'in:' . implode(',', array_keys(Assignment::DOCUMENT_CATEGORIES)),
             ],
         ]);
-
-        $file = $this->validateAndStoreFile($request, $assignment);
+    
+        $file   = $this->validateAndStoreFile($request, $assignment);
         $isLate = now()->gt($assignment->deadline);
- 
+    
         $submission = Submission::updateOrCreate(
             ['assignment_id' => $id, 'student_id' => auth()->id()],
             [
@@ -99,8 +99,7 @@ class StudentSubmissionController extends Controller
                 'reviewed_at'    => null,
             ]
         );
- 
-        // Ghi lịch sử
+    
         Submissionhistory::create([
             'submission_id' => $submission->id,
             'submitted_by'  => auth()->id(),
@@ -111,55 +110,54 @@ class StudentSubmissionController extends Controller
             'is_late'       => $isLate,
             'submitted_at'  => now(),
         ]);
-
-        //Ưu tiên category SV chọn, nếu không thì lấy từ assignment
-        $signRequest = null;
-        $category = $request->document_category
-            ?: ($assignment->requires_signing ? $assignment->document_category : null);
-
-        if ($category) {
-            $categoryLabel = Assignment::DOCUMENT_CATEGORIES[$category] ?? $category;
-            $signRequest   = $this->createSignRequestIfNeeded(
-                $submission, $assignment, $category, $categoryLabel
-            );
-        }
-
+    
+        // ✅ Chỉ gọi 1 lần
+        $signRequest = $this->createSignRequestIfNeeded(
+            $submission,
+            $assignment,
+            $request->document_category,
+            auth()->id() // ← requester_id = chính SV nộp
+        );
+    
         return response()->json([
-            'message'    => $isLate ? 'Nộp bài thành công (trễ hạn)' : 'Nộp bài thành công',
-            'submission' => $this->formatMySubmission($submission),
-            'is_late'    => $isLate,
+            'message'      => $isLate ? 'Nộp bài thành công (trễ hạn)' : 'Nộp bài thành công',
+            'submission'   => $this->formatMySubmission($submission),
+            'is_late'      => $isLate,
             'sign_request' => $signRequest ? $this->formatSignRequest($signRequest) : null,
         ]);
     }
- 
-    // POST /api/student/assignments/{id}/submit-group  (nhóm — chỉ leader)
+    
+    /**
+     * POST /api/student/assignments/{id}/submit-group
+     * Nộp bài nhóm (chỉ leader)
+     */
     public function submitGroup(Request $request, int $id): JsonResponse
     {
         $assignment = $this->resolveStudentAssignment($id);
- 
+    
         if (!in_array($assignment->submission_type, ['group', 'both'])) {
             return response()->json(['message' => 'Đợt nộp này không cho phép nộp theo nhóm'], 422);
         }
- 
+    
         $myGroup = auth()->user()->groups()
             ->where('class_id', $assignment->class_id)
             ->where('leader_id', auth()->id())
             ->first();
- 
+    
         if (!$myGroup) {
             return response()->json(['message' => 'Bạn không phải trưởng nhóm hoặc chưa có nhóm'], 403);
         }
-
+    
         $request->validate([
             'document_category' => [
                 'nullable', 'string',
                 'in:' . implode(',', array_keys(Assignment::DOCUMENT_CATEGORIES)),
             ],
         ]);
-
-        $file = $this->validateAndStoreFile($request, $assignment);
+    
+        $file   = $this->validateAndStoreFile($request, $assignment);
         $isLate = now()->gt($assignment->deadline);
- 
+    
         $submission = Submission::updateOrCreate(
             ['assignment_id' => $id, 'group_id' => $myGroup->id],
             [
@@ -178,7 +176,7 @@ class StudentSubmissionController extends Controller
                 'reviewed_at'    => null,
             ]
         );
- 
+    
         Submissionhistory::create([
             'submission_id' => $submission->id,
             'submitted_by'  => auth()->id(),
@@ -189,23 +187,19 @@ class StudentSubmissionController extends Controller
             'is_late'       => $isLate,
             'submitted_at'  => now(),
         ]);
-
-        //Ưu tiên category SV chọn, nếu không thì lấy từ assignment
-        $signRequest = null;
-        $category = $request->document_category
-            ?: ($assignment->requires_signing ? $assignment->document_category : null);
-
-        if ($category) {
-            $categoryLabel = Assignment::DOCUMENT_CATEGORIES[$category] ?? $category;
-            $signRequest   = $this->createSignRequestIfNeeded(
-                $submission, $assignment, $category, $categoryLabel
-            );
-        }
-
+    
+        // ✅ requester là leader (auth()->id() đã verify ở trên)
+        $signRequest = $this->createSignRequestIfNeeded(
+            $submission,
+            $assignment,
+            $request->document_category,
+            auth()->id()
+        );
+    
         return response()->json([
-            'message'    => $isLate ? 'Nộp bài nhóm thành công (trễ hạn)' : 'Nộp bài nhóm thành công',
-            'submission' => $this->formatMySubmission($submission),
-            'is_late'    => $isLate,
+            'message'      => $isLate ? 'Nộp bài nhóm thành công (trễ hạn)' : 'Nộp bài nhóm thành công',
+            'submission'   => $this->formatMySubmission($submission),
+            'is_late'      => $isLate,
             'sign_request' => $signRequest ? $this->formatSignRequest($signRequest) : null,
         ]);
     }
@@ -312,30 +306,85 @@ class StudentSubmissionController extends Controller
     private function createSignRequestIfNeeded(
         Submission $submission,
         Assignment $assignment,
-        string $category,
-        string $categoryLabel
-    ): ?DocumentSignRequest {
-        DocumentSignRequest::where('submission_id', $submission->id)
-            ->whereIn('status', [
-                DocumentSignRequest::STATUS_PENDING,
-                DocumentSignRequest::STATUS_ADMIN_REVIEWING,
-            ])
-            ->delete();
-        $lecturerId = $assignment->class->lecturer_id ?? null;
+        ?string $userCategory = null,
+        int $requesterId = null
+    ): ?DocumentSignRequest
+    {
+        // Resolve category: ưu tiên SV chọn > từ assignment
+        $category = $userCategory
+            ?: ($assignment->requires_signing ? $assignment->document_category : null);
+    
+        // Không có category → không tạo SignRequest
+        if (!$category) return null;
+    
+        // Validate lecturer
+        $lecturerId = $assignment->class->lecturer_id;
+        if (!$lecturerId) {
+            \Log::warning("Assignment #{$assignment->id} không có lecturer_id");
+            return null;
+        }
+    
+        $categoryLabel = Assignment::DOCUMENT_CATEGORIES[$category] ?? $category;
+    
+        // Check đã có request cho submission này chưa
+        $existing = DocumentSignRequest::where('submission_id', $submission->id)->first();
+        if ($existing) {
+            // Reset status nếu SV nộp lại
+            $existing->update([
+                'status'        => DocumentSignRequest::STATUS_PENDING,
+                'reject_reason' => null,
+                'signed_at'     => null,
+                'signed_file'   => null,
+                'sign_hash'     => null,
+                'original_file' => $submission->file_path,
+                'document_category'       => $category,
+                'document_category_label' => $categoryLabel,
+            ]);
+    
+            app(DocumentSignService::class)->log(
+                $existing->id,
+                $requesterId ?? auth()->id(),
+                'resubmitted',
+                'Sinh viên nộp lại tài liệu'
+            );
+    
+            return $existing;
+        }
+    
+        // Tạo mới
         $signRequest = DocumentSignRequest::create([
             'submission_id'           => $submission->id,
-            'requester_id'            => auth()->id(),
-            'lecturer_id'             => $lecturerId,
+            'requester_id'            => $requesterId ?? auth()->id(),
             'class_id'                => $assignment->class_id,
+            'lecturer_id'             => $lecturerId,
             'document_type'           => pathinfo($submission->file_name, PATHINFO_EXTENSION),
             'document_category'       => $category,
             'document_category_label' => $categoryLabel,
             'original_file'           => $submission->file_path,
             'status'                  => DocumentSignRequest::STATUS_PENDING,
         ]);
-
-        $this->signService->log($signRequest->id, auth()->id(), 'created');
-
+    
+        app(DocumentSignService::class)->log(
+            $signRequest->id,
+            $requesterId ?? auth()->id(),
+            'created',
+            'Sinh viên gửi yêu cầu ký số'
+        );
+    
+        // ✅ Notify GV — vừa email vừa lưu DB
+        try {
+            $lecturer = $signRequest->lecturer;
+            if ($lecturer) {
+                $lecturer->notify(
+                    new SignRequestCreated(
+                        $signRequest->fresh(['requester', 'lecturer', 'classModel', 'submission'])
+                    )
+                );
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Send sign-request-created notification failed: ' . $e->getMessage());
+        }
+    
         return $signRequest;
     }
 

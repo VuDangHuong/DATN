@@ -130,7 +130,7 @@ class SignRequestController extends Controller
     public function download(int $id)
     {
         $signRequest = DocumentSignRequest::where('requester_id', Auth::id())
-            ->where('status', DocumentSignRequest::STATUS_COMPLETED)
+            ->where('status', DocumentSignRequest::STATUS_SIGNED)
             ->findOrFail($id);
 
         if (!$signRequest->signed_file || !Storage::exists($signRequest->signed_file)) {
