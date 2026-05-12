@@ -12,22 +12,25 @@ export const signProfileApi = {
     return axiosClient.get('/lecturer/sign-profile/history')
   },
 
-  // GET danh sách nhà cung cấp + loại chứng thư
-  categories() {
-    return axiosClient.get('/lecturer/sign-profile/categories')
-  },
-
   // POST đăng ký / cập nhật chữ ký (multipart cho upload file)
-  upsert(formData) {
+  parseCertificate(formData) {
+    return axiosClient.post('/lecturer/sign-profile/parse-cert', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+  },
+  generateTest(payload) {
+    return axiosClient.post('/lecturer/sign-profile/generate-test', payload)
+  },
+  register(formData) {
     return axiosClient.post('/lecturer/sign-profile', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
   },
 
   // DELETE vô hiệu hóa chữ ký
-  deactivate(currentPassword) {
+  deactivate(accountPassword) {
     return axiosClient.delete('/lecturer/sign-profile', {
-      data: { current_password: currentPassword },
+      data: { account_password: accountPassword },
     })
   },
 }

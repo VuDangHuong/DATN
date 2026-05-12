@@ -1,7 +1,4 @@
-<!--
-src/components/lecturer/sign/LecturerSignConfirmForm.vue
-Form xác nhận ký - check sign-profile trước khi cho phép ký
--->
+<!-- src/components/lecturer/sign/LecturerSignConfirmForm.vue -->
 <template>
   <div class="p-6">
     <h3 class="text-lg font-bold text-stone-800 mb-1">🔏 Xác nhận ký số tài liệu</h3>
@@ -9,7 +6,7 @@ Form xác nhận ký - check sign-profile trước khi cho phép ký
       {{ request?.requester?.name }} - {{ request?.document_category_label }}
     </p>
 
-    <!-- ✅ E2: Chưa có sign-profile -->
+    <!-- E2: Chưa có sign-profile -->
     <div
       v-if="!signProfile && !checkingProfile"
       class="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl"
@@ -30,12 +27,10 @@ Form xác nhận ký - check sign-profile trước khi cho phép ký
         </svg>
         <div class="flex-1">
           <p class="text-sm font-semibold text-amber-800 mb-1">Chưa đăng ký chữ ký số</p>
-          <p class="text-xs text-amber-700 mb-3">
-            Bạn cần đăng ký chữ ký số cá nhân trước khi có thể ký tài liệu.
-          </p>
+          <p class="text-xs text-amber-700 mb-3">Bạn cần đăng ký chữ ký số trước khi ký.</p>
           <router-link
             to="/lecturer/sign-profile"
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 text-white rounded-lg text-xs font-medium hover:bg-amber-700 transition"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 text-white rounded-lg text-xs font-medium hover:bg-amber-700"
           >
             Đăng ký ngay →
           </router-link>
@@ -43,42 +38,20 @@ Form xác nhận ký - check sign-profile trước khi cho phép ký
       </div>
     </div>
 
-    <!-- ✅ E3: Chữ ký hết hạn -->
+    <!-- E3: Hết hạn -->
     <div v-else-if="isExpired" class="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl">
-      <div class="flex items-start gap-3">
-        <svg
-          class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-        <div class="flex-1">
-          <p class="text-sm font-semibold text-red-800 mb-1">Chữ ký số đã hết hạn</p>
-          <p class="text-xs text-red-700 mb-3">
-            Chứng thư của bạn đã hết hạn ngày
-            <strong>{{ formatDate(signProfile?.cert_expires_at) }}</strong
-            >. Vui lòng cập nhật chữ ký số mới.
-          </p>
-          <router-link
-            to="/lecturer/sign-profile"
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-medium hover:bg-red-700 transition"
-          >
-            Cập nhật chữ ký →
-          </router-link>
-        </div>
-      </div>
+      <p class="text-sm font-semibold text-red-800 mb-1">Chữ ký số đã hết hạn</p>
+      <router-link
+        to="/lecturer/sign-profile"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-medium hover:bg-red-700"
+      >
+        Cập nhật chữ ký →
+      </router-link>
     </div>
 
-    <!-- ✅ Hợp lệ → form xác nhận -->
+    <!-- Hợp lệ → form -->
     <template v-else-if="signProfile && !isExpired">
-      <!-- Info chữ ký số -->
+      <!-- Info chữ ký -->
       <div class="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
         <div class="flex items-center gap-2 mb-1">
           <svg class="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
@@ -91,8 +64,34 @@ Form xác nhận ký - check sign-profile trước khi cho phép ký
           <span class="text-xs font-semibold text-emerald-800">Chữ ký số hợp lệ</span>
         </div>
         <p class="text-[11px] text-emerald-700">
-          Serial: <span class="font-mono">{{ signProfile.certificate_serial }}</span>
-          <span class="ml-2">· Hết hạn: {{ formatDate(signProfile.cert_expires_at) }}</span>
+          <strong>{{ signProfile.subject_cn }}</strong>
+          <span class="ml-2"
+            >· Serial:
+            <span class="font-mono"
+              >{{ signProfile.certificate_serial?.substring(0, 16) }}...</span
+            ></span
+          >
+        </p>
+        <p class="text-[10px] text-emerald-600 mt-0.5">
+          Thuật toán: {{ signProfile.algorithm }} · Hết hạn:
+          {{ formatDate(signProfile.cert_expires_at) }}
+        </p>
+      </div>
+
+      <!-- Nhập mật khẩu ký -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-stone-700 mb-1">
+          Mật khẩu ký số <span class="text-red-500">*</span>
+        </label>
+        <input
+          v-model="signingPassword"
+          type="password"
+          placeholder="••••••••"
+          @keyup.enter="handleSubmit"
+          class="w-full px-4 py-2.5 border border-stone-200 rounded-xl text-sm focus:ring-2 focus:ring-teal-500 outline-none"
+        />
+        <p class="text-xs text-stone-400 mt-1">
+          Mật khẩu này dùng để giải mã private key của bạn — không phải mật khẩu đăng nhập.
         </p>
       </div>
 
@@ -104,27 +103,31 @@ Form xác nhận ký - check sign-profile trước khi cho phép ký
           class="mt-0.5 rounded text-teal-600 focus:ring-teal-500"
         />
         <span class="text-sm text-stone-700">
-          Tôi xác nhận đã xem xét nội dung tài liệu và đồng ý ký số bằng chứng thư của mình. Hệ
-          thống sẽ tự động tạo phiếu xác nhận và gửi cho sinh viên.
+          Tôi xác nhận đã xem xét tài liệu và đồng ý ký số bằng RSA-SHA256.
         </span>
       </label>
 
       <div
-        class="flex items-center gap-2 text-xs text-stone-400 bg-stone-50 rounded-xl px-3 py-2 mb-4"
+        class="flex items-center gap-2 text-xs text-stone-500 bg-blue-50 rounded-xl px-3 py-2 mb-4"
       >
-        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          class="w-4 h-4 text-blue-600 flex-shrink-0"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path
             stroke-linecap="round"
             stroke-linejoin="round"
             stroke-width="2"
-            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
           />
         </svg>
-        Sinh viên sẽ nhận email thông báo và mã xác thực SHA-256
+        Hash file → ký bằng RSA-SHA256 → SV verify được tại trang public
       </div>
     </template>
 
-    <!-- Loading check profile -->
+    <!-- Loading -->
     <div v-else class="flex items-center justify-center py-8 text-stone-400 text-sm">
       <div
         class="w-5 h-5 border-2 border-stone-300 border-t-stone-600 rounded-full animate-spin mr-2"
@@ -170,6 +173,7 @@ const toast = useToastStore()
 const signProfile = ref(null)
 const checkingProfile = ref(true)
 const confirmed = ref(false)
+const signingPassword = ref('')
 const submitting = ref(false)
 
 const isExpired = computed(() => {
@@ -177,7 +181,10 @@ const isExpired = computed(() => {
   return new Date(signProfile.value.cert_expires_at) < new Date()
 })
 
-const canSign = computed(() => signProfile.value && !isExpired.value && confirmed.value)
+const canSign = computed(
+  () =>
+    signProfile.value && !isExpired.value && confirmed.value && signingPassword.value.length > 0,
+)
 
 onMounted(loadSignProfile)
 
@@ -185,13 +192,10 @@ async function loadSignProfile() {
   checkingProfile.value = true
   try {
     const { data } = await axiosClient.get('/lecturer/sign-profile')
-    signProfile.value = data.profile ?? data.data ?? data
+    signProfile.value = data.profile
   } catch (e) {
-    if (e.response?.status === 404) {
-      signProfile.value = null // Chưa đăng ký
-    } else {
-      toast.error('Không thể tải thông tin chữ ký số')
-    }
+    if (e.response?.status === 404) signProfile.value = null
+    else toast.error('Không thể tải chữ ký số')
   } finally {
     checkingProfile.value = false
   }
@@ -199,29 +203,30 @@ async function loadSignProfile() {
 
 async function handleSubmit() {
   if (!canSign.value) return
+  if (!props.request?.id) {
+    toast.error('Thiếu thông tin yêu cầu')
+    return
+  }
   submitting.value = true
   try {
-    const { data } = await axiosClient.post(`/lecturer/sign-requests/${props.request.id}/sign`)
-    toast.success(data.message ?? 'Đã ký số tài liệu thành công')
+    const { data } = await axiosClient.post(`/lecturer/sign-requests/${props.request.id}/sign`, {
+      signing_password: signingPassword.value,
+    })
+    toast.success(data.message ?? 'Đã ký số thành công')
     emit('success', data.data)
   } catch (e) {
-    // ✅ Log đầy đủ để debug
-    console.error('Sign error:', {
-      status: e.response?.status,
-      data: e.response?.data,
-      message: e.message,
-    })
-
-    const errCode = e.response?.data?.error_code
-    if (errCode === 'NO_SIGN_PROFILE') {
-      toast.error('Bạn chưa đăng ký chữ ký số')
+    const code = e.response?.data?.error_code
+    if (code === 'WRONG_SIGNING_PASSWORD') {
+      toast.error('Mật khẩu ký số không chính xác')
+      signingPassword.value = ''
+    } else if (code === 'NO_SIGN_PROFILE') {
+      toast.error('Chưa đăng ký chữ ký số')
       signProfile.value = null
-    } else if (errCode === 'SIGN_PROFILE_EXPIRED') {
+    } else if (code === 'SIGN_PROFILE_EXPIRED') {
       toast.error('Chữ ký số đã hết hạn')
       await loadSignProfile()
     } else {
-      // ✅ Hiện cụ thể lỗi server
-      toast.error(e.response?.data?.message ?? `Lỗi ${e.response?.status}: ${e.message}`)
+      toast.error(e.response?.data?.message ?? 'Có lỗi xảy ra')
     }
   } finally {
     submitting.value = false
@@ -229,7 +234,7 @@ async function handleSubmit() {
 }
 
 function formatDate(d) {
-  if (!d) return 'Không xác định'
+  if (!d) return '—'
   return new Date(d).toLocaleDateString('vi-VN')
 }
 </script>

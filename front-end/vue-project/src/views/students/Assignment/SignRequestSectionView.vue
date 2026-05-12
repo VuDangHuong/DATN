@@ -138,18 +138,15 @@
           </button>
         </div>
 
-        <!-- ✅ Nút download khi signed (không cần đợi Admin nữa) -->
-        <div v-if="signRequest.status === 'signed'" class="mt-2">
+        <!-- Khi đã ký xong -->
+        <div v-if="signRequest.status === 'signed'" class="mt-2 space-y-2">
+          <!-- Nút download -->
           <button
             @click="handleDownload"
             :disabled="downloading"
-            class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700 disabled:opacity-50 transition"
+            class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700 disabled:opacity-50"
           >
-            <div
-              v-if="downloading"
-              class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"
-            />
-            <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -157,8 +154,31 @@
                 d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
               />
             </svg>
-            {{ downloading ? 'Đang tải...' : 'Tải tài liệu đã ký' }}
+            Tải tài liệu đã ký
           </button>
+
+          <!-- ✅ Box thông tin xác thực -->
+          <div
+            v-if="signRequest.sign_certificate"
+            class="p-2.5 bg-blue-50 border border-blue-200 rounded-lg"
+          >
+            <div class="flex items-center justify-between gap-2 mb-1">
+              <span class="text-[10px] font-bold text-blue-700 uppercase">🔍 Serial chứng thư</span>
+              <button @click="copySerial" class="text-[10px] text-blue-600 hover:underline">
+                📋 Copy
+              </button>
+            </div>
+            <p class="text-[10px] font-mono text-blue-800 break-all leading-relaxed">
+              {{ signRequest.sign_certificate }}
+            </p>
+            <a
+              href="/verify"
+              target="_blank"
+              class="block mt-1.5 text-[10px] text-blue-600 hover:underline"
+            >
+              → Xác thực file đã ký tại trang công khai
+            </a>
+          </div>
         </div>
 
         <!-- Refresh thủ công -->

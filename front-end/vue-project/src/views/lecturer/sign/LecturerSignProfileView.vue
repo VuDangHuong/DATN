@@ -258,9 +258,9 @@
             Bạn sẽ không thể ký tài liệu cho đến khi đăng ký chữ ký mới.
           </p>
           <div class="mb-4">
-            <label class="block text-sm font-medium text-stone-700 mb-1"
-              >Nhập mật khẩu để xác nhận</label
-            >
+            <label class="block text-sm font-medium text-stone-700 mb-1">
+              Nhập mật khẩu đăng nhập để xác nhận
+            </label>
             <input
               v-model="deactivatePassword"
               type="password"
@@ -307,7 +307,7 @@ const showDeactivateModal = ref(false)
 const deactivatePassword = ref('')
 
 onMounted(async () => {
-  await Promise.all([store.fetchProfile(), store.fetchHistory(), store.fetchCategories()])
+  await Promise.all([store.fetchProfile(), store.fetchHistory()])
 })
 
 function onRegisterSuccess() {
@@ -321,6 +321,7 @@ function confirmDeactivate() {
 }
 
 async function handleDeactivate() {
+  // ✅ Truyền plain string, không phải object
   const result = await store.deactivate(deactivatePassword.value)
   if (result.success) {
     toast.success('Đã vô hiệu hóa chữ ký số')

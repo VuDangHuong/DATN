@@ -7,7 +7,6 @@ export const useSignProfileStore = defineStore('signProfile', () => {
   // State
   const profile = ref(null) // chữ ký active hiện tại
   const history = ref([]) // lịch sử các chữ ký
-  const categories = ref({ providers: [], cert_types: [] })
   const loading = ref(false)
   const submitting = ref(false)
 
@@ -45,16 +44,6 @@ export const useSignProfileStore = defineStore('signProfile', () => {
     }
   }
 
-  async function fetchCategories() {
-    if (categories.value.providers.length) return // cache
-    try {
-      const { data } = await signProfileApi.categories()
-      categories.value = data
-    } catch {
-      // ignore
-    }
-  }
-
   async function register(formData) {
     submitting.value = true
     try {
@@ -73,10 +62,11 @@ export const useSignProfileStore = defineStore('signProfile', () => {
     }
   }
 
-  async function deactivate(currentPassword) {
+  // src/stores/lecturer/signProfileStore.js
+  async function deactivate(accountPassword) {
     submitting.value = true
     try {
-      await signProfileApi.deactivate(currentPassword)
+      await signProfileApi.deactivate(accountPassword)
       profile.value = null
       await fetchHistory()
       return { success: true }
@@ -99,7 +89,6 @@ export const useSignProfileStore = defineStore('signProfile', () => {
     // state
     profile,
     history,
-    categories,
     loading,
     submitting,
     // getters
@@ -111,7 +100,6 @@ export const useSignProfileStore = defineStore('signProfile', () => {
     // actions
     fetchProfile,
     fetchHistory,
-    fetchCategories,
     register,
     deactivate,
     reset,

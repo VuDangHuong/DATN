@@ -36,8 +36,15 @@ import LecturerSignView from '@/views/lecturer/sign/LecturerSignView.vue'
 import LecturerSignHistoryView from '@/views/lecturer/sign/LecturerSignHistoryView.vue'
 import LecturerTaskView from '@/views/lecturer/tasks/LecturerTaskView.vue'
 import LecturerSignProfileView from '@/views/lecturer/sign/LecturerSignProfileView.vue'
+import VerifyDocumentView from '@/views/public/VerifyDocumentView.vue'
 
 const routes = [
+  {
+    path: '/verify',
+    name: 'public-verify',
+    component: VerifyDocumentView,
+    meta: { public: true }, // không cần auth
+  },
   // Redirect mặc định
   { path: '/', redirect: '/login' },
 
