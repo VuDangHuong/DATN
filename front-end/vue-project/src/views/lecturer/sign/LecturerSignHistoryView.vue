@@ -210,7 +210,7 @@
                 class="px-2 py-0.5 text-xs font-bold rounded-full"
                 :class="statusBadgeClass(rec.status)"
               >
-                {{ rec.status_label }}
+                {{ rec.status }}
               </span>
             </td>
 
@@ -326,7 +326,7 @@
                     class="inline-block mt-0.5 px-2 py-0.5 text-xs font-bold rounded-full"
                     :class="statusBadgeClass(selectedRecord.status)"
                   >
-                    {{ selectedRecord.status_label }}
+                    {{ selectedRecord.status }}
                   </span>
                 </div>
               </div>

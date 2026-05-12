@@ -18,7 +18,7 @@
                 class="px-2 py-0.5 text-[10px] font-bold rounded-full"
                 :class="statusBadgeClass(store.selectedRequest.status)"
               >
-                {{ store.selectedRequest.status_label }}
+                {{ store.selectedRequest.status }}
               </span>
             </div>
             <p class="text-xs text-stone-400">
@@ -153,10 +153,20 @@
           </div>
 
           <!-- Form xác nhận ký số -->
-          <LecturerSignConfirmForm v-if="store.canSign" />
+          <LecturerSignConfirmForm
+            v-if="store.canSign"
+            :request="store.selectedRequest"
+            @cancel="handleClose"
+            @success="onSignSuccess"
+          />
 
           <!-- Form từ chối -->
-          <LecturerSignRejectForm v-if="store.canSign" />
+          <LecturerSignRejectForm
+            v-if="store.canSign"
+            :request="store.selectedRequest"
+            @cancel="handleClose"
+            @success="onRejectSuccess"
+          />
 
           <!-- Đã ký — chờ Admin -->
           <div
@@ -199,22 +209,31 @@
 import { useLecturerSignStore } from '@/stores/lecturer/lecturerSignStore'
 import LecturerSignConfirmForm from './LecturerSignConfirmForm.vue'
 import LecturerSignRejectForm from './LecturerSignRejectForm.vue'
+import { useToastStore } from '@/stores/toast'
 
 const store = useLecturerSignStore()
+const toast = useToastStore()
 
 function handleClose() {
   store.closeDetail()
 }
+// ✅ Thêm: callback khi ký thành công
+async function onSignSuccess() {
+  await store.loadRequests() // reload list
+  store.closeDetail() // đóng modal
+}
 
+// ✅ Thêm: callback khi từ chối thành công
+async function onRejectSuccess() {
+  await store.loadRequests()
+  store.closeDetail()
+}
 function statusBadgeClass(status) {
   const map = {
     pending: 'bg-amber-100 text-amber-700',
-    forwarded: 'bg-amber-100 text-amber-700',
     lecturer_reviewing: 'bg-blue-100 text-blue-700',
-    signed: 'bg-indigo-100 text-indigo-700',
-    completed: 'bg-emerald-100 text-emerald-700',
-    rejected_by_admin: 'bg-red-100 text-red-700',
-    rejected_by_lecturer: 'bg-red-100 text-red-700',
+    signed: 'bg-emerald-100 text-emerald-700',
+    rejected: 'bg-red-100 text-red-700',
   }
   return map[status] ?? 'bg-stone-100 text-stone-600'
 }

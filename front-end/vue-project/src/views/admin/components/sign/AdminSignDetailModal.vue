@@ -18,7 +18,7 @@
                 class="px-2 py-0.5 text-[10px] font-bold rounded-full"
                 :class="statusBadgeClass(store.selectedRequest.status)"
               >
-                {{ store.selectedRequest.status_label }}
+                {{ store.selectedRequest.status }}
               </span>
             </div>
             <p class="text-xs text-gray-400">

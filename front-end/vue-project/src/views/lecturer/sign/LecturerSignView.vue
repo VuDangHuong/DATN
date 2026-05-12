@@ -24,7 +24,7 @@
         <p class="text-xs text-stone-400 mt-1">Đã ký</p>
       </div>
       <div class="bg-white rounded-xl border border-emerald-200 p-4 text-center">
-        <p class="text-2xl font-bold text-emerald-600">{{ store.stats.completed ?? 0 }}</p>
+        <p class="text-2xl font-bold text-emerald-600">{{ store.stats.rejected ?? 0 }}</p>
         <p class="text-xs text-stone-400 mt-1">Hoàn thành</p>
       </div>
     </div>
@@ -105,7 +105,7 @@
                   class="px-2 py-0.5 text-[10px] font-bold rounded-full"
                   :class="statusBadgeClass(req.status)"
                 >
-                  {{ req.status_label }}
+                  {{ req.status }}
                 </span>
               </div>
               <div class="flex items-center gap-3 text-xs text-stone-400 flex-wrap">
@@ -119,9 +119,11 @@
             </div>
           </div>
           <!-- Action nhanh -->
+          <!-- Action nhanh -->
           <div class="flex-shrink-0 flex items-center gap-2" @click.stop>
+            <!-- pending / lecturer_reviewing → nút ký -->
             <button
-              v-if="['forwarded', 'lecturer_reviewing'].includes(req.status)"
+              v-if="['pending', 'lecturer_reviewing'].includes(req.status)"
               @click="store.loadDetail(req)"
               class="px-4 py-2 bg-teal-600 text-white rounded-lg text-xs font-semibold hover:bg-teal-700 transition flex items-center gap-1.5"
             >
@@ -135,17 +137,36 @@
               </svg>
               Ký tài liệu
             </button>
+
+            <!-- ✅ signed → đã ký thành công (terminal) -->
             <span
               v-else-if="req.status === 'signed'"
-              class="px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-medium rounded-lg"
+              class="px-3 py-1.5 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-lg flex items-center gap-1.5"
             >
-              Chờ Admin phát hành
+              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fill-rule="evenodd"
+                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              Đã ký thành công
             </span>
+
+            <!-- rejected -->
             <span
-              v-else-if="req.status === 'completed'"
-              class="px-3 py-1.5 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-lg"
+              v-else-if="req.status === 'rejected'"
+              class="px-3 py-1.5 bg-red-50 text-red-700 text-xs font-medium rounded-lg flex items-center gap-1.5"
             >
-              Hoàn thành
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+              Đã từ chối
             </span>
           </div>
         </div>
@@ -190,11 +211,10 @@ const store = useLecturerSignStore()
 
 const statusFilters = [
   { value: '', label: 'Tất cả' },
-  { value: 'forwarded', label: 'Chờ ký' },
+  { value: 'pending', label: 'Chờ ký' },
   { value: 'lecturer_reviewing', label: 'Đang xem' },
   { value: 'signed', label: 'Đã ký' },
-  { value: 'completed', label: 'Hoàn thành' },
-  { value: 'rejected_by_lecturer', label: 'Đã từ chối' },
+  { value: 'rejected', label: 'Đã từ chối' },
 ]
 
 onMounted(() => store.loadRequests())
@@ -202,12 +222,9 @@ onMounted(() => store.loadRequests())
 function statusBadgeClass(status) {
   const map = {
     pending: 'bg-amber-100 text-amber-700',
-    forwarded: 'bg-amber-100 text-amber-700',
     lecturer_reviewing: 'bg-blue-100 text-blue-700',
-    signed: 'bg-indigo-100 text-indigo-700',
-    completed: 'bg-emerald-100 text-emerald-700',
-    rejected_by_admin: 'bg-red-100 text-red-700',
-    rejected_by_lecturer: 'bg-red-100 text-red-700',
+    signed: 'bg-emerald-100 text-emerald-700',
+    rejected: 'bg-red-100 text-red-700',
   }
   return map[status] ?? 'bg-stone-100 text-stone-600'
 }

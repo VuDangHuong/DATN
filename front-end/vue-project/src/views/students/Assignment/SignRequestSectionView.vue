@@ -31,7 +31,7 @@
           </span>
         </div>
         <p class="text-xs text-slate-500 mb-2">
-          Bài nộp đã được chấp nhận. Bạn có thể gửi yêu cầu ký số tài liệu.
+          Bài nộp đã được chấp nhận. Bạn có thể gửi yêu cầu ký số tài liệu cho giảng viên.
         </p>
         <button
           @click="handleCreate"
@@ -54,7 +54,7 @@
         </button>
       </div>
 
-      <!-- Đã có yêu cầu → hiện trạng thái -->
+      <!-- Đã có yêu cầu -->
       <div v-else>
         <div class="flex items-center justify-between gap-2">
           <div class="flex items-center gap-2">
@@ -73,14 +73,19 @@
             </svg>
             <span class="text-xs font-semibold text-violet-700">Ký số tài liệu</span>
           </div>
-
-          <!-- Status badge -->
-          <span class="px-2 py-0.5 text-[10px] font-bold rounded-full" :class="statusClass">
-            {{ signRequest.status }}
-          </span>
+          <div class="flex items-center gap-1.5">
+            <div
+              v-if="isPolling"
+              class="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse"
+              title="Đang tự động cập nhật..."
+            />
+            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full" :class="statusClass">
+              {{ signRequest.status }}
+            </span>
+          </div>
         </div>
 
-        <!-- Timeline trạng thái -->
+        <!-- ✅ Timeline mới — 3 bước theo UC-11 (bỏ Admin) -->
         <div class="mt-2 flex items-center gap-1 overflow-x-auto pb-1">
           <div
             v-for="(step, idx) in steps"
@@ -120,9 +125,7 @@
 
         <!-- Thông báo từ chối -->
         <div v-if="isRejected" class="mt-2 p-2.5 bg-red-50 rounded-lg">
-          <p class="text-xs text-red-700 font-medium">
-            {{ signRequest.status === 'rejected_by_admin' ? 'Admin' : 'Giảng viên' }} đã từ chối
-          </p>
+          <p class="text-xs text-red-700 font-medium">Giảng viên đã từ chối yêu cầu</p>
           <p v-if="signRequest.reject_reason" class="text-xs text-red-600 mt-0.5 italic">
             "{{ signRequest.reject_reason }}"
           </p>
@@ -135,8 +138,8 @@
           </button>
         </div>
 
-        <!-- Nút download khi completed -->
-        <div v-if="signRequest.status === 'completed'" class="mt-2">
+        <!-- ✅ Nút download khi signed (không cần đợi Admin nữa) -->
+        <div v-if="signRequest.status === 'signed'" class="mt-2">
           <button
             @click="handleDownload"
             :disabled="downloading"
@@ -157,19 +160,38 @@
             {{ downloading ? 'Đang tải...' : 'Tải tài liệu đã ký' }}
           </button>
         </div>
+
+        <!-- Refresh thủ công -->
+        <button
+          v-if="!isTerminalStatus"
+          @click="refreshStatus"
+          class="mt-2 flex items-center gap-1 text-[10px] text-slate-400 hover:text-slate-600 transition"
+        >
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+          Cập nhật trạng thái
+        </button>
       </div>
     </template>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useToastStore } from '@/stores/toast'
 import { useStudentAssignmentStore } from '@/stores/students/studentAssignmentStore'
+
 const props = defineProps({
   submissionId: { type: Number, required: true },
   assignment: { type: Object, required: true },
 })
+
 const store = useStudentAssignmentStore()
 const toast = useToastStore()
 const loading = ref(false)
@@ -177,32 +199,70 @@ const creating = ref(false)
 const downloading = ref(false)
 const signRequest = ref(null)
 
+// ── Polling ────────────────────────────────────────────
+const POLL_INTERVAL = 30_000
+let pollTimer = null
+
+const isTerminalStatus = computed(() => ['signed', 'rejected'].includes(signRequest.value?.status))
+
+const isPolling = computed(() => !!signRequest.value && !isTerminalStatus.value)
+
+function startPolling() {
+  stopPolling()
+  if (isTerminalStatus.value) return
+
+  pollTimer = setInterval(async () => {
+    const data = await store.fetchSignRequest(props.submissionId)
+    if (!data) return
+
+    const oldStatus = signRequest.value?.status
+    signRequest.value = data
+
+    if (oldStatus && oldStatus !== data.status) {
+      if (data.status === 'signed') {
+        toast.success('🎉 Tài liệu đã được ký! Bạn có thể tải về.')
+      } else if (data.status === 'rejected') {
+        toast.error('Yêu cầu ký số đã bị từ chối.')
+      } else if (data.status === 'lecturer_reviewing') {
+        toast.success('Giảng viên đang xem xét yêu cầu của bạn.')
+      }
+    }
+
+    if (isTerminalStatus.value) stopPolling()
+  }, POLL_INTERVAL)
+}
+
+function stopPolling() {
+  if (pollTimer) {
+    clearInterval(pollTimer)
+    pollTimer = null
+  }
+}
+
+onMounted(async () => {
+  await loadSignRequest()
+  if (signRequest.value && !isTerminalStatus.value) startPolling()
+})
+
+onUnmounted(() => stopPolling())
+
+// ✅ Timeline mới — chỉ 3 bước (bỏ Admin)
 const steps = [
-  { key: 'pending', label: 'Chờ Admin' },
-  { key: 'forwarded', label: 'Chuyển GV' },
-  { key: 'signed', label: 'GV ký' },
-  { key: 'completed', label: 'Hoàn thành' },
+  { key: 'pending', label: 'Đã gửi' },
+  { key: 'lecturer_reviewing', label: 'GV xem' },
+  { key: 'signed', label: 'Đã ký' },
 ]
 
-const stepOrder = [
-  'pending',
-  'admin_reviewing',
-  'forwarded',
-  'lecturer_reviewing',
-  'signed',
-  'completed',
-]
+const stepOrder = ['pending', 'lecturer_reviewing', 'signed']
 
-const isRejected = computed(() =>
-  ['rejected_by_admin', 'rejected_by_lecturer'].includes(signRequest.value?.status),
-)
+const isRejected = computed(() => signRequest.value?.status === 'rejected')
 
 const statusClass = computed(() => {
   const s = signRequest.value?.status
-  if (s === 'completed') return 'bg-emerald-100 text-emerald-700'
-  if (s?.includes('rejected')) return 'bg-red-100 text-red-700'
-  if (s === 'signed') return 'bg-blue-100 text-blue-700'
-  if (s === 'forwarded' || s === 'lecturer_reviewing') return 'bg-amber-100 text-amber-700'
+  if (s === 'signed') return 'bg-emerald-100 text-emerald-700'
+  if (s === 'rejected') return 'bg-red-100 text-red-700'
+  if (s === 'lecturer_reviewing') return 'bg-blue-100 text-blue-700'
+  if (s === 'pending') return 'bg-amber-100 text-amber-700'
   return 'bg-slate-100 text-slate-600'
 })
 
@@ -222,15 +282,8 @@ function isStepDone(stepKey) {
 
 function isCurrentStep(stepKey) {
   if (!signRequest.value) return false
-  const s = signRequest.value.status
-  if (stepKey === 'pending' && (s === 'pending' || s === 'admin_reviewing')) return true
-  if (stepKey === 'forwarded' && (s === 'forwarded' || s === 'lecturer_reviewing')) return true
-  if (stepKey === 'signed' && s === 'signed') return true
-  if (stepKey === 'completed' && s === 'completed') return true
-  return false
+  return signRequest.value.status === stepKey
 }
-
-onMounted(loadSignRequest)
 
 async function loadSignRequest() {
   loading.value = true
@@ -238,12 +291,25 @@ async function loadSignRequest() {
   loading.value = false
 }
 
+async function refreshStatus() {
+  const data = await store.fetchSignRequest(props.submissionId)
+  if (!data) return
+  const oldStatus = signRequest.value?.status
+  signRequest.value = data
+  if (oldStatus !== data.status) {
+    toast.success('Trạng thái đã được cập nhật')
+  }
+  if (!isTerminalStatus.value) startPolling()
+  else stopPolling()
+}
+
 async function handleCreate() {
   creating.value = true
   const result = await store.createSignRequest(props.submissionId)
   if (result.success) {
     signRequest.value = result.data
-    toast.success('Đã gửi yêu cầu ký số thành công')
+    toast.success('Đã gửi yêu cầu ký số. Giảng viên sẽ nhận email thông báo.')
+    startPolling()
   } else {
     toast.error(result.message)
   }

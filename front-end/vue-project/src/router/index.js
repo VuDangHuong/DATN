@@ -35,6 +35,7 @@ import AdminSignView from '@/views/admin/sign/AdminSignView.vue'
 import LecturerSignView from '@/views/lecturer/sign/LecturerSignView.vue'
 import LecturerSignHistoryView from '@/views/lecturer/sign/LecturerSignHistoryView.vue'
 import LecturerTaskView from '@/views/lecturer/tasks/LecturerTaskView.vue'
+import LecturerSignProfileView from '@/views/lecturer/sign/LecturerSignProfileView.vue'
 
 const routes = [
   // Redirect mặc định
@@ -81,6 +82,8 @@ const routes = [
       { path: 'chat', name: 'chat', component: ChatView },
       { path: 'tasks', name: 'tasks', component: TaskView },
       { path: 'assignments', name: 'assignments', component: StudentSubmisionView },
+      { path: 'profile', name: 'student-profile', component: ProfileView },
+      { path: 'change-password', name: 'student-change-password', component: ChangePasswordForm },
     ],
   },
 
@@ -139,6 +142,14 @@ const routes = [
         component: LecturerTaskView,
         meta: { title: 'Công việc nhóm' },
       },
+      {
+        path: 'sign-profile',
+        name: 'lecturer-sign-profile',
+        component: LecturerSignProfileView,
+        meta: { title: 'Chữ ký số của tôi' },
+      },
+      { path: 'profile', name: 'lecturer-profile', component: ProfileView },
+      { path: 'change-password', name: 'lecturer-change-password', component: ChangePasswordForm },
     ],
   },
 ]

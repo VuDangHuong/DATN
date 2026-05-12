@@ -237,7 +237,7 @@
                     'bg-red-100 text-red-700': sub.status === 'rejected',
                   }"
                 >
-                  {{ sub.status_label }}
+                  {{ sub.status }}
                 </span>
                 <span
                   v-if="sub.is_late"
