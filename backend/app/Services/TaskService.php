@@ -12,8 +12,6 @@ class TaskService
 {
     /**
      * Lấy danh sách task trong nhóm.
-     *
-     * Hỗ trợ filter theo status, assignee, priority.
      */
     public function getTasks(User $user, int $groupId, array $filters = []): array
     {
@@ -25,21 +23,20 @@ class TaskService
 
         $query = Task::where('group_id', $groupId)
             ->with([
-                'assignee:id,code,name',
-                'creator:id,code,name',
+                'assignee:id,code,name,avatar',
+                'creator:id,code,name,avatar',
+                'comments' => fn($q) => $q->orderBy('created_at', 'asc'),
+                'comments.user:id,code,name,avatar',
+                'comments.attachments',
+                'comments.attachments.uploader:id,name',
             ]);
 
-        // Filter theo status
         if (!empty($filters['status'])) {
             $query->where('status', $filters['status']);
         }
-
-        // Filter theo assignee
         if (!empty($filters['assignee_id'])) {
             $query->where('assignee_id', $filters['assignee_id']);
         }
-
-        // Filter theo priority
         if (!empty($filters['priority'])) {
             $query->where('priority', $filters['priority']);
         }
@@ -48,13 +45,11 @@ class TaskService
                          ->orderBy('deadline', 'asc')
                          ->get();
 
-        // ✅ Dùng array_map thay vì Collection->map để tránh lỗi callable
         $tasks = array_map(
             function ($task) { return $this->formatTask($task); },
             $taskList->all()
         );
 
-        // Thống kê nhanh — dùng 1 query thay vì 5
         $statusCounts = Task::where('group_id', $groupId)
             ->selectRaw("
                 COUNT(*) as total,
@@ -80,10 +75,7 @@ class TaskService
     }
 
     /**
-     * Nhóm trưởng tạo task và giao cho thành viên.
-     *
-     * Chỉ leader mới được tạo task.
-     * assignee_id phải là thành viên trong nhóm.
+     * Nhóm trưởng tạo task.
      */
     public function createTask(User $leader, int $groupId, array $data): array
     {
@@ -93,7 +85,6 @@ class TaskService
             return $this->error('Chỉ nhóm trưởng mới có quyền giao việc', 403);
         }
 
-        // Kiểm tra assignee thuộc nhóm
         if (!empty($data['assignee_id'])) {
             if (!$group->isMember($data['assignee_id'])) {
                 return $this->error('Người được giao việc không phải thành viên nhóm', 422);
@@ -114,7 +105,6 @@ class TaskService
                 'weight'      => $data['weight'] ?? 1,
             ]);
 
-            // Ghi log activity
             TaskActivity::create([
                 'task_id'   => $task->id,
                 'user_id'   => $leader->id,
@@ -133,10 +123,6 @@ class TaskService
 
     /**
      * Cập nhật trạng thái task.
-     *
-     * - Thành viên (assignee) được cập nhật status: todo → doing → done
-     * - Nhóm trưởng được cập nhật mọi field
-     * - Nếu done sau deadline → tự động chuyển thành 'late'
      */
     public function updateTaskStatus(User $user, int $taskId, string $newStatus): array
     {
@@ -147,7 +133,6 @@ class TaskService
             return $this->error('Bạn không phải thành viên của nhóm này', 403);
         }
 
-        // Chỉ assignee hoặc leader mới được cập nhật status
         $isAssignee = $task->assignee_id === $user->id;
         $isLeader   = $group->isLeader($user->id);
 
@@ -165,24 +150,19 @@ class TaskService
         DB::transaction(function () use ($task, $user, $newStatus, $oldStatus) {
             $updateData = ['status' => $newStatus];
 
-            // Nếu chuyển sang done → ghi actual_finish_date
             if ($newStatus === 'done') {
                 $updateData['actual_finish_date'] = now();
-
-                // Nếu hoàn thành sau deadline → đánh dấu late
                 if (now()->gt($task->deadline)) {
                     $updateData['status'] = 'late';
                 }
             }
 
-            // Nếu quay lại todo/doing → xóa actual_finish_date
             if (in_array($newStatus, ['todo', 'doing'])) {
                 $updateData['actual_finish_date'] = null;
             }
 
             $task->update($updateData);
 
-            // Ghi log
             TaskActivity::create([
                 'task_id'   => $task->id,
                 'user_id'   => $user->id,
@@ -198,7 +178,7 @@ class TaskService
     }
 
     /**
-     * Nhóm trưởng cập nhật thông tin task (title, description, assignee, priority, deadline...).
+     * Nhóm trưởng cập nhật task.
      */
     public function updateTask(User $leader, int $taskId, array $data): array
     {
@@ -209,7 +189,6 @@ class TaskService
             return $this->error('Chỉ nhóm trưởng mới có quyền chỉnh sửa công việc', 403);
         }
 
-        // Nếu đổi assignee → kiểm tra thuộc nhóm
         if (!empty($data['assignee_id']) && $data['assignee_id'] != $task->assignee_id) {
             if (!$group->isMember($data['assignee_id'])) {
                 return $this->error('Người được giao việc không phải thành viên nhóm', 422);
@@ -260,37 +239,47 @@ class TaskService
     }
 
     /**
-     * Xem chi tiết task kèm lịch sử hoạt động.
+     *Xem chi tiết task — eager load đầy đủ + KHÔNG overwrite comments
      */
     public function getTaskDetail(User $user, int $taskId): array
     {
-        $task = Task::with(['assignee:id,code,name', 'creator:id,code,name', 'activities.user:id,code,name', 'comments.user:id,code,name', 'group'])
-            ->findOrFail($taskId);
+        $task = Task::with([
+            'group',                                            // để check member
+            'assignee:id,name,code,avatar',
+            'creator:id,name,code,avatar',
+            'comments' => fn($q) => $q->orderBy('created_at', 'asc'),
+            'comments.user:id,name,code,avatar',
+            'comments.attachments',                             // ✅ eager load attachments
+            'comments.attachments.uploader:id,name',
+            'activities' => fn($q) => $q->orderBy('created_at', 'desc'),
+            'activities.user:id,name',
+        ])->find($taskId);
+
+        if (!$task) {
+            return $this->error('Task không tồn tại', 404);
+        }
 
         if (!$task->group->isMember($user->id)) {
             return $this->error('Bạn không phải thành viên của nhóm này', 403);
         }
 
+        //Lấy data từ formatTask (đã có comments + attachments + avatar)
         $result = $this->formatTask($task);
 
+        //CHỈ THÊM activities — KHÔNG overwrite comments
         $result['activities'] = $task->activities->map(function ($a) {
             return [
                 'id'         => $a->id,
                 'action'     => $a->action,
                 'old_value'  => $a->old_value,
                 'new_value'  => $a->new_value,
-                'user'       => $a->user ? ['id' => $a->user->id, 'name' => $a->user->name] : null,
+                'user'       => $a->user ? [
+                    'id'         => $a->user->id,
+                    'name'       => $a->user->name,
+                    'avatar'     => $a->user->avatar,
+                    'avatar_url' => $a->user->avatar_url,
+                ] : null,
                 'created_at' => $a->created_at,
-            ];
-        })->values()->toArray();
-
-        $result['comments'] = $task->comments->map(function ($c) {
-            return [
-                'id'             => $c->id,
-                'content'        => $c->content,
-                'attachment_url' => $c->attachment_url,
-                'user'           => $c->user ? ['id' => $c->user->id, 'name' => $c->user->name] : null,
-                'created_at'     => $c->created_at,
             ];
         })->values()->toArray();
 
@@ -301,31 +290,40 @@ class TaskService
     // Private helpers
     // ─────────────────────────────────────────────
 
-    private function formatTask(Task $task): array
+    /**
+     * Format task — bao gồm comments + attachments + user avatar
+     */
+    private function formatTask($task): array
     {
         return [
-            'id'                 => $task->id,
-            'title'              => $task->title,
-            'description'        => $task->description,
-            'status'             => $task->status,
-            'priority'           => $task->priority,
-            'weight'             => $task->weight,
-            'start_date'         => $task->start_date,
-            'deadline'           => $task->deadline,
-            'actual_finish_date' => $task->actual_finish_date,
-            'is_overdue'         => $task->isOverdue(),
-            'creator'            => $task->creator ? [
-                'id'   => $task->creator->id,
-                'code' => $task->creator->code,
-                'name' => $task->creator->name,
-            ] : null,
-            'assignee'           => $task->assignee ? [
-                'id'   => $task->assignee->id,
-                'code' => $task->assignee->code,
-                'name' => $task->assignee->name,
-            ] : null,
-            'created_at'         => $task->created_at,
-            'updated_at'         => $task->updated_at,
+            'id'          => $task->id,
+            'title'       => $task->title,
+            'description' => $task->description,
+            'status'      => $task->status,
+            'priority'    => $task->priority,
+            'deadline'    => $task->deadline,
+            'start_date'  => $task->start_date,
+            'weight'      => $task->weight,
+            'is_overdue'  => $task->deadline < now() && $task->status !== 'done',
+            'assignee'    => $task->assignee,
+            'creator'     => $task->creator,
+
+            //Comments với attachments + user avatar (qua accessor avatar_url)
+            'comments'    => $task->relationLoaded('comments')
+                ? $task->comments->map(function ($c) {
+                    return [
+                        'id'          => $c->id,
+                        'content'     => $c->content,
+                        'created_at'  => $c->created_at,
+                        'updated_at'  => $c->updated_at,
+                        'user'        => $c->user,                  // include avatar_url accessor
+                        'attachments' => $c->attachments ?? [],     // mỗi attachment có file_url, is_image, file_size_human
+                    ];
+                })->values()->toArray()
+                : [],
+
+            'created_at' => $task->created_at,
+            'updated_at' => $task->updated_at,
         ];
     }
 

@@ -5,7 +5,8 @@ namespace App\Models\Task;
 use App\Models\Auth\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class TaskComment extends Model
 {
     use HasFactory;
@@ -24,5 +25,9 @@ class TaskComment extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(TaskCommentAttachment::class, 'comment_id');
     }
 }

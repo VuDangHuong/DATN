@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\TaskService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TaskController extends Controller
 {
@@ -57,7 +58,43 @@ class TaskController extends Controller
  
         return $this->toResponse($result, 201);
     }
- 
+    public function storeBulk(Request $request, int $groupId): JsonResponse
+    {
+        $validated = $request->validate([
+            'tasks'                 => 'required|array|min:1|max:20',
+            'tasks.*.title'         => 'required|string|max:255',
+            'tasks.*.description'   => 'nullable|string',
+            'tasks.*.assignee_id'   => 'nullable|integer|exists:users,id',
+            'tasks.*.deadline'      => 'required|date|after:now',
+            'tasks.*.start_date'    => 'nullable|date',
+            'tasks.*.priority'      => 'nullable|in:low,medium,high,urgent',
+            'tasks.*.weight'        => 'nullable|integer|min:1|max:10',
+        ]);
+
+        $created = [];
+
+        try {
+            DB::transaction(function () use ($validated, $groupId, &$created) {
+                foreach ($validated['tasks'] as $taskData) {
+                    $result = $this->service->createTask(auth()->user(), $groupId, $taskData);
+                    $created[] = $result['data'] ?? $result;
+                }
+            });
+
+            return response()->json([
+                'message' => 'Đã tạo ' . count($created) . ' công việc',
+                'data'    => $created,
+                'total'   => count($created),
+            ], 201);
+
+        } catch (\Exception $e) {
+            \Log::error('Bulk create tasks failed: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Tạo công việc thất bại: ' . $e->getMessage(),
+                'created_count' => count($created),
+            ], 422);
+        }
+    }
     /**
      * GET /student/tasks/{taskId}
      *

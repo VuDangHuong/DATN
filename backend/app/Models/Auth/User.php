@@ -50,14 +50,11 @@ class User extends Authenticatable
     ];
 
     protected $appends = ['avatar_url'];
-    public function getAvatarUrlAttribute()
+    public function getAvatarUrlAttribute(): ?string
     {
-        if ($this->avatar && Storage::disk('public')->exists($this->avatar)) {
-            return Storage::url($this->avatar);
-        }
-
-        // Trả về ảnh mặc định nếu chưa upload
-        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=7F9CF5&background=EBF4FF';
+        if (!$this->avatar) return null;
+        if (str_starts_with($this->avatar, 'http')) return $this->avatar;
+        return asset('storage/' . $this->avatar) . '?v=' . $this->updated_at?->timestamp;
     }
     // --- CÁC HÀM CHECK QUYỀN NHANH ---
     public function isAdmin() { return $this->role === 'admin'; }

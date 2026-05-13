@@ -290,7 +290,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // ─────────────────────────────────────────
         Route::get('groups/{groupId}/tasks',  [TaskController::class, 'index']);         // DS task trong nhóm
         Route::post('groups/{groupId}/tasks', [TaskController::class, 'store']);         // Tạo task (leader)
- 
+        Route::post('groups/{groupId}/tasks/bulk',    [TaskController::class, 'storeBulk']);
+
         Route::get('tasks/{taskId}',          [TaskController::class, 'show']);          // Chi tiết task
         Route::put('tasks/{taskId}',          [TaskController::class, 'update']);        // Sửa task (leader)
         Route::patch('tasks/{taskId}/status', [TaskController::class, 'updateStatus']); // Đổi status
@@ -300,5 +301,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('tasks/{taskId}/comments',   [TaskCommentController::class, 'store']);   // Thêm bình luận
         Route::put('comments/{commentId}',       [TaskCommentController::class, 'update']);  // Sửa bình luận
         Route::delete('comments/{commentId}',    [TaskCommentController::class, 'destroy']); // Xóa bình luận
+        Route::delete('/comments/attachments/{attachmentId}',[TaskCommentController::class, 'deleteAttachment']);
     });
 });
