@@ -6,21 +6,20 @@ export const studentAssignmentApi = {
   getByClass: (classId) => axiosClient.get(`/student/classes/${classId}/assignments`),
 
   // Nộp bài cá nhân
-  submitIndividual: (assignmentId, file, note = '', documentCategory = '') => {
+  submitIndividual: (assignmentId, file, note = '') => {
     const form = new FormData()
     form.append('file', file)
     if (note) form.append('note', note)
-    if (documentCategory) form.append('document_category', documentCategory) // ← thêm
     return axiosClient.post(`/student/assignments/${assignmentId}/submit`, form, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
   },
 
-  submitGroup: (assignmentId, file, note = '', documentCategory = '') => {
+  // Nộp bài nhóm (leader only)
+  submitGroup: (assignmentId, file, note = '') => {
     const form = new FormData()
     form.append('file', file)
     if (note) form.append('note', note)
-    if (documentCategory) form.append('document_category', documentCategory) // ← thêm
     return axiosClient.post(`/student/assignments/${assignmentId}/submit-group`, form, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
