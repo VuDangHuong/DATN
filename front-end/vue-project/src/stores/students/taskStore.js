@@ -125,10 +125,9 @@ export const useTaskStore = defineStore('task', () => {
   }
 
   // Thêm bình luận
-  async function addComment(taskId, content) {
+  async function addComment(taskId, content, files = []) {
     try {
-      const { data } = await commentApi.create(taskId, { content })
-      // Thêm comment mới vào cuối
+      const { data } = await commentApi.create(taskId, { content, files })
       if (currentTask.value && currentTask.value.id === taskId) {
         if (!currentTask.value.comments) currentTask.value.comments = []
         currentTask.value.comments.push(data.comment)
@@ -140,10 +139,13 @@ export const useTaskStore = defineStore('task', () => {
   }
 
   // Sửa bình luận
-  async function updateComment(commentId, content) {
+  async function updateComment(commentId, content, files = [], removedAttachmentIds = []) {
     try {
-      const { data } = await commentApi.update(commentId, { content })
-      // Cập nhật comment trong danh sách
+      const { data } = await commentApi.update(commentId, {
+        content,
+        files,
+        removedAttachmentIds,
+      })
       if (currentTask.value?.comments) {
         const idx = currentTask.value.comments.findIndex((c) => c.id === commentId)
         if (idx !== -1) {
@@ -170,6 +172,45 @@ export const useTaskStore = defineStore('task', () => {
     }
   }
 
+  async function deleteAttachment(attachmentId, commentId) {
+    try {
+      await commentApi.deleteAttachment(attachmentId)
+      // Update local: xóa attachment khỏi comment
+      if (currentTask.value?.comments) {
+        const comment = currentTask.value.comments.find((c) => c.id === commentId)
+        if (comment?.attachments) {
+          comment.attachments = comment.attachments.filter((a) => a.id !== attachmentId)
+        }
+      }
+      return { success: true }
+    } catch (err) {
+      return { success: false, message: err.response?.data?.message || 'Lỗi xóa file' }
+    }
+  }
+
+  async function bulkCreateTasks(groupId, tasksData) {
+    loading.value = true
+    try {
+      const { data } = await taskApi.bulkCreate(groupId, tasksData)
+      // Refresh task list
+      await fetchTasks(groupId)
+
+      return {
+        success: true,
+        data: data.data,
+        total: data.total,
+        message: data.message,
+      }
+    } catch (e) {
+      return {
+        success: false,
+        message: e.response?.data?.message ?? 'Tạo công việc thất bại',
+        errors: e.response?.data?.errors ?? {},
+      }
+    } finally {
+      loading.value = false
+    }
+  }
   return {
     tasks,
     stats,
@@ -192,5 +233,7 @@ export const useTaskStore = defineStore('task', () => {
     addComment,
     updateComment,
     deleteComment,
+    deleteAttachment,
+    bulkCreateTasks,
   }
 })

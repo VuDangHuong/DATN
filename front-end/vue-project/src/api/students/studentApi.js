@@ -72,6 +72,9 @@ export const taskApi = {
   // Tạo task
   create: (groupId, data) => axiosClient.post(`${BASE}/groups/${groupId}/tasks`, data),
 
+  bulkCreate: (groupId, tasks) =>
+    axiosClient.post(`${BASE}/groups/${groupId}/tasks/bulk`, { tasks }),
+
   // Cập nhật task
   update: (taskId, data) => axiosClient.put(`${BASE}/tasks/${taskId}`, data),
 
@@ -89,11 +92,35 @@ export const commentApi = {
   getByTask: (taskId) => axiosClient.get(`/student/tasks/${taskId}/comments`),
 
   // Thêm bình luận
-  create: (taskId, data) => axiosClient.post(`/student/tasks/${taskId}/comments`, data),
+  create: (taskId, { content, files = [] }) => {
+    const fd = new FormData()
+    fd.append('content', content)
+    files.forEach((file) => fd.append('files[]', file))
+
+    return axiosClient.post(`/student/tasks/${taskId}/comments`, fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+  },
 
   // Sửa bình luận
-  update: (commentId, data) => axiosClient.put(`/student/comments/${commentId}`, data),
+  update: (commentId, { content, files = [], removedAttachmentIds = [] }) => {
+    const fd = new FormData()
+    fd.append('content', content)
+
+    // Method override để Laravel nhận POST nhưng route là PUT
+    fd.append('_method', 'PUT')
+
+    files.forEach((file) => fd.append('files[]', file))
+    removedAttachmentIds.forEach((id) => fd.append('removed_attachment_ids[]', id))
+
+    return axiosClient.post(`/student/comments/${commentId}`, fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+  },
 
   // Xóa bình luận
   delete: (commentId) => axiosClient.delete(`/student/comments/${commentId}`),
+
+  deleteAttachment: (attachmentId) =>
+    axiosClient.delete(`/student/comments/attachments/${attachmentId}`),
 }
