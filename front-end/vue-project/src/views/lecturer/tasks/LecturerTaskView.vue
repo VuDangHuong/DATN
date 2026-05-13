@@ -555,7 +555,7 @@ async function onGroupChange() {
 }
 
 async function loadGroups(classId) {
-  openClassId.value = classId
+  // openClassId.value = classId
   groups.value = []
   loadingGroups.value = true
   try {
