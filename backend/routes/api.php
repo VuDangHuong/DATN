@@ -284,7 +284,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // ─────────────────────────────────────────
         Route::get('groups/{groupId}/messages',  [MessageController::class, 'index']);   // Lấy tin nhắn
         Route::post('groups/{groupId}/messages', [MessageController::class, 'store']);   // Gửi tin nhắn
- 
+        Route::delete('/messages/{messageId}',    [MessageController::class, 'destroy']);
+        Route::delete('/messages/attachments/{attachmentId}',
+            [MessageController::class, 'deleteAttachment']);
         // ─────────────────────────────────────────
         // Quản lý công việc (Task Management)
         // ─────────────────────────────────────────

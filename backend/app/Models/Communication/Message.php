@@ -11,8 +11,12 @@ class Message extends Model
         'group_id',
         'user_id',
         'content',
+        'mentions',
     ];
 
+    protected $casts = [
+        'mentions' => 'array',   //tự động convert JSON ↔ array
+    ];
     // ==================== RELATIONS ====================
 
     public function group(): BelongsTo
@@ -51,5 +55,10 @@ class Message extends Model
     public function isOwnedBy(int $userId): bool
     {
         return $this->user_id === $userId;
+    }
+    
+    public function attachments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(MessageAttachment::class);
     }
 }
