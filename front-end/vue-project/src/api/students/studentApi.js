@@ -42,20 +42,30 @@ export const groupApi = {
 
 // ── Messages (Chat) ────────────────────────────
 export const messageApi = {
-  // Lấy danh sách tin nhắn (phân trang)
   getMessages: (groupId, { page = 1, perPage = 30 } = {}) =>
     axiosClient.get(`${BASE}/groups/${groupId}/messages`, {
-      params: {
-        page,
-        per_page: perPage,
-      },
+      params: { page, per_page: perPage },
     }),
 
-  // Gửi tin nhắn
-  send: (groupId, content) =>
-    axiosClient.post(`${BASE}/groups/${groupId}/messages`, {
-      content,
-    }),
+  //Gửi tin nhắn với mentions + files (multipart)
+  send: (groupId, { content = '', mentions = [], files = [] }) => {
+    const fd = new FormData()
+    fd.append('content', content)
+
+    mentions.forEach((userId) => fd.append('mentions[]', userId))
+    files.forEach((file) => fd.append('files[]', file))
+
+    return axiosClient.post(`${BASE}/groups/${groupId}/messages`, fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+  },
+
+  // Xóa tin nhắn
+  delete: (messageId) => axiosClient.delete(`${BASE}/messages/${messageId}`),
+
+  // Xóa 1 attachment
+  deleteAttachment: (attachmentId) =>
+    axiosClient.delete(`${BASE}/messages/attachments/${attachmentId}`),
 }
 
 // ── Tasks ──────────────────────────────────────
