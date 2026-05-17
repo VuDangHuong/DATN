@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Lecturers\AssignmentController;
 use App\Http\Controllers\Lecturers\ClassController;
+use App\Http\Controllers\Lecturers\LecturerDashboardController;
 use App\Http\Controllers\Lecturers\LecturerGroupController;
 use App\Http\Controllers\Public\PublicVerificationController;
 use App\Http\Controllers\Shared\ClassStudentController;
@@ -82,7 +84,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // B. ADMIN AREA (Chỉ Admin - Quản lý hệ thống & Đào tạo)
     // =================================================================
     Route::prefix('admin')->middleware('role:admin')->group(function () {
-        
+         Route::get('/dashboard', [AdminDashboardController::class, 'index']);
         // 1. Quản lý Người dùng (Users)
         Route::get('/users', [UserController::class, 'index']);
         Route::post('/users', [UserController::class, 'store']);
@@ -167,7 +169,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // Route::get('/sign-profile',                 [SignProfileController::class, 'show']);
         // Route::post('/sign-profile',                [SignProfileController::class, 'upsert']);
         // Route::delete('/sign-profile',              [SignProfileController::class, 'deactivate']); // ← thêm
-
+        Route::get('/dashboard', [LecturerDashboardController::class, 'index']);
         Route::get('/sign-requests',                [LecturerSignController::class, 'index']);
         Route::get('/sign-requests/{id}',           [LecturerSignController::class, 'show']);
         Route::get('/sign-requests/{id}/preview',   [LecturerSignController::class, 'preview']);
