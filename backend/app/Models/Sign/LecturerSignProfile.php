@@ -21,6 +21,7 @@ class LecturerSignProfile extends Model
         'cert_expires_at',
         'certificate_meta',
         'is_active',
+        'pending_deactivation',
     ];
      protected $hidden = [
         // Không expose private key qua API
@@ -34,6 +35,7 @@ class LecturerSignProfile extends Model
         'cert_valid_from'  => 'datetime',
         'cert_expires_at'  => 'datetime',
         'is_active'        => 'boolean',
+        'pending_deactivation' => 'boolean',
     ];
  
     // ── Accessors ─────────────────────────────────────────
@@ -86,5 +88,25 @@ class LecturerSignProfile extends Model
     public function scopeForLecturer($query, int $lecturerId)
     {
         return $query->where('lecturer_id', $lecturerId);
+    }
+
+    // Thêm relationship
+    public function deactivationRequests(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(SignProfileDeactivationRequest::class, 'profile_id');
+    }
+    
+    // Yêu cầu pending hiện tại (nếu có)
+    public function pendingDeactivationRequest(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(SignProfileDeactivationRequest::class, 'profile_id')
+                    ->where('status', 'pending');
+    }
+    
+    // Scope: chỉ profile có thể ký (active + KHÔNG pending deactivation)
+    public function scopeCanSign($query)
+    {
+        return $query->where('is_active', true)
+                    ->where('pending_deactivation', false);
     }
 }

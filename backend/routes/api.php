@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminSignProfileController;
 use App\Http\Controllers\Lecturers\AssignmentController;
 use App\Http\Controllers\Lecturers\ClassController;
 use App\Http\Controllers\Lecturers\LecturerDashboardController;
@@ -157,6 +158,21 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // Route::post('/sign-requests/{id}/reject', [AdminSignController::class, 'reject']);
         // // Phát hành file đã ký về cho SV
         // Route::post('/sign-requests/{id}/complete', [AdminSignController::class, 'complete']);
+        // Sign profiles management
+        Route::get('/sign-profiles',
+            [AdminSignProfileController::class, 'index']);
+        Route::get('/sign-profiles/stats',
+            [AdminSignProfileController::class, 'stats']);
+    
+        // Deactivation requests
+        Route::get('/deactivation-requests',
+            [AdminSignProfileController::class, 'listRequests']);
+        Route::get('/deactivation-requests/{id}',
+            [AdminSignProfileController::class, 'showRequest']);
+        Route::post('/deactivation-requests/{id}/approve',
+            [AdminSignProfileController::class, 'approve']);
+        Route::post('/deactivation-requests/{id}/reject',
+            [AdminSignProfileController::class, 'reject']);
     });
 
     // =================================================================
@@ -235,7 +251,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('/verify-password',  [SignProfileController::class, 'verifySigningPassword']);
             // Register thay cho upsert cũ (đổi tên rõ ràng hơn)
             Route::post('/',                 [SignProfileController::class, 'register']);
-            Route::delete('/',               [SignProfileController::class, 'deactivate']);
+            // Route::delete('/',               [SignProfileController::class, 'deactivate']);
+            Route::post('/deactivation-request',
+                [SignProfileController::class, 'requestDeactivation']);
+        
+            Route::get('/deactivation-requests',
+                [SignProfileController::class, 'deactivationRequests']);
+        
+            Route::get('/deactivation-request/current',
+                [SignProfileController::class, 'currentDeactivationRequest']);
         });
     });
 

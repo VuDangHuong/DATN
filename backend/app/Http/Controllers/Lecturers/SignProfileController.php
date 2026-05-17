@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Sign\LecturerSignProfile;
 use App\Services\DocumentSignService;
 use App\Services\PkiService;
+use App\Services\SignProfileDeactivationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -284,29 +285,53 @@ class SignProfileController extends Controller
     /**
      * DELETE /api/lecturer/sign-profile
      */
-    public function deactivate(Request $request): JsonResponse
-    {
-        $request->validate([
-            'account_password' => 'required|string',
+    public function requestDeactivation(
+        Request $request,
+        SignProfileDeactivationService $service
+    ): JsonResponse {
+        $data = $request->validate([
+            'reason' => 'required|string|min:10|max:1000',
+        ], [
+            'reason.required' => 'Vui lòng nhập lý do vô hiệu hóa',
+            'reason.min'      => 'Lý do phải có ít nhất 10 ký tự',
         ]);
  
-        if (!Hash::check($request->account_password, Auth::user()->password)) {
-            return response()->json([
-                'message' => 'Mật khẩu không chính xác',
-            ], 422);
+        $result = $service->requestDeactivation(auth()->user(), $data['reason']);
+ 
+        return $this->toResponse($result, 201);
+    }
+ 
+    /**
+     * GET /api/lecturer/sign-profile/deactivation-requests
+     *
+     * GV xem lịch sử yêu cầu vô hiệu hóa của mình
+     */
+    public function deactivationRequests(SignProfileDeactivationService $service): JsonResponse
+    {
+        $result = $service->getRequestsByLecturer(auth()->user());
+        return $this->toResponse($result);
+    }
+ 
+    /**
+     * GET /api/lecturer/sign-profile/deactivation-request/current
+     *
+     * Lấy request pending hiện tại (nếu có) — frontend dùng để hiển thị banner
+     */
+    public function currentDeactivationRequest(SignProfileDeactivationService $service): JsonResponse
+    {
+        $pending = $service->getCurrentPendingRequest(auth()->user());
+        return response()->json(['request' => $pending]);
+    }
+ 
+    private function toResponse(array $result, int $successCode = 200): JsonResponse
+    {
+        if ($result['status'] === 'error') {
+            return response()->json(['message' => $result['message']], $result['code']);
         }
- 
-        $updated = LecturerSignProfile::forLecturer(Auth::id())
-            ->active()
-            ->update(['is_active' => false]);
- 
-        if (!$updated) {
-            return response()->json([
-                'message' => 'Không có chữ ký nào đang hoạt động',
-            ], 404);
-        }
- 
-        return response()->json(['message' => 'Đã vô hiệu hóa chữ ký số']);
+        return response()->json([
+            'message' => $result['message'],
+            ...$result['data'],
+        ], $successCode);
     }
  
     // ── Helpers ────────────────────────────────────────

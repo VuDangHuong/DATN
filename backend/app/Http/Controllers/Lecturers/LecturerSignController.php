@@ -129,7 +129,12 @@ class LecturerSignController extends Controller
                 'error_code' => 'NO_SIGN_PROFILE',
             ], 422);
         }
- 
+        if ($signProfile->pendingDeactivationRequest) {
+            return response()->json([
+                'message'    => 'Chữ ký số đang chờ Admin duyệt vô hiệu hóa. Bạn không thể ký lúc này.',
+                'error_code' => 'PENDING_DEACTIVATION',
+            ], 403);
+        }
         //E3: Check expires_at
         if ($signProfile->cert_expires_at && $signProfile->cert_expires_at->isPast()) {
             return response()->json([
@@ -137,7 +142,40 @@ class LecturerSignController extends Controller
                 'error_code' => 'SIGN_PROFILE_EXPIRED',
             ], 422);
         }
- 
+        //3. Load sign request + check submission đã graded
+        $signRequest = DocumentSignRequest::where('lecturer_id', Auth::id())
+            ->whereIn('status', [
+                DocumentSignRequest::STATUS_PENDING,
+                DocumentSignRequest::STATUS_LECTURER_REVIEWING,
+            ])
+            ->with(['requester', 'classModel', 'submission.assignment'])
+            ->findOrFail($id);
+
+        $submission = $signRequest->submission;
+
+        if (!$submission) {
+            return response()->json([
+                'message'    => 'Không tìm thấy bài nộp liên kết với yêu cầu ký này.',
+                'error_code' => 'NO_SUBMISSION',
+            ], 422);
+        }
+
+        // Check graded + score
+        if ($submission->status !== 'graded' || is_null($submission->score)) {
+            return response()->json([
+                'message'    => 'Bạn cần chấm điểm bài nộp trước khi ký xác nhận tài liệu.',
+                'error_code' => 'SUBMISSION_NOT_GRADED',
+                'data' => [
+                    'submission_id'     => $submission->id,
+                    'submission_status' => $submission->status,
+                    'has_score'         => !is_null($submission->score),
+                    'assignment_id'     => $submission->assignment_id,
+                    'class_id'          => $signRequest->class_id,
+                    // Đường dẫn frontend nên redirect đến
+                    'grade_url'         => "/lecturer/assignments/{$submission->assignment_id}/review",
+                ],
+            ], 403);
+        }
         // ── 4. Verify signing password ──────────────────
         if (!Hash::check($request->signing_password, $signProfile->signing_password_hash)) {
             return response()->json([
@@ -162,13 +200,13 @@ class LecturerSignController extends Controller
         }
  
         // ── 6. Load sign request ────────────────────────
-        $signRequest = DocumentSignRequest::where('lecturer_id', Auth::id())
-            ->whereIn('status', [
-                DocumentSignRequest::STATUS_PENDING,
-                DocumentSignRequest::STATUS_LECTURER_REVIEWING,
-            ])
-            ->with(['requester', 'classModel', 'submission'])
-            ->findOrFail($id);
+        // $signRequest = DocumentSignRequest::where('lecturer_id', Auth::id())
+        //     ->whereIn('status', [
+        //         DocumentSignRequest::STATUS_PENDING,
+        //         DocumentSignRequest::STATUS_LECTURER_REVIEWING,
+        //     ])
+        //     ->with(['requester', 'classModel', 'submission'])
+        //     ->findOrFail($id);
  
         // ── 7. Generate PDF + Hash + Sign ───────────────
         $signedFilePath = $this->generateSignedPdf($signRequest, $signProfile);
