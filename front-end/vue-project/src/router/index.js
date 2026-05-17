@@ -37,6 +37,7 @@ import LecturerSignHistoryView from '@/views/lecturer/sign/LecturerSignHistoryVi
 import LecturerTaskView from '@/views/lecturer/tasks/LecturerTaskView.vue'
 import LecturerSignProfileView from '@/views/lecturer/sign/LecturerSignProfileView.vue'
 import VerifyDocumentView from '@/views/public/VerifyDocumentView.vue'
+import LecturerDashboardView from '@/views/lecturer/LecturerDashboardView.vue'
 
 const routes = [
   {
@@ -101,6 +102,12 @@ const routes = [
     meta: { requiresAuth: true, role: 'lecturer' },
     redirect: '/lecturer/assignments',
     children: [
+      {
+        path: 'dashboard',
+        name: 'lecturer-dashboard',
+        component: LecturerDashboardView,
+        meta: { title: 'Dashboard' },
+      },
       // Đợt nộp bài — danh sách + tạo mới
       {
         path: 'assignments',
