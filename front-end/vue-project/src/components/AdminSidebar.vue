@@ -1,22 +1,37 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { storeToRefs } from 'pinia'
 import SvgIcon from '@/components/icons/SVG.vue'
+import { useAdminSignProfileStore } from '@/stores/admin/sign/adminSignProfileStore'
 
 const props = defineProps({
-  isMobileOpen: Boolean, // Nhận trạng thái từ Layout
+  isMobileOpen: Boolean,
 })
 
-const emit = defineEmits(['close-mobile']) // Gửi sự kiện đóng menu khi click link
+const emit = defineEmits(['close-mobile'])
 
 const route = useRoute()
-const isCollapsed = ref(false) // Trạng thái co giãn Desktop
+const isCollapsed = ref(false)
+
+//Load stats để hiện badge số pending requests
+const adminSignStore = useAdminSignProfileStore()
+const { stats } = storeToRefs(adminSignStore)
+
+const pendingCount = computed(() => stats.value?.pending_requests ?? 0)
+
+onMounted(async () => {
+  try {
+    await adminSignStore.fetchStats()
+  } catch {
+    /* ignore */
+  }
+})
 
 const toggleSidebar = () => {
   isCollapsed.value = !isCollapsed.value
 }
 
-// Khi click link trên mobile -> tự đóng menu
 const handleLinkClick = () => {
   emit('close-mobile')
 }
@@ -28,9 +43,16 @@ const menuItems = [
   { name: 'Quản lý lớp học phần', path: '/admin/classes', icon: 'classes' },
   { name: 'Quản lý danh mục', path: '/admin/master-data', icon: 'master-data' },
   { name: 'Quản lý Chat', path: '/admin/chatBot', icon: 'master-data' },
+  { name: 'Quản lý chữ ký số', path: '/admin/sign-profiles', icon: 'sign' },
+  {
+    name: 'Yêu cầu vô hiệu hóa',
+    path: '/admin/deactivation-requests',
+    icon: 'sign',
+    badge: 'pending',
+  },
+  { name: 'Ký số tài liệu', path: '/admin/sign-requests', icon: 'sign' },
   { name: 'Cấu hình hệ thống', path: '/admin/settings', icon: 'settings' },
   { name: 'Giám sát & Báo cáo', path: '/admin/reports', icon: 'reports' },
-  { name: 'Ký số tài liệu', path: '/admin/sign-requests', icon: 'sign' },
 ]
 </script>
 
@@ -38,10 +60,7 @@ const menuItems = [
   <aside
     class="fixed inset-y-0 left-0 z-30 bg-blue-900 text-white shadow-lg transition-all duration-300 ease-in-out lg:static lg:translate-x-0"
     :class="[
-      // Logic Mobile: Ẩn/Hiện dựa vào props
       isMobileOpen ? 'translate-x-0 w-64' : '-translate-x-full',
-
-      // Logic Desktop: Co/Dãn
       isCollapsed ? 'lg:w-20' : 'lg:w-64',
     ]"
   >
@@ -110,6 +129,11 @@ const menuItems = [
                 class="transition-all duration-300"
                 :class="isCollapsed && !isMobileOpen ? 'h-6 w-6' : 'h-5 w-5 mr-3'"
               />
+              <!-- Dot báo có pending khi sidebar collapsed -->
+              <span
+                v-if="item.badge === 'pending' && pendingCount > 0 && isCollapsed && !isMobileOpen"
+                class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-blue-900 lg:block hidden"
+              />
             </div>
 
             <span
@@ -123,11 +147,27 @@ const menuItems = [
               {{ item.name }}
             </span>
 
+            <!-- Badge số lượng pending (chỉ hiện khi sidebar expanded) -->
+            <span
+              v-if="item.badge === 'pending' && pendingCount > 0"
+              class="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full"
+              :class="isCollapsed && !isMobileOpen ? 'lg:hidden' : ''"
+            >
+              {{ pendingCount }}
+            </span>
+
+            <!-- Tooltip khi collapsed -->
             <div
               v-if="isCollapsed"
               class="hidden lg:block absolute left-full top-1/2 transform -translate-y-1/2 ml-2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-nowrap shadow-lg"
             >
               {{ item.name }}
+              <span
+                v-if="item.badge === 'pending' && pendingCount > 0"
+                class="ml-1 bg-red-500 text-white px-1.5 rounded-full"
+              >
+                {{ pendingCount }}
+              </span>
             </div>
           </router-link>
         </li>

@@ -38,6 +38,8 @@ import LecturerTaskView from '@/views/lecturer/tasks/LecturerTaskView.vue'
 import LecturerSignProfileView from '@/views/lecturer/sign/LecturerSignProfileView.vue'
 import VerifyDocumentView from '@/views/public/VerifyDocumentView.vue'
 import LecturerDashboardView from '@/views/lecturer/LecturerDashboardView.vue'
+import AdminSignProfilesView from '@/views/admin/sign/AdminSignProfilesView.vue'
+import AdminDeactivationRequestsView from '@/views/admin/sign/AdminDeactivationRequestsView.vue'
 
 const routes = [
   {
@@ -74,6 +76,18 @@ const routes = [
       { path: 'profile', name: 'admin-profile', component: ProfileView },
       { path: 'chatBot', name: 'chatBot', component: ChatBotManagement },
       { path: 'sign-requests', name: 'admin-sign-requests', component: AdminSignView },
+      {
+        path: 'sign-profiles',
+        name: 'admin-sign-profiles',
+        component: AdminSignProfilesView,
+        meta: { requiresAuth: true, role: 'admin', title: 'Quản lý chữ ký số' },
+      },
+      {
+        path: 'deactivation-requests',
+        name: 'admin-deactivation-requests',
+        component: AdminDeactivationRequestsView,
+        meta: { requiresAuth: true, role: 'admin', title: 'Yêu cầu vô hiệu hóa' },
+      },
     ],
   },
 
