@@ -3,6 +3,7 @@
 namespace App\Models\Auth;
 use App\Models\Academic\Classes;
 use App\Models\Group\Group;
+use App\Models\Sign\DocumentSignRequest;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 // 1. QUAN TRỌNG: Phải dùng Authenticatable thay vì Model thường
@@ -102,5 +103,35 @@ class User extends Authenticatable
     public function ledGroups()
     {
         return $this->hasMany(Group::class, 'leader_id');
+    }
+
+
+        // ✅ Lớp dạy (GV)
+    public function classes()
+    {
+        return $this->hasMany(Classes::class, 'lecturer_id');
+    }
+    
+    // ✅ Lớp đang học (SV) - qua bảng pivot class_students
+    public function classesEnrolled()
+    {
+        return $this->belongsToMany(
+            Classes::class,
+            'class_students',
+            'student_id',
+            'class_id'
+        )->withPivot('has_group')->withTimestamps();
+    }
+    
+    // ✅ Sign requests làm với tư cách GV
+    public function signRequestsAsLecturer()
+    {
+        return $this->hasMany(DocumentSignRequest::class, 'lecturer_id');
+    }
+    
+    // ✅ Sign requests do SV gửi
+    public function signRequestsAsRequester()
+    {
+        return $this->hasMany(DocumentSignRequest::class, 'requester_id');
     }
 }
