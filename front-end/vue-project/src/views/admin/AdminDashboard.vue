@@ -1,213 +1,440 @@
-<script setup>
-import { ref } from 'vue'
-import VueApexCharts from 'vue3-apexcharts'
-
-// --- DỮ LIỆU BIỂU ĐỒ ---
-
-// 1. Biểu đồ Tròn: Tỉ lệ trạng thái Nhóm
-const groupChartOptions = ref({
-  chart: {
-    type: 'donut',
-    fontFamily: 'Segoe UI, sans-serif',
-  },
-  labels: ['Đã đủ thành viên', 'Chưa đủ thành viên'],
-  colors: ['#A855F7', '#EAB308'], // Màu Tím (Đủ) và Vàng (Thiếu) khớp với Card
-  legend: {
-    position: 'bottom',
-  },
-  dataLabels: {
-    enabled: true,
-  },
-  plotOptions: {
-    pie: {
-      donut: {
-        size: '65%',
-        labels: {
-          show: true,
-          total: {
-            show: true,
-            label: 'Tổng nhóm',
-            fontSize: '16px',
-            fontWeight: 600,
-            color: '#373d3f',
-          },
-        },
-      },
-    },
-  },
-})
-const groupChartSeries = ref([86, 12]) // Số liệu từ Card
-
-// 2. Biểu đồ Cột: Thống kê tổng quan
-const overviewChartOptions = ref({
-  chart: {
-    type: 'bar',
-    toolbar: { show: false },
-    fontFamily: 'Segoe UI, sans-serif',
-  },
-  plotOptions: {
-    bar: {
-      borderRadius: 4,
-      columnWidth: '45%',
-      distributed: true, // Để mỗi cột 1 màu khác nhau
-    },
-  },
-  dataLabels: {
-    enabled: false,
-  },
-  xaxis: {
-    categories: ['Người dùng', 'Lớp học', 'Tổng nhóm'],
-    labels: {
-      style: { fontSize: '12px' },
-    },
-  },
-  colors: ['#3B82F6', '#22C55E', '#F97316'], // Xanh dương, Xanh lá, Cam
-  legend: { show: false }, // Ẩn chú thích vì màu đã rõ theo cột
-})
-const overviewChartSeries = ref([
-  {
-    name: 'Số lượng',
-    data: [1240, 45, 98], // 98 là tổng (12 + 86)
-  },
-])
-</script>
-
+<!-- src/views/admin/AdminDashboardView.vue -->
 <template>
-  <div>
-    <h1 class="text-2xl font-bold text-gray-800 mb-6">Tổng quan hệ thống</h1>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <div
-        class="bg-white p-6 rounded-lg shadow border-l-4 border-blue-500 hover:shadow-lg transition-shadow"
-      >
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="text-gray-500 text-sm font-medium">Tổng số người dùng</h3>
-            <p class="text-3xl font-bold text-gray-800 mt-2">1,240</p>
-          </div>
-          <div class="p-3 bg-blue-100 rounded-full">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-6 w-6 text-blue-600"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-              />
-            </svg>
-          </div>
+  <div class="space-y-6">
+    <!-- ─── Welcome banner ─── -->
+    <div class="bg-gradient-to-r from-rose-500 to-pink-600 rounded-2xl p-6 text-white shadow-sm">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-2xl font-bold mb-1">👑 Trang Quản Trị</h2>
+          <p class="text-rose-50 text-sm">
+            {{ formatToday() }} · Xin chào, {{ user?.name || 'Admin' }}
+          </p>
         </div>
-      </div>
-
-      <div
-        class="bg-white p-6 rounded-lg shadow border-l-4 border-green-500 hover:shadow-lg transition-shadow"
-      >
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="text-gray-500 text-sm font-medium">Lớp học phần</h3>
-            <p class="text-3xl font-bold text-gray-800 mt-2">45</p>
+        <div class="hidden md:flex items-center gap-4">
+          <div class="text-center">
+            <p class="text-2xl font-bold">{{ stats.new_users_today }}</p>
+            <p class="text-xs text-rose-100">User mới hôm nay</p>
           </div>
-          <div class="p-3 bg-green-100 rounded-full">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-6 w-6 text-green-600"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-              />
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      <div
-        class="bg-white p-6 rounded-lg shadow border-l-4 border-yellow-500 hover:shadow-lg transition-shadow"
-      >
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="text-gray-500 text-sm font-medium">Nhóm chưa đủ</h3>
-            <p class="text-3xl font-bold text-gray-800 mt-2">12</p>
-          </div>
-          <div class="p-3 bg-yellow-100 rounded-full">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-6 w-6 text-yellow-600"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-              />
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      <div
-        class="bg-white p-6 rounded-lg shadow border-l-4 border-purple-500 hover:shadow-lg transition-shadow"
-      >
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="text-gray-500 text-sm font-medium">Nhóm đã đủ</h3>
-            <p class="text-3xl font-bold text-gray-800 mt-2">86</p>
-          </div>
-          <div class="p-3 bg-purple-100 rounded-full">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-6 w-6 text-purple-600"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
+          <div class="w-px h-10 bg-white/30" />
+          <div class="text-center">
+            <p class="text-2xl font-bold">{{ stats.sign_requests_today }}</p>
+            <p class="text-xs text-rose-100">Yêu cầu ký hôm nay</p>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div class="bg-white p-6 rounded-lg shadow lg:col-span-2">
-        <h3 class="text-lg font-bold text-gray-700 mb-4">Quy mô hoạt động hệ thống</h3>
-        <VueApexCharts
-          type="bar"
-          height="350"
-          :options="overviewChartOptions"
-          :series="overviewChartSeries"
-        />
+    <!-- Loading -->
+    <div v-if="store.loading" class="flex justify-center py-16">
+      <div class="w-10 h-10 border-4 border-rose-200 border-t-rose-600 rounded-full animate-spin" />
+    </div>
+
+    <template v-else>
+      <!-- ─── Section: Users ─── -->
+      <div>
+        <h3 class="text-xs font-bold text-stone-500 uppercase tracking-wider mb-3">
+          👥 Người dùng
+        </h3>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <StatCard
+            icon="👥"
+            label="Tổng user"
+            :value="stats.total_users"
+            color="indigo"
+            link="/admin/users"
+          />
+          <StatCard icon="👑" label="Admin" :value="stats.total_admins" color="red" />
+          <StatCard icon="👨‍🏫" label="Giảng viên" :value="stats.total_lecturers" color="teal" />
+          <StatCard icon="👨‍🎓" label="Sinh viên" :value="stats.total_students" color="blue" />
+          <StatCard icon="✅" label="Đang hoạt động" :value="stats.active_users" color="emerald" />
+        </div>
       </div>
 
-      <div class="bg-white p-6 rounded-lg shadow">
-        <h3 class="text-lg font-bold text-gray-700 mb-4">Tỉ lệ hoàn thành nhóm</h3>
-        <div class="flex items-center justify-center h-full pb-6">
-          <VueApexCharts
-            type="donut"
-            width="380"
-            :options="groupChartOptions"
-            :series="groupChartSeries"
+      <!-- ─── Section: Academic ─── -->
+      <div>
+        <h3 class="text-xs font-bold text-stone-500 uppercase tracking-wider mb-3">🎓 Học vụ</h3>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <StatCard
+            icon="🎓"
+            label="Lớp học"
+            :value="stats.total_classes"
+            color="purple"
+            link="/admin/classes"
+          />
+          <StatCard icon="📅" label="Lớp hoạt động" :value="stats.active_classes" color="emerald" />
+          <StatCard
+            icon="📚"
+            label="Môn học"
+            :value="stats.total_subjects"
+            color="amber"
+            link="/admin/subjects"
+          />
+          <StatCard
+            icon="🗓️"
+            label="Học kỳ"
+            :value="stats.total_semesters"
+            color="cyan"
+            link="/admin/semesters"
+          />
+          <StatCard icon="👥" label="Nhóm" :value="stats.total_groups" color="indigo" />
+        </div>
+      </div>
+
+      <!-- ─── Section: Activity ─── -->
+      <div>
+        <h3 class="text-xs font-bold text-stone-500 uppercase tracking-wider mb-3">
+          📊 Hoạt động hệ thống
+        </h3>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <StatCard icon="📝" label="Bài tập" :value="stats.total_assignments" color="blue" />
+          <StatCard icon="📥" label="Bài nộp" :value="stats.total_submissions" color="cyan" />
+          <StatCard
+            icon="⏳"
+            label="Bài chờ duyệt"
+            :value="stats.submissions_pending"
+            color="amber"
+          />
+          <StatCard
+            icon="📝"
+            label="Yêu cầu ký"
+            :value="stats.total_sign_requests"
+            color="indigo"
+          />
+          <StatCard
+            icon="✅"
+            label="GV có chữ ký số"
+            :value="stats.lecturers_with_pki"
+            color="emerald"
+            link="/admin/lecturers"
           />
         </div>
       </div>
-    </div>
+
+      <!-- ─── Charts row 1: Users growth + System activity ─── -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white rounded-2xl border border-stone-200 p-5">
+          <div class="flex items-center gap-2 mb-4">
+            <div
+              class="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center text-teal-700"
+            >
+              📈
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-stone-800">Tăng trưởng user 12 tháng</h3>
+              <p class="text-[10px] text-stone-400">User đăng ký mới theo tháng</p>
+            </div>
+          </div>
+          <LineChart :data="charts.users_growth_12months" />
+        </div>
+
+        <div class="bg-white rounded-2xl border border-stone-200 p-5">
+          <div class="flex items-center gap-2 mb-4">
+            <div
+              class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700"
+            >
+              ⚡
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-stone-800">Hoạt động 30 ngày qua</h3>
+              <p class="text-[10px] text-stone-400">Bài nộp + Yêu cầu ký theo ngày</p>
+            </div>
+          </div>
+          <LineChart :data="charts.system_activity_30days" />
+        </div>
+      </div>
+
+      <!-- ─── Charts row 2: 3 donuts + bar ─── -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white rounded-2xl border border-stone-200 p-5">
+          <div class="flex items-center gap-2 mb-4">
+            <div
+              class="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-700"
+            >
+              👥
+            </div>
+            <h3 class="text-sm font-bold text-stone-800">User theo vai trò</h3>
+          </div>
+          <DonutChart :data="charts.users_by_role" />
+        </div>
+
+        <div class="bg-white rounded-2xl border border-stone-200 p-5">
+          <div class="flex items-center gap-2 mb-4">
+            <div
+              class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-700"
+            >
+              📝
+            </div>
+            <h3 class="text-sm font-bold text-stone-800">Trạng thái ký số</h3>
+          </div>
+          <DonutChart :data="charts.sign_requests_status" />
+        </div>
+
+        <div class="bg-white rounded-2xl border border-stone-200 p-5">
+          <div class="flex items-center gap-2 mb-4">
+            <div
+              class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700"
+            >
+              📥
+            </div>
+            <h3 class="text-sm font-bold text-stone-800">Trạng thái bài nộp</h3>
+          </div>
+          <DonutChart :data="charts.submissions_status" />
+        </div>
+
+        <div class="bg-white rounded-2xl border border-stone-200 p-5">
+          <div class="flex items-center gap-2 mb-4">
+            <div
+              class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-700"
+            >
+              📊
+            </div>
+            <h3 class="text-sm font-bold text-stone-800">Top lớp nhiều nhóm</h3>
+          </div>
+          <BarChart :data="charts.top_classes_by_groups" />
+        </div>
+      </div>
+
+      <!-- ─── Recent users + Recent classes + Top lecturers ─── -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <!-- Recent users -->
+        <div class="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+          <div class="px-5 py-3 border-b border-stone-100 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div
+                class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700"
+              >
+                👤
+              </div>
+              <div>
+                <h3 class="text-sm font-bold text-stone-800">User mới nhất</h3>
+                <p class="text-[10px] text-stone-400">5 người mới đăng ký</p>
+              </div>
+            </div>
+            <router-link to="/admin/users" class="text-xs text-rose-600 hover:underline">
+              Xem tất cả →
+            </router-link>
+          </div>
+          <div class="divide-y divide-stone-100 max-h-80 overflow-y-auto">
+            <div v-if="!recentUsers.length" class="p-6 text-center text-sm text-stone-400">
+              Chưa có user nào
+            </div>
+            <div v-for="u in recentUsers" :key="u.id" class="px-5 py-3 flex items-center gap-3">
+              <div
+                class="w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center text-xs font-bold text-stone-600 overflow-hidden flex-shrink-0"
+              >
+                <img v-if="u.avatar_url" :src="u.avatar_url" class="w-full h-full object-cover" />
+                <span v-else>{{ u.name?.charAt(0) }}</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-stone-800 truncate">{{ u.name }}</p>
+                <p class="text-xs text-stone-500 truncate">
+                  <span
+                    class="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase mr-1"
+                    :class="roleBadge(u.role)"
+                  >
+                    {{ u.role }}
+                  </span>
+                  {{ u.email }}
+                </p>
+              </div>
+              <span class="text-[10px] text-stone-400 flex-shrink-0">
+                {{ formatRelative(u.created_at) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent classes -->
+        <div class="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+          <div class="px-5 py-3 border-b border-stone-100 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div
+                class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-700"
+              >
+                🎓
+              </div>
+              <div>
+                <h3 class="text-sm font-bold text-stone-800">Lớp mới nhất</h3>
+                <p class="text-[10px] text-stone-400">5 lớp mới tạo</p>
+              </div>
+            </div>
+            <router-link to="/admin/classes" class="text-xs text-rose-600 hover:underline">
+              Xem tất cả →
+            </router-link>
+          </div>
+          <div class="divide-y divide-stone-100 max-h-80 overflow-y-auto">
+            <div v-if="!recentClasses.length" class="p-6 text-center text-sm text-stone-400">
+              Chưa có lớp nào
+            </div>
+            <div v-for="c in recentClasses" :key="c.id" class="px-5 py-3">
+              <div class="flex items-center justify-between">
+                <p class="text-sm font-semibold text-stone-800 truncate">{{ c.code }}</p>
+                <span
+                  class="px-1.5 py-0.5 rounded-full text-[10px] font-bold"
+                  :class="
+                    c.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-stone-100 text-stone-500'
+                  "
+                >
+                  {{ c.is_active ? 'Active' : 'Inactive' }}
+                </span>
+              </div>
+              <p class="text-xs text-stone-500 truncate mt-0.5">{{ c.name }}</p>
+              <p class="text-[10px] text-stone-400 mt-1">
+                GV: {{ c.lecturer?.name || 'Chưa gán' }} · {{ formatRelative(c.created_at) }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top lecturers -->
+        <div class="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+          <div class="px-5 py-3 border-b border-stone-100 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div
+                class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700"
+              >
+                🏆
+              </div>
+              <div>
+                <h3 class="text-sm font-bold text-stone-800">Top giảng viên</h3>
+                <p class="text-[10px] text-stone-400">Hoạt động nhiều nhất</p>
+              </div>
+            </div>
+          </div>
+          <div class="divide-y divide-stone-100 max-h-80 overflow-y-auto">
+            <div v-if="!topLecturers.length" class="p-6 text-center text-sm text-stone-400">
+              Chưa có dữ liệu
+            </div>
+            <div
+              v-for="(l, idx) in topLecturers"
+              :key="l.id"
+              class="px-5 py-3 flex items-center gap-3"
+            >
+              <span
+                class="text-base font-bold w-5 text-center flex-shrink-0"
+                :class="
+                  idx === 0
+                    ? 'text-amber-500'
+                    : idx === 1
+                      ? 'text-stone-400'
+                      : idx === 2
+                        ? 'text-orange-700'
+                        : 'text-stone-300'
+                "
+              >
+                {{ idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}` }}
+              </span>
+              <div
+                class="w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center text-xs font-bold text-stone-600 overflow-hidden flex-shrink-0"
+              >
+                <img v-if="l.avatar_url" :src="l.avatar_url" class="w-full h-full object-cover" />
+                <span v-else>{{ l.name?.charAt(0) }}</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-stone-800 truncate">{{ l.name }}</p>
+                <p class="text-[10px] text-stone-500">
+                  🎓 {{ l.classes_count }} lớp · ✅ {{ l.signed_count }} ký
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── Activity feed ─── -->
+      <div class="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+        <div class="px-5 py-3 border-b border-stone-100">
+          <div class="flex items-center gap-2">
+            <div
+              class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-700"
+            >
+              ⚡
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-stone-800">Hoạt động gần đây</h3>
+              <p class="text-[10px] text-stone-400">20 hoạt động mới nhất toàn hệ thống</p>
+            </div>
+          </div>
+        </div>
+        <div class="p-5 max-h-96 overflow-y-auto">
+          <div v-if="!recentActivities.length" class="text-center py-6 text-sm text-stone-400">
+            Chưa có hoạt động nào
+          </div>
+          <div v-else class="space-y-3">
+            <router-link
+              v-for="(a, idx) in recentActivities"
+              :key="idx"
+              :to="a.link"
+              class="flex items-start gap-3 p-2 -mx-2 rounded-lg hover:bg-stone-50 transition group"
+            >
+              <div class="text-lg flex-shrink-0">{{ a.icon }}</div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-stone-700 group-hover:text-rose-600 transition">
+                  {{ a.title }}
+                </p>
+                <p class="text-xs text-stone-500 truncate">{{ a.subtitle }}</p>
+              </div>
+              <span class="text-[10px] text-stone-400 flex-shrink-0 whitespace-nowrap">
+                {{ formatRelative(a.time) }}
+              </span>
+            </router-link>
+          </div>
+        </div>
+      </div>
+    </template>
   </div>
 </template>
+
+<script setup>
+import { computed, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useAdminDashboardStore } from '@/stores/admin/adminDashboardStore'
+import { useAuthStore } from '@/stores/auth'
+import LineChart from '../lecturer/components/dashboard/StatCard.vue'
+import DonutChart from '../lecturer/components/dashboard/StatCard.vue'
+import BarChart from '../lecturer/components/dashboard/StatCard.vue'
+import StatCard from '../lecturer/components/dashboard/StatCard.vue'
+
+const store = useAdminDashboardStore()
+const authStore = useAuthStore()
+
+const { stats, charts, recentUsers, recentClasses, recentActivities, topLecturers } =
+  storeToRefs(store)
+
+const user = computed(() => authStore.user)
+
+onMounted(() => store.fetchDashboard())
+
+function roleBadge(role) {
+  return (
+    {
+      admin: 'bg-red-100 text-red-700',
+      lecturer: 'bg-teal-100 text-teal-700',
+      student: 'bg-blue-100 text-blue-700',
+    }[role] || 'bg-stone-100 text-stone-600'
+  )
+}
+
+function formatToday() {
+  return new Date().toLocaleDateString('vi-VN', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
+
+function formatRelative(d) {
+  if (!d) return ''
+  const date = new Date(d)
+  const now = new Date()
+  const diff = Math.floor((now - date) / 1000)
+
+  if (diff < 60) return 'Vừa xong'
+  if (diff < 3600) return `${Math.floor(diff / 60)}p trước`
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h trước`
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d trước`
+
+  return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })
+}
+</script>
