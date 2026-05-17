@@ -15,21 +15,56 @@
     </div>
 
     <template v-else>
+      <!--Banner: đang chờ admin duyệt vô hiệu hóa -->
+      <div
+        v-if="store.pendingRequest"
+        class="mb-6 bg-amber-50 border-2 border-amber-300 rounded-2xl p-5"
+      >
+        <div class="flex items-start gap-3">
+          <div
+            class="w-10 h-10 rounded-xl bg-amber-200 flex items-center justify-center flex-shrink-0"
+          >
+            <svg
+              class="w-5 h-5 text-amber-700"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h4 class="text-sm font-bold text-amber-900">
+              Yêu cầu vô hiệu hóa đang chờ Admin duyệt
+            </h4>
+            <p class="text-xs text-amber-800 mt-2">
+              <strong>Lý do bạn đã gửi:</strong> {{ store.pendingRequest.reason }}
+            </p>
+            <p class="text-xs text-amber-700 mt-2">
+              ⚠️ Bạn không thể ký tài liệu trong thời gian chờ duyệt.<br />
+              Gửi lúc {{ formatDateTime(store.pendingRequest.created_at) }}.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <!-- ── Card chữ ký hiện tại ── -->
       <div v-if="store.hasProfile" class="mb-6">
-        <div
-          class="bg-white rounded-2xl border-2 p-6"
-          :class="store.isValid ? 'border-emerald-200' : 'border-red-200'"
-        >
+        <div class="bg-white rounded-2xl border-2 p-6" :class="cardBorderClass">
           <div class="flex items-start justify-between gap-4 mb-4">
             <div class="flex items-center gap-3">
               <!-- Icon trạng thái -->
               <div
                 class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                :class="store.isValid ? 'bg-emerald-100' : 'bg-red-100'"
+                :class="iconBgClass"
               >
                 <svg
-                  v-if="store.isValid"
+                  v-if="store.isValid && !store.isPendingDeactivation"
                   class="w-6 h-6 text-emerald-600"
                   fill="currentColor"
                   viewBox="0 0 20 20"
@@ -42,7 +77,8 @@
                 </svg>
                 <svg
                   v-else
-                  class="w-6 h-6 text-red-600"
+                  class="w-6 h-6"
+                  :class="store.isPendingDeactivation ? 'text-amber-600' : 'text-red-600'"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -57,18 +93,12 @@
               </div>
               <div>
                 <div class="flex items-center gap-2 mb-1">
-                  <h3 class="text-lg font-bold text-stone-800">Chữ ký số đang hoạt động</h3>
+                  <h3 class="text-lg font-bold text-stone-800">Chữ ký số</h3>
                   <span
                     class="px-2 py-0.5 text-[10px] font-bold rounded-full"
-                    :class="
-                      store.isValid
-                        ? 'bg-emerald-100 text-emerald-700'
-                        : store.isExpired
-                          ? 'bg-red-100 text-red-700'
-                          : 'bg-amber-100 text-amber-700'
-                    "
+                    :class="statusBadgeClass"
                   >
-                    {{ store.isValid ? 'Hợp lệ' : store.isExpired ? 'Đã hết hạn' : 'Sắp hết hạn' }}
+                    {{ statusLabel }}
                   </span>
                 </div>
                 <p class="text-sm text-stone-500">
@@ -77,12 +107,15 @@
               </div>
             </div>
 
+            <!-- Nút Yêu cầu vô hiệu — chỉ hiện khi chưa có pending -->
             <button
-              @click="confirmDeactivate"
+              v-if="!store.isPendingDeactivation"
+              @click="showDeactivateModal = true"
               class="px-3 py-1.5 border border-red-200 text-red-600 rounded-lg text-xs font-medium hover:bg-red-50 transition"
             >
-              Vô hiệu hóa
+              Yêu cầu vô hiệu hóa
             </button>
+            <span v-else class="text-xs text-amber-600 font-medium"> ⏳ Đang chờ duyệt </span>
           </div>
 
           <!-- Cảnh báo sắp hết hạn / đã hết hạn -->
@@ -109,36 +142,27 @@
             <div class="p-3 bg-stone-50 rounded-xl">
               <p class="text-xs text-stone-400 mb-1">Serial chứng thư</p>
               <p class="font-mono font-medium text-stone-700 break-all">
-                {{ store.profile.certificate_serial }}
+                {{ store.profile.certificate_serial || store.profile.serial_number }}
               </p>
             </div>
             <div class="p-3 bg-stone-50 rounded-xl">
               <p class="text-xs text-stone-400 mb-1">Ngày hết hạn</p>
               <p class="font-medium" :class="store.isExpired ? 'text-red-600' : 'text-stone-700'">
-                {{ formatDate(store.profile.cert_expires_at) }}
+                {{ formatDate(store.profile.cert_expires_at || store.profile.cert_valid_to) }}
               </p>
             </div>
-            <div v-if="store.profile.certificate_meta?.provider" class="p-3 bg-stone-50 rounded-xl">
-              <p class="text-xs text-stone-400 mb-1">Nhà cung cấp</p>
-              <p class="font-medium text-stone-700">
-                {{ providerLabel(store.profile.certificate_meta.provider) }}
-              </p>
+            <div v-if="store.profile.subject_cn" class="p-3 bg-stone-50 rounded-xl">
+              <p class="text-xs text-stone-400 mb-1">Chủ sở hữu</p>
+              <p class="font-medium text-stone-700 truncate">{{ store.profile.subject_cn }}</p>
             </div>
-            <div
-              v-if="store.profile.certificate_meta?.cert_type"
-              class="p-3 bg-stone-50 rounded-xl"
-            >
-              <p class="text-xs text-stone-400 mb-1">Loại chứng thư</p>
-              <p class="font-medium text-stone-700">
-                {{
-                  store.profile.certificate_meta.cert_type === 'personal' ? 'Cá nhân' : 'Tổ chức'
-                }}
-              </p>
+            <div v-if="store.profile.issuer_cn" class="p-3 bg-stone-50 rounded-xl">
+              <p class="text-xs text-stone-400 mb-1">Cấp bởi</p>
+              <p class="font-medium text-stone-700 truncate">{{ store.profile.issuer_cn }}</p>
             </div>
           </div>
 
           <!-- Public key preview -->
-          <div class="mt-3 p-3 bg-stone-50 rounded-xl">
+          <div v-if="store.profile.public_key_preview" class="mt-3 p-3 bg-stone-50 rounded-xl">
             <p class="text-xs text-stone-400 mb-1">Public key (rút gọn)</p>
             <p class="font-mono text-[11px] text-stone-600 break-all">
               {{ store.profile.public_key_preview }}
@@ -196,7 +220,7 @@
         @success="onRegisterSuccess"
       />
 
-      <!-- ── Lịch sử ── -->
+      <!-- ── Lịch sử chữ ký ── -->
       <div v-if="store.history.length > 1" class="mt-8">
         <h3 class="text-sm font-semibold text-stone-700 mb-3">Lịch sử chữ ký</h3>
         <div class="space-y-2">
@@ -225,7 +249,7 @@
               </div>
               <div class="min-w-0">
                 <p class="text-sm font-mono font-medium text-stone-700 truncate">
-                  {{ p.certificate_serial }}
+                  {{ p.certificate_serial || p.serial_number }}
                 </p>
                 <p class="text-xs text-stone-400">
                   {{ formatDate(p.created_at) }} · Đã hết hạn / Đã vô hiệu hóa
@@ -240,51 +264,114 @@
           </div>
         </div>
       </div>
+
+      <!-- ── Lịch sử yêu cầu vô hiệu hóa ── -->
+      <div v-if="store.deactivationRequests.length" class="mt-8">
+        <h3 class="text-sm font-semibold text-stone-700 mb-3">Lịch sử yêu cầu vô hiệu hóa</h3>
+        <div class="space-y-2">
+          <div
+            v-for="req in store.deactivationRequests"
+            :key="req.id"
+            class="bg-white rounded-xl border border-stone-200 p-3"
+          >
+            <div class="flex items-start justify-between gap-3 mb-1">
+              <p class="text-xs text-stone-500">Gửi lúc {{ formatDateTime(req.created_at) }}</p>
+              <span
+                class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase flex-shrink-0"
+                :class="reqStatusClass(req.status)"
+              >
+                {{ reqStatusLabel(req.status) }}
+              </span>
+            </div>
+            <p class="text-sm text-stone-700 mb-1">
+              <span class="text-xs text-stone-500">Lý do:</span> {{ req.reason }}
+            </p>
+            <p v-if="req.admin_note" class="text-xs text-red-600 mt-1">
+              <span class="font-semibold">Admin từ chối:</span> {{ req.admin_note }}
+            </p>
+            <p v-if="req.resolved_at" class="text-[10px] text-stone-400 mt-1">
+              Xử lý lúc {{ formatDateTime(req.resolved_at) }}
+              <span v-if="req.admin">· bởi {{ req.admin.name }}</span>
+            </p>
+          </div>
+        </div>
+      </div>
     </template>
 
-    <!-- Modal xác nhận deactivate -->
+    <!-- Modal yêu cầu vô hiệu hóa (nhập lý do, không phải password) -->
     <Teleport to="body">
       <div
         v-if="showDeactivateModal"
         class="fixed inset-0 z-50 flex items-center justify-center p-4"
       >
-        <div
-          class="absolute inset-0 bg-black/30 backdrop-blur-sm"
-          @click="showDeactivateModal = false"
-        />
+        <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" @click="closeDeactivateModal" />
         <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-          <h3 class="text-lg font-bold text-stone-800 mb-1">Vô hiệu hóa chữ ký số</h3>
-          <p class="text-sm text-stone-500 mb-4">
-            Bạn sẽ không thể ký tài liệu cho đến khi đăng ký chữ ký mới.
-          </p>
+          <div class="flex items-start gap-3 mb-4">
+            <div
+              class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0"
+            >
+              <svg
+                class="w-5 h-5 text-red-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-stone-800">Yêu cầu vô hiệu hóa</h3>
+              <p class="text-xs text-stone-500 mt-1">Yêu cầu sẽ được gửi cho Admin duyệt</p>
+            </div>
+          </div>
+
+          <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl mb-4">
+            <p class="text-xs text-amber-800">
+              ⚠️ <strong>Lưu ý:</strong> Trong thời gian chờ duyệt, bạn sẽ
+              <strong>không thể ký tài liệu</strong>. Nếu Admin từ chối, chữ ký sẽ tiếp tục hoạt
+              động bình thường.
+            </p>
+          </div>
+
           <div class="mb-4">
             <label class="block text-sm font-medium text-stone-700 mb-1">
-              Nhập mật khẩu đăng nhập để xác nhận
+              Lý do vô hiệu hóa <span class="text-red-500">*</span>
             </label>
-            <input
-              v-model="deactivatePassword"
-              type="password"
-              placeholder="••••••••"
-              class="w-full px-4 py-2.5 border border-stone-200 rounded-xl text-sm focus:ring-2 focus:ring-red-500 outline-none"
+            <textarea
+              v-model="deactivateReason"
+              rows="4"
+              maxlength="1000"
+              placeholder="Vui lòng nêu rõ lý do (vd: chứng chỉ bị lộ, đổi sang chứng chỉ mới...)"
+              class="w-full px-3 py-2 border border-stone-200 rounded-xl text-sm resize-none focus:ring-2 focus:ring-red-500 outline-none"
             />
+            <div class="flex justify-between mt-1">
+              <p class="text-xs text-stone-400">Tối thiểu 10 ký tự</p>
+              <p class="text-xs text-stone-400">{{ deactivateReason.length }}/1000</p>
+            </div>
           </div>
+
           <div class="flex gap-3">
             <button
-              @click="showDeactivateModal = false"
+              @click="closeDeactivateModal"
               class="flex-1 py-2.5 border border-stone-200 rounded-xl text-sm font-medium text-stone-600 hover:bg-stone-50"
             >
               Hủy
             </button>
             <button
               @click="handleDeactivate"
-              :disabled="!deactivatePassword || store.submitting"
+              :disabled="deactivateReason.length < 10 || store.submitting"
               class="flex-1 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               <div
                 v-if="store.submitting"
                 class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"
               />
-              Vô hiệu hóa
+              {{ store.submitting ? 'Đang gửi...' : 'Gửi yêu cầu' }}
             </button>
           </div>
         </div>
@@ -294,7 +381,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useSignProfileStore } from '@/stores/lecturer/signProfileStore'
 import { useToastStore } from '@/stores/toast'
 import SignProfileRegisterForm from '../components/sign/SignProfileRegisterForm.vue'
@@ -304,38 +391,74 @@ const toast = useToastStore()
 
 const showForm = ref(false)
 const showDeactivateModal = ref(false)
-const deactivatePassword = ref('')
+const deactivateReason = ref('')
 
-onMounted(async () => {
-  await Promise.all([store.fetchProfile(), store.fetchHistory()])
+// ── Computed cho status display ──────────────
+const cardBorderClass = computed(() => {
+  if (store.isPendingDeactivation) return 'border-amber-300'
+  if (!store.isValid) return 'border-red-200'
+  return 'border-emerald-200'
 })
 
+const iconBgClass = computed(() => {
+  if (store.isPendingDeactivation) return 'bg-amber-100'
+  if (!store.isValid) return 'bg-red-100'
+  return 'bg-emerald-100'
+})
+
+const statusLabel = computed(() => {
+  if (store.isPendingDeactivation) return 'Chờ duyệt vô hiệu'
+  if (store.isExpired) return 'Đã hết hạn'
+  if (store.isExpiringSoon) return 'Sắp hết hạn'
+  if (store.isValid) return 'Hợp lệ'
+  return 'Không hoạt động'
+})
+
+const statusBadgeClass = computed(() => {
+  if (store.isPendingDeactivation) return 'bg-amber-100 text-amber-700'
+  if (store.isExpired) return 'bg-red-100 text-red-700'
+  if (store.isExpiringSoon) return 'bg-amber-100 text-amber-700'
+  if (store.isValid) return 'bg-emerald-100 text-emerald-700'
+  return 'bg-stone-100 text-stone-600'
+})
+
+// ── Lifecycle ────────────────────────────────
+onMounted(async () => {
+  await Promise.all([
+    store.fetchProfile(),
+    store.fetchHistory(),
+    store.fetchPendingRequest(),
+    store.fetchDeactivationRequests(), //Load lịch sử yêu cầu
+  ])
+})
+
+// ── Handlers ─────────────────────────────────
 function onRegisterSuccess() {
   showForm.value = false
   toast.success('Đăng ký chữ ký số thành công')
 }
 
-function confirmDeactivate() {
-  deactivatePassword.value = ''
-  showDeactivateModal.value = true
+function closeDeactivateModal() {
+  showDeactivateModal.value = false
+  deactivateReason.value = ''
 }
 
+//Gửi yêu cầu vô hiệu hóa (không phải deactivate trực tiếp)
 async function handleDeactivate() {
-  // ✅ Truyền plain string, không phải object
-  const result = await store.deactivate(deactivatePassword.value)
+  if (deactivateReason.value.length < 10) return
+
+  const result = await store.requestDeactivation(deactivateReason.value)
   if (result.success) {
-    toast.success('Đã vô hiệu hóa chữ ký số')
-    showDeactivateModal.value = false
-    deactivatePassword.value = ''
+    toast.success(result.message ?? 'Đã gửi yêu cầu, đang chờ Admin duyệt')
+    closeDeactivateModal()
+    // Reload để lấy lịch sử mới
+    await store.fetchDeactivationRequests()
   } else {
-    toast.error(result.message)
+    toast.error(result.message ?? 'Có lỗi xảy ra')
   }
 }
 
-function providerLabel(value) {
-  return store.categories.providers.find((p) => p.value === value)?.label ?? value
-}
-
+// ── Formatters ───────────────────────────────
 function formatDate(d) {
   if (!d) return '—'
   return new Date(d).toLocaleDateString('vi-VN', {
@@ -343,5 +466,36 @@ function formatDate(d) {
     month: '2-digit',
     year: 'numeric',
   })
+}
+
+function formatDateTime(d) {
+  if (!d) return '—'
+  return new Date(d).toLocaleString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+function reqStatusClass(s) {
+  return (
+    {
+      pending: 'bg-amber-100 text-amber-700',
+      approved: 'bg-emerald-100 text-emerald-700',
+      rejected: 'bg-red-100 text-red-700',
+    }[s] || 'bg-stone-100 text-stone-600'
+  )
+}
+
+function reqStatusLabel(s) {
+  return (
+    {
+      pending: 'Chờ duyệt',
+      approved: 'Đã chấp thuận',
+      rejected: 'Bị từ chối',
+    }[s] || s
+  )
 }
 </script>

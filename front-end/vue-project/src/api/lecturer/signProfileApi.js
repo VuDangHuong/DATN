@@ -28,9 +28,19 @@ export const signProfileApi = {
   },
 
   // DELETE vô hiệu hóa chữ ký
-  deactivate(accountPassword) {
-    return axiosClient.delete('/lecturer/sign-profile', {
-      data: { account_password: accountPassword },
-    })
-  },
+  // deactivate(accountPassword) {
+  //   return axiosClient.delete('/lecturer/sign-profile', {
+  //     data: { account_password: accountPassword },
+  //   })
+  // },
+  //GV gửi yêu cầu vô hiệu hóa
+  requestDeactivation: (reason) =>
+    axiosClient.post('/lecturer/sign-profile/deactivation-request', { reason }),
+
+  //Xem lịch sử yêu cầu
+  getDeactivationRequests: () => axiosClient.get('/lecturer/sign-profile/deactivation-requests'),
+
+  // Lấy request pending hiện tại
+  getCurrentPendingRequest: () =>
+    axiosClient.get('/lecturer/sign-profile/deactivation-request/current'),
 }

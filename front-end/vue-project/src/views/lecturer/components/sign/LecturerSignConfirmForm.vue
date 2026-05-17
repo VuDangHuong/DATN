@@ -6,9 +6,40 @@
       {{ request?.requester?.name }} - {{ request?.document_category_label }}
     </p>
 
+    <!-- Warning: Submission chưa chấm điểm -->
+    <div v-if="submissionNotGraded" class="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+      <div class="flex items-start gap-3">
+        <svg
+          class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+          />
+        </svg>
+        <div class="flex-1">
+          <p class="text-sm font-semibold text-amber-800 mb-1">Bài nộp chưa được chấm điểm</p>
+          <p class="text-xs text-amber-700 mb-3">
+            Bạn cần chấm điểm bài nộp này trước khi ký xác nhận tài liệu.
+          </p>
+          <button
+            @click="goToGrade"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 text-white rounded-lg text-xs font-medium hover:bg-amber-700"
+          >
+            📝 Chấm điểm ngay →
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- E2: Chưa có sign-profile -->
     <div
-      v-if="!signProfile && !checkingProfile"
+      v-else-if="!signProfile && !checkingProfile"
       class="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl"
     >
       <div class="flex items-start gap-3">
@@ -67,10 +98,8 @@
           <strong>{{ signProfile.subject_cn }}</strong>
           <span class="ml-2"
             >· Serial:
-            <span class="font-mono"
-              >{{ signProfile.certificate_serial?.substring(0, 16) }}...</span
-            ></span
-          >
+            <span class="font-mono">{{ signProfile.certificate_serial?.substring(0, 16) }}...</span>
+          </span>
         </p>
         <p class="text-[10px] text-emerald-600 mt-0.5">
           Thuật toán: {{ signProfile.algorithm }} · Hết hạn:
@@ -144,6 +173,7 @@
         Hủy
       </button>
       <button
+        v-if="!submissionNotGraded"
         @click="handleSubmit"
         :disabled="!canSign || submitting"
         class="flex-1 py-2.5 bg-teal-600 text-white rounded-xl text-sm font-semibold hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
@@ -160,6 +190,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import axiosClient from '@/api/axiosClient'
 import { useToastStore } from '@/stores/toast'
 
@@ -169,12 +200,18 @@ const props = defineProps({
 
 const emit = defineEmits(['cancel', 'success'])
 
+const router = useRouter()
 const toast = useToastStore()
+
 const signProfile = ref(null)
 const checkingProfile = ref(true)
 const confirmed = ref(false)
 const signingPassword = ref('')
 const submitting = ref(false)
+
+// ✅ State cho submission chưa graded
+const submissionNotGraded = ref(false)
+const gradeInfo = ref(null) // { submission_id, assignment_id, grade_url }
 
 const isExpired = computed(() => {
   if (!signProfile.value?.cert_expires_at) return false
@@ -183,7 +220,11 @@ const isExpired = computed(() => {
 
 const canSign = computed(
   () =>
-    signProfile.value && !isExpired.value && confirmed.value && signingPassword.value.length > 0,
+    signProfile.value &&
+    !isExpired.value &&
+    !submissionNotGraded.value &&
+    confirmed.value &&
+    signingPassword.value.length > 0,
 )
 
 onMounted(loadSignProfile)
@@ -216,6 +257,24 @@ async function handleSubmit() {
     emit('success', data.data)
   } catch (e) {
     const code = e.response?.data?.error_code
+    const errData = e.response?.data?.data
+
+    // Submission chưa chấm điểm → hiện warning + auto navigate
+    if (code === 'SUBMISSION_NOT_GRADED') {
+      submissionNotGraded.value = true
+      gradeInfo.value = errData
+
+      toast.warning('Bài nộp chưa được chấm điểm. Đang chuyển đến trang chấm điểm...', {
+        duration: 3000,
+      })
+
+      // Auto navigate sau 1.5s để user kịp đọc toast
+      setTimeout(() => {
+        goToGrade()
+      }, 1500)
+      return
+    }
+
     if (code === 'WRONG_SIGNING_PASSWORD') {
       toast.error('Mật khẩu ký số không chính xác')
       signingPassword.value = ''
@@ -225,12 +284,31 @@ async function handleSubmit() {
     } else if (code === 'SIGN_PROFILE_EXPIRED') {
       toast.error('Chữ ký số đã hết hạn')
       await loadSignProfile()
+    } else if (code === 'PENDING_DEACTIVATION') {
+      toast.error('Chữ ký số đang chờ Admin duyệt vô hiệu hóa')
     } else {
       toast.error(e.response?.data?.message ?? 'Có lỗi xảy ra')
     }
   } finally {
     submitting.value = false
   }
+}
+
+// Navigate đến trang chấm điểm
+function goToGrade() {
+  if (!gradeInfo.value) return
+
+  // Đóng modal/form trước khi navigate
+  emit('cancel')
+
+  // Navigate đến trang review của assignment
+  if (gradeInfo.value.assignment_id) {
+    router.push(`/lecturer/assignments/${gradeInfo.value.assignment_id}/review`)
+    return
+  }
+
+  // Last fallback
+  router.push('/lecturer/assignments')
 }
 
 function formatDate(d) {
