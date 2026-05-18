@@ -6,6 +6,8 @@ use App\Models\Auth\User;
 use App\Models\Group\Group;
 use App\Models\Task\Task;
 use App\Models\Task\TaskActivity;
+use App\Notifications\TaskReviewResolved;
+use App\Notifications\TaskSubmittedForReview;
 use Illuminate\Support\Facades\DB;
 
 class TaskService
@@ -55,6 +57,7 @@ class TaskService
                 COUNT(*) as total,
                 SUM(CASE WHEN status = 'todo' THEN 1 ELSE 0 END) as todo,
                 SUM(CASE WHEN status = 'doing' THEN 1 ELSE 0 END) as doing,
+                SUM(CASE WHEN status = 'pending_review' THEN 1 ELSE 0 END) as pending_review,
                 SUM(CASE WHEN status = 'done' THEN 1 ELSE 0 END) as done,
                 SUM(CASE WHEN status = 'late' THEN 1 ELSE 0 END) as late
             ")
@@ -64,6 +67,7 @@ class TaskService
             'total' => (int) $statusCounts->total,
             'todo'  => (int) $statusCounts->todo,
             'doing' => (int) $statusCounts->doing,
+            'pending_review' => (int) $statusCounts->pending_review,
             'done'  => (int) $statusCounts->done,
             'late'  => (int) $statusCounts->late,
         ];
@@ -143,6 +147,16 @@ class TaskService
         $validStatuses = ['todo', 'doing', 'done', 'late'];
         if (!in_array($newStatus, $validStatuses)) {
             return $this->error('Trạng thái không hợp lệ. Cho phép: todo, doing, done, late', 422);
+        }
+        //Assignee (không phải leader) chỉ được chuyển todo ↔ doing
+        if ($isAssignee && !$isLeader) {
+            if (!in_array($newStatus, ['todo', 'doing'])) {
+                return $this->error(
+                    'Bạn chỉ có thể chuyển sang trạng thái "Đang làm" hoặc "Cần làm". '
+                    . 'Để báo hoàn thành, hãy bấm "Báo hoàn thành" để gửi cho nhóm trưởng duyệt.',
+                    403
+                );
+            }
         }
 
         $oldStatus = $task->status;
@@ -286,6 +300,170 @@ class TaskService
         return $this->success('Chi tiết công việc', ['task' => $result]);
     }
 
+    // ─── 1. SV submit hoàn thành ──────────────────────────
+    /**
+     * Assignee báo task đã hoàn thành — chờ leader duyệt
+     */
+    public function submitForReview(User $user, int $taskId, ?string $note = null): array
+    {
+        $task = Task::with('group')->findOrFail($taskId);
+    
+        if (!$task->group->isMember($user->id)) {
+            return $this->error('Bạn không phải thành viên của nhóm này', 403);
+        }
+    
+        // Chỉ assignee mới được submit
+        if ($task->assignee_id !== $user->id) {
+            return $this->error('Chỉ người được giao việc mới có thể báo hoàn thành', 403);
+        }
+    
+        // Không cho submit nếu đang done hoặc đang pending_review
+        if ($task->status === 'done') {
+            return $this->error('Task này đã hoàn thành', 409);
+        }
+        if ($task->status === 'pending_review') {
+            return $this->error('Đã gửi yêu cầu duyệt, đang chờ nhóm trưởng', 409);
+        }
+    
+        try {
+            DB::transaction(function () use ($task, $user, $note) {
+                $oldStatus = $task->status;
+    
+                $task->update([
+                    'status'                  => 'pending_review',
+                    'submitted_for_review_at' => now(),
+                    'submission_note'         => $note,
+                    // Reset reviewed_by nếu là lần submit lại sau khi bị reject
+                    'reviewed_by'             => null,
+                    'reviewed_at'             => null,
+                    'review_note'             => null,
+                ]);
+    
+                TaskActivity::create([
+                    'task_id'   => $task->id,
+                    'user_id'   => $user->id,
+                    'action'    => 'submitted_for_review',
+                    'old_value' => ['status' => $oldStatus],
+                    'new_value' => ['status' => 'pending_review', 'note' => $note],
+                ]);
+            });
+    
+            // Notify leader
+            $this->notifyLeader($task->fresh(['group', 'assignee']));
+    
+            return $this->success('Đã gửi yêu cầu xác nhận hoàn thành. Chờ nhóm trưởng duyệt.', [
+                'task' => $this->formatTask($task->fresh(['assignee', 'creator', 'reviewer'])),
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Submit task review failed: ' . $e->getMessage());
+            return $this->error('Lỗi: ' . $e->getMessage(), 500);
+        }
+    }
+    
+    // ─── 2. Leader approve ────────────────────────────────
+    /**
+     * Trưởng nhóm duyệt task hoàn thành → status=done
+     */
+    public function approveCompletion(User $leader, int $taskId, ?string $note = null): array
+    {
+        $task = Task::with(['group', 'assignee'])->findOrFail($taskId);
+    
+        if (!$task->group->isLeader($leader->id)) {
+            return $this->error('Chỉ nhóm trưởng mới có quyền duyệt', 403);
+        }
+    
+        if ($task->status !== 'pending_review') {
+            return $this->error('Task không ở trạng thái chờ duyệt', 409);
+        }
+    
+        try {
+            DB::transaction(function () use ($task, $leader, $note) {
+                $finalStatus = 'done';
+    
+                // Nếu hoàn thành sau deadline → đánh dấu late
+                if ($task->deadline && now()->gt($task->deadline)) {
+                    $finalStatus = 'late';
+                }
+    
+                $task->update([
+                    'status'             => $finalStatus,
+                    'actual_finish_date' => $task->submitted_for_review_at ?? now(),
+                    'reviewed_by'        => $leader->id,
+                    'reviewed_at'        => now(),
+                    'review_note'        => $note,
+                ]);
+    
+                TaskActivity::create([
+                    'task_id'   => $task->id,
+                    'user_id'   => $leader->id,
+                    'action'    => 'review_approved',
+                    'old_value' => ['status' => 'pending_review'],
+                    'new_value' => ['status' => $finalStatus, 'note' => $note],
+                ]);
+            });
+    
+            // Notify assignee
+            if ($task->assignee) {
+                $this->notifyAssignee($task->fresh(['group', 'reviewer']), 'approved');
+            }
+    
+            return $this->success('Đã duyệt hoàn thành công việc', [
+                'task' => $this->formatTask($task->fresh(['assignee', 'creator', 'reviewer'])),
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Approve task failed: ' . $e->getMessage());
+            return $this->error('Lỗi: ' . $e->getMessage(), 500);
+        }
+    }
+    
+    // ─── 3. Leader reject ─────────────────────────────────
+    /**
+     * Trưởng nhóm từ chối → status quay về 'doing', assignee phải làm tiếp
+     */
+    public function rejectCompletion(User $leader, int $taskId, string $reason): array
+    {
+        $task = Task::with(['group', 'assignee'])->findOrFail($taskId);
+    
+        if (!$task->group->isLeader($leader->id)) {
+            return $this->error('Chỉ nhóm trưởng mới có quyền từ chối', 403);
+        }
+    
+        if ($task->status !== 'pending_review') {
+            return $this->error('Task không ở trạng thái chờ duyệt', 409);
+        }
+    
+        try {
+            DB::transaction(function () use ($task, $leader, $reason) {
+                $task->update([
+                    'status'             => 'doing',          // Quay về làm tiếp
+                    'actual_finish_date' => null,
+                    'reviewed_by'        => $leader->id,
+                    'reviewed_at'        => now(),
+                    'review_note'        => $reason,
+                ]);
+    
+                TaskActivity::create([
+                    'task_id'   => $task->id,
+                    'user_id'   => $leader->id,
+                    'action'    => 'review_rejected',
+                    'old_value' => ['status' => 'pending_review'],
+                    'new_value' => ['status' => 'doing', 'reason' => $reason],
+                ]);
+            });
+    
+            // Notify assignee
+            if ($task->assignee) {
+                $this->notifyAssignee($task->fresh(['group', 'reviewer']), 'rejected');
+            }
+    
+            return $this->success('Đã từ chối, công việc sẽ quay lại trạng thái Đang làm', [
+                'task' => $this->formatTask($task->fresh(['assignee', 'creator', 'reviewer'])),
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Reject task failed: ' . $e->getMessage());
+            return $this->error('Lỗi: ' . $e->getMessage(), 500);
+        }
+    }
     // ─────────────────────────────────────────────
     // Private helpers
     // ─────────────────────────────────────────────
@@ -293,6 +471,27 @@ class TaskService
     /**
      * Format task — bao gồm comments + attachments + user avatar
      */
+    private function notifyLeader(Task $task): void
+    {
+        try {
+            $leader = $task->group->leader ?? null;
+            if (!$leader || $leader->id === $task->assignee_id) return;
+    
+            $leader->notify(new TaskSubmittedForReview($task));
+        } catch (\Exception $e) {
+            \Log::warning('Notify leader review failed: ' . $e->getMessage());
+        }
+    }
+    
+    private function notifyAssignee(Task $task, string $action): void
+    {
+        try {
+            if (!$task->assignee) return;
+            $task->assignee->notify(new TaskReviewResolved($task, $action));
+        } catch (\Exception $e) {
+            \Log::warning('Notify assignee review failed: ' . $e->getMessage());
+        }
+    }
     private function formatTask($task): array
     {
         return [
@@ -307,7 +506,12 @@ class TaskService
             'is_overdue'  => $task->deadline < now() && $task->status !== 'done',
             'assignee'    => $task->assignee,
             'creator'     => $task->creator,
-
+            // Review info
+            'submitted_for_review_at' => $task->submitted_for_review_at,
+            'submission_note'         => $task->submission_note,
+            'reviewer'                => $task->relationLoaded('reviewer') ? $task->reviewer : null,
+            'reviewed_at'             => $task->reviewed_at,
+            'review_note'             => $task->review_note,
             //Comments với attachments + user avatar (qua accessor avatar_url)
             'comments'    => $task->relationLoaded('comments')
                 ? $task->comments->map(function ($c) {

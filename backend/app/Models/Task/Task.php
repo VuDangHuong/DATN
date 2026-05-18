@@ -22,12 +22,19 @@ class Task extends Model
         'priority',    // 'low' | 'medium' | 'high' | 'urgent'
         'status',      // 'todo' | 'doing' | 'done' | 'late'
         'weight',
+        'submitted_for_review_at',
+        'submission_note',
+        'reviewed_by',
+        'reviewed_at',
+        'review_note',
     ];
  
     protected $casts = [
         'start_date'         => 'datetime',
         'deadline'           => 'datetime',
         'actual_finish_date' => 'datetime',
+        'submitted_for_review_at' => 'datetime',
+        'reviewed_at'             => 'datetime',
     ];
     public function group()
     {
@@ -53,7 +60,10 @@ class Task extends Model
     {
         return $this->hasMany(TaskComment::class)->orderBy('created_at', 'asc');
     }
- 
+    public function reviewer(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
+    }
     /* ── Helpers ────────────────────────────────── */
  
     /**

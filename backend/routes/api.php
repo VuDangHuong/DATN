@@ -320,15 +320,20 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('groups/{groupId}/tasks', [TaskController::class, 'store']);         // Tạo task (leader)
         Route::post('groups/{groupId}/tasks/bulk',    [TaskController::class, 'storeBulk']);
 
-        Route::get('tasks/{taskId}',          [TaskController::class, 'show']);          // Chi tiết task
-        Route::put('tasks/{taskId}',          [TaskController::class, 'update']);        // Sửa task (leader)
-        Route::patch('tasks/{taskId}/status', [TaskController::class, 'updateStatus']); // Đổi status
-        Route::delete('tasks/{taskId}',       [TaskController::class, 'destroy']);       // Xóa task (leader)
-
         Route::get('tasks/{taskId}/comments',    [TaskCommentController::class, 'index']);   // DS bình luận
         Route::post('tasks/{taskId}/comments',   [TaskCommentController::class, 'store']);   // Thêm bình luận
         Route::put('comments/{commentId}',       [TaskCommentController::class, 'update']);  // Sửa bình luận
         Route::delete('comments/{commentId}',    [TaskCommentController::class, 'destroy']); // Xóa bình luận
         Route::delete('/comments/attachments/{attachmentId}',[TaskCommentController::class, 'deleteAttachment']);
+        //Task
+        Route::post('tasks/{id}/submit-review', [TaskController::class, 'submitForReview']);
+        Route::post('tasks/{id}/approve',       [TaskController::class, 'approve']);
+        Route::post('tasks/{id}/reject',        [TaskController::class, 'reject']);
+        Route::patch('tasks/{taskId}/status',   [TaskController::class, 'updateStatus']);
+
+        // Đặt SAU các route cụ thể
+        Route::get('tasks/{taskId}',    [TaskController::class, 'show']);
+        Route::put('tasks/{taskId}',    [TaskController::class, 'update']);
+        Route::delete('tasks/{taskId}', [TaskController::class, 'destroy']);
     });
 });

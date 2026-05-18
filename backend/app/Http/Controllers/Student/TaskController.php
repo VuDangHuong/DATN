@@ -162,7 +162,71 @@ class TaskController extends Controller
     }
  
     // ─────────────────────────────────────────────
+    /**
+     * POST /api/student/tasks/{id}/submit-review
+     *
+     * Assignee báo hoàn thành công việc
+     * Body: { "note": "Đã làm xong phần này..." } (optional)
+     */
+    public function submitForReview(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'note' => 'nullable|string|max:1000',
+        ]);
+    
+        $result = $this->service->submitForReview(
+            auth()->user(),
+            $id,
+            $data['note'] ?? null,
+        );
+    
+        return $this->toResponse($result);
+    }
  
+    /**
+     * POST /api/student/tasks/{id}/approve
+     *
+     * Trưởng nhóm duyệt
+     * Body: { "note": "OK rồi" } (optional)
+     */
+    public function approve(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'note' => 'nullable|string|max:1000',
+        ]);
+    
+        $result = $this->service->approveCompletion(
+            auth()->user(),
+            $id,
+            $data['note'] ?? null,
+        );
+    
+        return $this->toResponse($result);
+    }
+    
+    /**
+     * POST /api/student/tasks/{id}/reject
+     *
+     * Trưởng nhóm từ chối
+     * Body: { "reason": "Phần này chưa đủ..." } (BẮT BUỘC)
+     */
+    public function reject(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'reason' => 'required|string|min:5|max:1000',
+        ], [
+            'reason.required' => 'Vui lòng nhập lý do từ chối',
+            'reason.min'      => 'Lý do phải có ít nhất 5 ký tự',
+        ]);
+    
+        $result = $this->service->rejectCompletion(
+            auth()->user(),
+            $id,
+            $data['reason'],
+        );
+    
+        return $this->toResponse($result);
+    }
     private function toResponse(array $result, int $successCode = 200): JsonResponse
     {
         if ($result['status'] === 'error') {
