@@ -84,10 +84,16 @@
               >
                 <option value="todo">📋 Cần làm</option>
                 <option value="doing">🔄 Đang làm</option>
-                <option value="done">✅ Hoàn thành</option>
+                <option v-if="isLeader" value="done">✅ Hoàn thành (override)</option>
               </select>
             </div>
-
+            <TaskReviewSection
+              :task="task"
+              :current-user-id="currentUserId"
+              :is-leader="isLeader"
+              :leader-name="leaderName"
+              @updated="$emit('refresh')"
+            />
             <!-- Comments -->
             <div>
               <h4 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
@@ -205,6 +211,7 @@
 <script setup>
 import TaskCommentItem from './TaskCommentItem.vue'
 import CommentAttachmentInput from './CommentAttachmentInput.vue'
+import TaskReviewSection from './TaskReviewSection.vue'
 
 defineProps({
   show: { type: Boolean, default: false },
@@ -219,6 +226,7 @@ defineProps({
   editCommentContent: { type: String, default: '' },
   editCommentFiles: { type: Array, default: () => [] },
   removedEditAttachmentIds: { type: Array, default: () => [] },
+  leaderName: { type: String, default: 'Nhóm trưởng' },
 })
 
 defineEmits([
@@ -289,12 +297,21 @@ function statusClass(s) {
       todo: 'bg-slate-100 text-slate-600',
       doing: 'bg-blue-100 text-blue-700',
       done: 'bg-emerald-100 text-emerald-700',
+      pending_review: 'bg-amber-100 text-amber-700',
       late: 'bg-red-100 text-red-700',
     }[s] || ''
   )
 }
 
 function statusLabel(s) {
-  return { todo: 'Cần làm', doing: 'Đang làm', done: 'Hoàn thành', late: 'Trễ hạn' }[s] || s
+  return (
+    {
+      todo: 'Cần làm',
+      doing: 'Đang làm',
+      pending_review: 'Chờ duyệt',
+      done: 'Hoàn thành',
+      late: 'Trễ hạn',
+    }[s] || s
+  )
 }
 </script>

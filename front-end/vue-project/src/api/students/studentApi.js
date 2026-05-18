@@ -96,6 +96,16 @@ export const taskApi = {
 
   // Xóa task
   delete: (taskId) => axiosClient.delete(`${BASE}/tasks/${taskId}`),
+
+  //SV báo hoàn thành
+  submitForReview: (taskId, note = '') =>
+    axiosClient.post(`/student/tasks/${taskId}/submit-review`, { note }),
+
+  // Trưởng duyệt
+  approve: (taskId, note = '') => axiosClient.post(`/student/tasks/${taskId}/approve`, { note }),
+
+  // Trưởng từ chối
+  reject: (taskId, reason) => axiosClient.post(`/student/tasks/${taskId}/reject`, { reason }),
 }
 export const commentApi = {
   // Lấy DS bình luận trong task

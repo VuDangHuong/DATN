@@ -21,6 +21,7 @@ const items = {
   total: { label: 'Tổng', color: 'text-slate-700' },
   todo: { label: 'Cần làm', color: 'text-slate-500' },
   doing: { label: 'Đang làm', color: 'text-blue-600' },
+  pending_review: { label: 'Chờ duyệt', color: 'text-amber-600' },
   done: { label: 'Hoàn thành', color: 'text-emerald-600' },
   late: { label: 'Trễ hạn', color: 'text-red-600' },
 }

@@ -44,11 +44,12 @@
     </div>
 
     <template v-else>
-      <!-- ✅ Component thống kê -->
+      <!-- Component thống kê -->
       <TaskStats :stats="stats" />
 
       <KanbanboardView
         :tasks="tasks"
+        :members="members"
         :is-leader="isLeader"
         :current-user-id="user.id"
         @click-task="openTaskDetail"
@@ -58,7 +59,7 @@
       />
     </template>
 
-    <!-- ✅ Modal tạo/sửa task -->
+    <!-- Modal tạo/sửa task -->
     <TaskFormModal
       :show="showTaskModal"
       :editing-task="editingTask"
@@ -68,7 +69,7 @@
       @save="handleSaveTask"
     />
 
-    <!-- ✅ Modal chi tiết task -->
+    <!-- Modal chi tiết task -->
     <TaskDetailModal
       :show="showDetailModal"
       :task="currentTask"
@@ -82,6 +83,8 @@
       :edit-comment-content="editCommentContent"
       :edit-comment-files="editCommentFiles"
       :removed-edit-attachment-ids="removedEditAttachmentIds"
+      :leader-name="leaderName"
+      @refresh="taskStore.fetchTasks(groupId)"
       @close="showDetailModal = false"
       @edit-task="openEditModal"
       @change-status="handleChangeStatus"
@@ -98,7 +101,7 @@
       @update:edit-comment-files="editCommentFiles = $event"
     />
 
-    <!-- ✅ Modal tạo nhiều task -->
+    <!-- Modal tạo nhiều task -->
     <BulkCreateTaskModal
       :show="showBulkModal"
       :group-id="groupId"
@@ -161,6 +164,7 @@ const isLeader = computed(() => dashboardStore.myGroup?.leader?.id === user.id)
 const members = computed(
   () => groupStore.currentGroup?.members || dashboardStore.myGroup?.members || [],
 )
+const leaderName = computed(() => dashboardStore.myGroup?.leader?.name || 'Nhóm trưởng')
 
 function canChangeStatusFor(task) {
   if (!task) return false

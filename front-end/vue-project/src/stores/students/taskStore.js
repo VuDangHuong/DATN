@@ -211,6 +211,70 @@ export const useTaskStore = defineStore('task', () => {
       loading.value = false
     }
   }
+
+  async function submitForReview(taskId, note = '') {
+    try {
+      const { data } = await taskApi.submitForReview(taskId, note)
+
+      // Cập nhật local
+      const idx = tasks.value.findIndex((t) => t.id === taskId)
+      if (idx >= 0 && data.task) {
+        tasks.value[idx] = data.task
+      }
+      if (currentTask.value?.id === taskId && data.task) {
+        currentTask.value = data.task
+      }
+
+      return { success: true, message: data.message, data: data.task }
+    } catch (e) {
+      return {
+        success: false,
+        message: e.response?.data?.message ?? 'Gửi yêu cầu thất bại',
+      }
+    }
+  }
+
+  async function approveTask(taskId, note = '') {
+    try {
+      const { data } = await taskApi.approve(taskId, note)
+
+      const idx = tasks.value.findIndex((t) => t.id === taskId)
+      if (idx >= 0 && data.task) {
+        tasks.value[idx] = data.task
+      }
+      if (currentTask.value?.id === taskId && data.task) {
+        currentTask.value = data.task
+      }
+
+      return { success: true, message: data.message, data: data.task }
+    } catch (e) {
+      return {
+        success: false,
+        message: e.response?.data?.message ?? 'Duyệt thất bại',
+      }
+    }
+  }
+
+  async function rejectTask(taskId, reason) {
+    try {
+      const { data } = await taskApi.reject(taskId, reason)
+
+      const idx = tasks.value.findIndex((t) => t.id === taskId)
+      if (idx >= 0 && data.task) {
+        tasks.value[idx] = data.task
+      }
+      if (currentTask.value?.id === taskId && data.task) {
+        currentTask.value = data.task
+      }
+
+      return { success: true, message: data.message, data: data.task }
+    } catch (e) {
+      return {
+        success: false,
+        message: e.response?.data?.message ?? 'Từ chối thất bại',
+      }
+    }
+  }
   return {
     tasks,
     stats,
@@ -235,5 +299,8 @@ export const useTaskStore = defineStore('task', () => {
     deleteComment,
     deleteAttachment,
     bulkCreateTasks,
+    submitForReview,
+    approveTask,
+    rejectTask,
   }
 })
