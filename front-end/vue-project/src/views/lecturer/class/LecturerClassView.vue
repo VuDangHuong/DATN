@@ -75,22 +75,28 @@
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
                 <h3 class="font-semibold text-slate-800">{{ cls.name }}</h3>
-                <span
-                  class="px-2 py-0.5 bg-slate-100 text-slate-500 text-xs font-mono rounded-lg"
-                  >{{ cls.code }}</span
-                >
+                <span class="px-2 py-0.5 bg-slate-100 text-slate-500 text-xs font-mono rounded-lg">
+                  {{ cls.code }}
+                </span>
                 <span
                   v-if="lecturerStore.selectedClassId === cls.id"
                   class="px-2 py-0.5 bg-teal-100 text-teal-700 text-[10px] font-bold rounded-full"
                 >
                   Đang chọn
                 </span>
+
+                <!-- Badge định mức TV/nhóm -->
+                <span
+                  class="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded-full flex items-center gap-1"
+                >
+                  👥 {{ cls.max_members_per_group ?? 5 }}/nhóm
+                </span>
               </div>
               <div class="flex items-center gap-4 mt-1 text-xs text-slate-400">
                 <span>{{ cls.semester?.name }}</span>
-                <span v-if="cls.subjects?.length">{{
-                  cls.subjects.map((s) => s.code).join(', ')
-                }}</span>
+                <span v-if="cls.subjects?.length">
+                  {{ cls.subjects.map((s) => s.code).join(', ') }}
+                </span>
               </div>
             </div>
             <div class="hidden sm:flex items-center gap-6 text-center flex-shrink-0">
@@ -133,13 +139,39 @@
           </div>
 
           <div v-else class="p-5">
-            <div class="flex items-center justify-between mb-4">
-              <h4 class="text-sm font-semibold text-slate-600">
-                Danh sách nhóm
-                <span class="ml-1.5 px-2 py-0.5 bg-teal-100 text-teal-700 text-xs rounded-full">{{
-                  groups.length
-                }}</span>
-              </h4>
+            <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
+              <div class="flex items-center gap-3">
+                <h4 class="text-sm font-semibold text-slate-600">
+                  Danh sách nhóm
+                  <span class="ml-1.5 px-2 py-0.5 bg-teal-100 text-teal-700 text-xs rounded-full">
+                    {{ groups.length }}
+                  </span>
+                </h4>
+
+                <!-- ✅ Nút cài đặt định mức -->
+                <button
+                  @click.stop="openMaxMembersModal(cls)"
+                  class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-medium transition border border-indigo-200"
+                  title="Cài đặt định mức thành viên mỗi nhóm"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                    />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                  Định mức: {{ cls.max_members_per_group ?? 5 }} TV/nhóm
+                </button>
+              </div>
+
               <input
                 v-model="groupSearch"
                 type="text"
@@ -177,6 +209,7 @@
                     {{ group.is_locked ? 'Đã khóa' : 'Mở' }}
                   </span>
                 </div>
+
                 <div class="flex items-center gap-2 mb-3">
                   <div
                     class="w-6 h-6 rounded-full bg-teal-100 flex items-center justify-center text-[10px] font-bold text-teal-700 flex-shrink-0"
@@ -190,6 +223,7 @@
                     <p class="text-[10px] text-slate-400">Trưởng nhóm</p>
                   </div>
                 </div>
+
                 <div class="flex items-center justify-between">
                   <div class="flex -space-x-1.5">
                     <div
@@ -207,9 +241,21 @@
                       +{{ group.members.length - 4 }}
                     </div>
                   </div>
-                  <span class="text-xs text-slate-500"
-                    >{{ group.member_count ?? group.members?.length ?? 0 }} thành viên</span
+                  <!-- ✅ Hiện cả max của lớp -->
+                  <span
+                    class="text-xs"
+                    :class="
+                      isGroupOverLimit(group, cls)
+                        ? 'text-amber-600 font-semibold'
+                        : 'text-slate-500'
+                    "
                   >
+                    {{ group.member_count ?? group.members?.length ?? 0 }}/{{
+                      cls.max_members_per_group ?? 5
+                    }}
+                    TV
+                    <span v-if="isGroupOverLimit(group, cls)" class="ml-0.5">⚠️</span>
+                  </span>
                 </div>
                 <p
                   class="text-[10px] text-teal-600 mt-2 opacity-0 group-hover:opacity-100 transition"
@@ -231,6 +277,15 @@
       @close="selectedGroup = null"
       @updated="onGroupUpdated"
     />
+
+    <!-- Modal cài đặt định mức TV/nhóm -->
+    <MaxMembersPerGroupModal
+      :show="showMaxMembersModal"
+      :class-id="targetClass?.id ?? 0"
+      :current="targetClass?.max_members_per_group ?? 5"
+      @close="showMaxMembersModal = false"
+      @updated="onMaxMembersUpdated"
+    />
   </div>
 </template>
 
@@ -239,6 +294,8 @@ import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useLecturerStore } from '@/stores/lecturer/lecturerStore'
 import axiosClient from '@/api/axiosClient'
 import ModalGroupDetailView from '../components/ModalGroupDetailView.vue'
+import MaxMembersPerGroupModal from '../components/class/MaxMembersPerGroupModal.vue'
+
 const lecturerStore = useLecturerStore()
 
 const classes = ref([])
@@ -249,29 +306,38 @@ const openClassId = ref(null)
 const groupSearch = ref('')
 const groupCounts = ref({})
 const selectedGroup = ref(null)
-const classRefs = ref({}) // refs để scroll
+const classRefs = ref({})
 
-// ✅ Lọc theo selectedClassId từ store
+// State cho modal định mức
+const showMaxMembersModal = ref(false)
+const targetClass = ref(null)
+
 const filteredClasses = computed(() => {
   const id = lecturerStore.selectedClassId
   if (!id) return classes.value
   return classes.value.filter((c) => c.id === id)
 })
 
+const filteredGroups = computed(() => {
+  if (!groupSearch.value.trim()) return groups.value
+  const q = groupSearch.value.toLowerCase()
+  return groups.value.filter(
+    (g) =>
+      g.name?.toLowerCase().includes(q) ||
+      g.leader?.name?.toLowerCase().includes(q) ||
+      g.invitation_code?.toLowerCase().includes(q),
+  )
+})
+
 onMounted(fetchClasses)
 
-// ✅ Watch selectedClassId → tự mở accordion + scroll đến lớp đó
 watch(
   () => lecturerStore.selectedClassId,
   async (classId) => {
     if (!classId) return
-
-    // Mở accordion của lớp được chọn
     if (openClassId.value !== classId) {
       await loadGroups(classId)
     }
-
-    // Scroll đến lớp đó
     await nextTick()
     const el = classRefs.value[classId]
     if (el) {
@@ -283,7 +349,6 @@ watch(
 async function fetchClasses() {
   loading.value = true
   try {
-    // Dùng lại data từ store nếu đã có, không cần gọi lại
     if (lecturerStore.classes.length > 0) {
       classes.value = lecturerStore.classes
     } else {
@@ -293,7 +358,6 @@ async function fetchClasses() {
     }
     await loadGroupCounts(classes.value)
 
-    // Nếu đã có selectedClassId → mở luôn
     if (lecturerStore.selectedClassId) {
       await loadGroups(lecturerStore.selectedClassId)
     }
@@ -310,6 +374,11 @@ async function loadGroupCounts(classList) {
       try {
         const { data } = await axiosClient.get(`/lecturer/classes/${cls.id}/groups`)
         groupCounts.value[cls.id] = data.groups?.length ?? 0
+
+        //Cập nhật max_members_per_group nếu API trả về
+        if (data.max_members_per_group !== undefined) {
+          cls.max_members_per_group = data.max_members_per_group
+        }
       } catch {
         groupCounts.value[cls.id] = 0
       }
@@ -336,7 +405,14 @@ async function loadGroups(classId) {
     const { data } = await axiosClient.get(`/lecturer/classes/${classId}/groups`)
     const rawGroups = data.groups ?? data.data ?? data ?? []
 
-    //Load members cho từng group song song
+    // Cập nhật max_members_per_group cho class hiện tại
+    if (data.max_members_per_group !== undefined) {
+      const idx = classes.value.findIndex((c) => c.id === classId)
+      if (idx >= 0) {
+        classes.value[idx].max_members_per_group = data.max_members_per_group
+      }
+    }
+
     const groupsWithMembers = await Promise.all(
       rawGroups.map(async (g) => {
         try {
@@ -365,28 +441,40 @@ async function loadGroups(classId) {
 function openGroupDetail(group) {
   selectedGroup.value = group
 }
-// Thêm handler
+
 function onGroupUpdated(groupId) {
-  // Reload group count
   loadGroupCounts(classes.value)
 }
-const filteredGroups = computed(() => {
-  if (!groupSearch.value.trim()) return groups.value
-  const q = groupSearch.value.toLowerCase()
-  return groups.value.filter(
-    (g) =>
-      g.name?.toLowerCase().includes(q) ||
-      g.leader?.name?.toLowerCase().includes(q) ||
-      g.invitation_code?.toLowerCase().includes(q),
-  )
-})
 
-function formatDate(d) {
-  if (!d) return ''
-  return new Date(d).toLocaleDateString('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  })
+// Mở modal cài đặt định mức
+function openMaxMembersModal(cls) {
+  targetClass.value = cls
+  showMaxMembersModal.value = true
+}
+
+// ✅ Sau khi update định mức thành công
+function onMaxMembersUpdated(newMax) {
+  if (!targetClass.value) return
+
+  // Update local class data
+  const idx = classes.value.findIndex((c) => c.id === targetClass.value.id)
+  if (idx >= 0) {
+    classes.value[idx].max_members_per_group = newMax
+  }
+
+  // Update lecturer store nếu có
+  if (lecturerStore.classes) {
+    const storeIdx = lecturerStore.classes.findIndex((c) => c.id === targetClass.value.id)
+    if (storeIdx >= 0) {
+      lecturerStore.classes[storeIdx].max_members_per_group = newMax
+    }
+  }
+}
+
+// Check nhóm có vượt định mức không
+function isGroupOverLimit(group, cls) {
+  const max = cls.max_members_per_group ?? 5
+  const count = group.member_count ?? group.members?.length ?? 0
+  return count > max
 }
 </script>

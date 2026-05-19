@@ -99,7 +99,7 @@
             </div>
           </div>
           <!-- Số SV tối đa -->
-          <div>
+          <!-- <div>
             <label class="block text-sm font-medium text-gray-600 mb-1">Số SV tối đa</label>
             <input
               v-model.number="form.max_members"
@@ -108,7 +108,7 @@
               max="200"
               class="input-field"
             />
-          </div>
+          </div> -->
         </div>
 
         <!-- Actions -->
