@@ -137,7 +137,72 @@ class GroupService
             'member_count' => $group->memberCount(),
         ]);
     }
+    /**
+     * GV thêm SV vào nhóm — BYPASS check max_members_per_group
+     * Dùng khi SV lẻ ra sau khi các nhóm đã đủ định mức
+     */
+    public function addMemberByLecturer(User $lecturer, int $groupId, string $studentCode): array
+    {
+        $group = Group::with('classRoom')->findOrFail($groupId);
  
+        $class = $group->classRoom;
+ 
+        // Chỉ GV của lớp này mới được
+        if (!$class || $class->lecturer_id !== $lecturer->id) {
+            return $this->error('Bạn không phải giảng viên của lớp này', 403);
+        }
+ 
+        $student = User::where('code', $studentCode)->where('role', 'student')->first();
+        if (!$student) {
+            return $this->error("Không tìm thấy sinh viên với mã: {$studentCode}", 404);
+        }
+ 
+        if (!$class->students()->where('student_id', $student->id)->exists()) {
+            return $this->error('Sinh viên không thuộc lớp này', 422);
+        }
+ 
+        $alreadyInGroup = Group::where('class_id', $class->id)
+            ->whereHas('members', fn($q) => $q->where('user_id', $student->id))
+            ->exists();
+ 
+        if ($alreadyInGroup) {
+            return $this->error('Sinh viên đã có nhóm trong lớp này', 422);
+        }
+ 
+        // KHÔNG check max - GV được bypass
+ 
+        DB::transaction(function () use ($group, $student, $class) {
+            GroupMember::create([
+                'group_id'  => $group->id,
+                'user_id'   => $student->id,
+                'role'      => 'member',
+                'joined_at' => now(),
+            ]);
+ 
+            $class->students()->updateExistingPivot($student->id, [
+                'has_group'  => true,
+                'updated_at' => now(),
+            ]);
+        });
+ 
+        $maxPerGroup  = $class->max_members_per_group ?? 5;
+        $newCount     = $group->memberCount();
+        $isOverLimit  = $newCount > $maxPerGroup;
+ 
+        $message = $isOverLimit
+            ? "Đã thêm sinh viên vào nhóm. Lưu ý: nhóm hiện có {$newCount}/{$maxPerGroup} thành viên (vượt định mức)."
+            : 'Đã thêm sinh viên vào nhóm';
+ 
+        return $this->success($message, [
+            'member'        => [
+                'id'   => $student->id,
+                'code' => $student->code,
+                'name' => $student->name,
+            ],
+            'member_count'  => $newCount,
+            'is_over_limit' => $isOverLimit,
+        ]);
+    }
     /**
      * Nhóm trưởng xóa thành viên khỏi nhóm.
      */
@@ -320,12 +385,72 @@ class GroupService
             'group' => $this->formatGroup($group->fresh(['leader', 'members.user'])),
         ]);
     }
+
+    /**
+     *GV update max_members_per_group cho lớp
+     */
+    public function updateMaxMembersPerGroup(User $lecturer, int $classId, ?int $maxPerGroup): array
+    {
+        $class = Classes::find($classId);
+ 
+        if (!$class) {
+            return $this->error('Lớp không tồn tại', 404);
+        }
+ 
+        if ($class->lecturer_id !== $lecturer->id) {
+            return $this->error('Bạn không phải giảng viên của lớp này', 403);
+        }
+ 
+        if ($maxPerGroup !== null && ($maxPerGroup < 1 || $maxPerGroup > 100)) {
+            return $this->error('Số thành viên/nhóm phải từ 1 đến 100', 422);
+        }
+ 
+        // Warning nếu có nhóm hiện vượt mức mới
+        $warning = null;
+        if ($maxPerGroup !== null) {
+            $largestGroup = DB::table('groups')
+                ->leftJoin('group_members', 'groups.id', '=', 'group_members.group_id')
+                ->where('groups.class_id', $classId)
+                ->select('groups.id', DB::raw('COUNT(group_members.user_id) as cnt'))
+                ->groupBy('groups.id')
+                ->orderByDesc('cnt')
+                ->first();
+ 
+            if ($largestGroup && $largestGroup->cnt > $maxPerGroup) {
+                $warning = "Có nhóm hiện có {$largestGroup->cnt} thành viên, vượt mức mới ({$maxPerGroup}).";
+            }
+        }
+ 
+        $class->update(['max_members_per_group' => $maxPerGroup]);
+ 
+        return $this->success(
+            $maxPerGroup === null
+                ? 'Đã bỏ giới hạn (default 5)'
+                : "Đã cập nhật: {$maxPerGroup} thành viên/nhóm",
+            [
+                'class' => [
+                    'id'                    => $class->id,
+                    'name'                  => $class->name,
+                    'max_members_per_group' => $class->max_members_per_group,
+                ],
+                'warning' => $warning,
+            ]
+        );
+    }
     // ─────────────────────────────────────────────
     // Format helpers
     // ─────────────────────────────────────────────
  
     private function formatGroup(Group $group): array
     {
+        //Dùng max_members_per_group (không phải max_members là sĩ số lớp)
+        $maxPerGroup = $group->relationLoaded('classRoom') && $group->classRoom
+            ? ($group->classRoom->max_members_per_group ?? 5)
+            : null;
+ 
+        $memberCount = $group->relationLoaded('members')
+            ? $group->members->count()
+            : $group->memberCount();
         return [
             'id'              => $group->id,
             'name'            => $group->name,
@@ -345,6 +470,10 @@ class GroupService
                 'joined_at' => $m->joined_at,
             ]),
             'member_count'    => $group->members->count(),
+            // ✅ Capacity info — frontend dùng được
+            'max_members'     => $maxPerGroup,
+            'is_full'         => $maxPerGroup !== null && $memberCount >= $maxPerGroup,
+            'remaining_slots' => $maxPerGroup !== null ? max(0, $maxPerGroup - $memberCount) : null,
             'created_at'      => $group->created_at,
         ];
     }

@@ -20,10 +20,13 @@ class Classes extends Model
         'max_members',
         'group_registration_deadline',
         'is_active',
+        'max_members_per_group',
     ];
     protected $casts = [
         'is_active'                   => 'boolean',
         'group_registration_deadline' => 'datetime',
+        'max_members'           => 'integer',
+        'max_members_per_group' => 'integer',
     ];
 
     public function assignments()

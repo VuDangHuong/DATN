@@ -234,7 +234,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         // Danh sách nhóm theo lớp
         Route::get('/classes/{classId}/groups', [ClassController::class, 'groups']);
+        // Cài đặt định mức TV/nhóm
+        Route::patch('/classes/{id}/max-members-per-group',
+            [ClassController::class, 'updateMaxMembersPerGroup']);
         
+        // GV thêm SV vào nhóm (bypass max)
+        Route::post('/groups/{id}/add-member',
+            [ClassController::class, 'addMemberToGroup']);
+
         // Danh sách thành viên nhóm
         Route::get('/groups/{groupId}/members', [LecturerGroupController::class, 'members']);
         Route::get('/groups/{groupId}/tasks', [LecturerGroupController::class, 'tasks']);
