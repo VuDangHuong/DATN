@@ -40,6 +40,10 @@ import VerifyDocumentView from '@/views/public/VerifyDocumentView.vue'
 import LecturerDashboardView from '@/views/lecturer/LecturerDashboardView.vue'
 import AdminSignProfilesView from '@/views/admin/sign/AdminSignProfilesView.vue'
 import AdminDeactivationRequestsView from '@/views/admin/sign/AdminDeactivationRequestsView.vue'
+import MaterialsListPage from '@/views/students/materials/MaterialsListPage.vue'
+import StudentMaterialsView from '@/views/students/materials/StudentMaterialsView.vue'
+import MaterialsPage from '@/views/lecturer/materials/MaterialsPage.vue'
+import ClassMaterialsView from '@/views/lecturer/materials/ClassMaterialsView.vue'
 
 const routes = [
   {
@@ -106,6 +110,17 @@ const routes = [
       { path: 'assignments', name: 'assignments', component: StudentSubmisionView },
       { path: 'profile', name: 'student-profile', component: ProfileView },
       { path: 'change-password', name: 'student-change-password', component: ChangePasswordForm },
+      {
+        path: 'materials',
+        name: 'student-materials',
+        component: MaterialsListPage,
+      },
+      {
+        path: 'classes/:classId/materials',
+        name: 'student-class-materials',
+        component: StudentMaterialsView,
+        props: (route) => ({ classId: Number(route.params.classId) }),
+      },
     ],
   },
 
@@ -178,6 +193,18 @@ const routes = [
       },
       { path: 'profile', name: 'lecturer-profile', component: ProfileView },
       { path: 'change-password', name: 'lecturer-change-password', component: ChangePasswordForm },
+
+      {
+        path: 'materials',
+        name: 'lecturer-materials',
+        component: MaterialsPage,
+      },
+      {
+        path: 'classes/:classId/materials',
+        name: 'lecturer-class-materials',
+        component: ClassMaterialsView,
+        props: (route) => ({ classId: Number(route.params.classId) }),
+      },
     ],
   },
 ]
