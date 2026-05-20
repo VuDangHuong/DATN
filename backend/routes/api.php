@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\AdminSignProfileController;
 use App\Http\Controllers\Lecturers\AssignmentController;
 use App\Http\Controllers\Lecturers\ClassController;
+use App\Http\Controllers\Lecturers\ClassMaterialController;
 use App\Http\Controllers\Lecturers\LecturerDashboardController;
 use App\Http\Controllers\Lecturers\LecturerGroupController;
 use App\Http\Controllers\Public\PublicVerificationController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\Student\MessageController;
 use App\Http\Controllers\Student\StudentDashboardController;
 use App\Http\Controllers\Student\TaskCommentController;
 use App\Http\Controllers\Student\TaskController;
+use App\Http\Controllers\Students\StudentMaterialController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Admin\UserController;
@@ -268,6 +270,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('/deactivation-request/current',
                 [SignProfileController::class, 'currentDeactivationRequest']);
         });
+
+        Route::get('/classes/{classId}/materials',     [ClassMaterialController::class, 'index']);
+        Route::post('/classes/{classId}/materials',    [ClassMaterialController::class, 'store']);
+        Route::get('/classes/{classId}/copy-targets',  [ClassMaterialController::class, 'copyTargets']);
+        
+        Route::patch('/materials/{id}',                [ClassMaterialController::class, 'update']);
+        Route::delete('/materials/{id}',               [ClassMaterialController::class, 'destroy']);
+        Route::post('/materials/{id}/files',           [ClassMaterialController::class, 'addFiles']);
+        Route::post('/materials/copy',                 [ClassMaterialController::class, 'copy']);
+        
+        Route::delete('/material-files/{id}',          [ClassMaterialController::class, 'deleteFile']);
+        Route::get('/material-files/{id}/download',    [ClassMaterialController::class, 'downloadFile']);
     });
 
     // Student routes
@@ -342,5 +356,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('tasks/{taskId}',    [TaskController::class, 'show']);
         Route::put('tasks/{taskId}',    [TaskController::class, 'update']);
         Route::delete('tasks/{taskId}', [TaskController::class, 'destroy']);
+
+        Route::get('/classes/{classId}/materials',     [StudentMaterialController::class, 'index']);
+        Route::get('/material-files/{id}/download',    [StudentMaterialController::class, 'downloadFile']);
     });
 });
