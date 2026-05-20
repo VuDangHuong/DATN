@@ -181,6 +181,18 @@
           <span>Quản lý lớp</span>
         </router-link>
 
+        <router-link to="/lecturer/materials" class="nav-link" active-class="nav-active">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 006.5 22H20v-5M4 19.5v-15A2.5 2.5 0 016.5 2H20v15"
+            />
+          </svg>
+          <span>Tài liệu lớp học</span>
+        </router-link>
+
         <router-link to="/lecturer/tasks" class="nav-link" active-class="nav-active">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -380,6 +392,7 @@ const pageMap = {
   '/lecturer/dashboard': 'Dashboard',
   '/lecturer/classes': 'Quản lý lớp',
   '/lecturer/tasks': 'Công việc nhóm',
+  '/lecturer/materials': 'Tài liệu lớp học',
   '/lecturer/assignments': 'Đợt nộp bài',
   '/lecturer/reviews': 'Duyệt bài nộp',
   '/lecturer/sign-requests': 'Yêu cầu ký số',
