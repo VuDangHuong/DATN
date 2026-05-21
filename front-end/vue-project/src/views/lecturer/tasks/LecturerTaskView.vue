@@ -4,84 +4,119 @@
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
       <div>
-        <h2 class="text-2xl font-bold text-stone-800">Công việc nhóm</h2>
-        <p class="text-sm text-stone-500 mt-1">Theo dõi nhiệm vụ các thành viên trong nhóm</p>
+        <!-- Breadcrumb -->
+        <div
+          v-if="mode !== 'groups'"
+          class="flex items-center gap-2 text-xs text-stone-500 mb-1.5 flex-wrap"
+        >
+          <button @click="backToGroups" class="hover:text-teal-600 transition">
+            Công việc nhóm
+          </button>
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+          <button
+            v-if="mode === 'detail'"
+            @click="backToMembers"
+            class="hover:text-teal-600 transition"
+          >
+            {{ selectedGroup?.name }}
+          </button>
+          <span v-else class="text-stone-800 font-medium">{{ selectedGroup?.name }}</span>
+
+          <template v-if="mode === 'detail'">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+            <span class="text-stone-800 font-medium">{{ selectedMember?.name }}</span>
+          </template>
+        </div>
+
+        <h2 class="text-2xl font-bold text-stone-800">
+          {{ pageTitle }}
+        </h2>
+        <p class="text-sm text-stone-500 mt-1">{{ pageSubtitle }}</p>
       </div>
+
+      <button
+        v-if="mode !== 'groups'"
+        @click="handleBack"
+        class="px-4 py-2 border border-stone-200 hover:bg-stone-50 rounded-xl text-sm font-medium text-stone-700 flex items-center gap-2"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15 19l-7-7 7-7"
+          />
+        </svg>
+        Quay lại
+      </button>
     </div>
 
-    <!-- Chọn lớp + nhóm -->
+    <!-- ── Chọn lớp (luôn hiện) ── -->
     <div
       class="bg-white rounded-xl border border-stone-200 p-4 mb-5 flex flex-wrap gap-3 items-center"
     >
-      <!-- Chọn lớp -->
-      <div class="flex items-center gap-2">
+      <!-- ✅ Chọn lớp - dùng SearchableSelect -->
+      <div class="flex items-center gap-2 flex-1 min-w-[200px] max-w-md">
         <label class="text-xs font-medium text-stone-500 whitespace-nowrap">Lớp học:</label>
-        <select
+        <SearchableSelect
           v-model="selectedClassId"
+          :options="classOptions"
+          label-key="label"
+          value-key="id"
+          placeholder="-- Chọn lớp --"
+          search-placeholder="Tìm lớp theo mã / tên..."
+          empty-text="Bạn chưa có lớp nào"
+          class="flex-1"
           @change="onClassChange"
-          class="px-3 py-1.5 border border-stone-200 rounded-lg text-sm text-stone-700 outline-none focus:ring-2 focus:ring-teal-500"
-        >
-          <option value="">-- Chọn lớp --</option>
-          <option v-for="c in lecturerStore.classes" :key="c.id" :value="c.id">
-            {{ c.code }} - {{ c.name }}
-          </option>
-        </select>
-      </div>
-
-      <!-- Chọn nhóm -->
-      <div v-if="selectedClassId" class="flex items-center gap-2">
-        <label class="text-xs font-medium text-stone-500 whitespace-nowrap">Nhóm:</label>
-        <select
-          v-model="selectedGroupId"
-          @change="onGroupChange"
-          class="px-3 py-1.5 border border-stone-200 rounded-lg text-sm text-stone-700 outline-none focus:ring-2 focus:ring-teal-500"
-          :disabled="loadingGroups"
-        >
-          <option value="">-- Chọn nhóm --</option>
-          <option v-for="g in groups" :key="g.id" :value="g.id">{{ g.name }}</option>
-        </select>
-        <div
-          v-if="loadingGroups"
-          class="w-4 h-4 border-2 border-stone-300 border-t-stone-600 rounded-full animate-spin"
         />
       </div>
 
-      <!-- Filter thành viên -->
-      <div v-if="selectedGroupId && members.length" class="flex items-center gap-2">
-        <label class="text-xs font-medium text-stone-500 whitespace-nowrap">Thành viên:</label>
-        <select
-          v-model="filterMemberId"
-          @change="applyFilters"
-          class="px-3 py-1.5 border border-stone-200 rounded-lg text-sm text-stone-700 outline-none focus:ring-2 focus:ring-teal-500"
-        >
-          <option value="">Tất cả thành viên</option>
-          <option v-for="m in members" :key="m.id" :value="m.id">
-            {{ m.name }} {{ m.role === 'leader' ? '(Trưởng nhóm)' : '' }}
-          </option>
-        </select>
-      </div>
-
-      <!-- Filter trạng thái -->
-      <div v-if="selectedGroupId" class="flex gap-1 bg-stone-100 rounded-lg p-1 ml-auto">
-        <button
-          v-for="f in statusFilters"
-          :key="f.value"
-          @click="handleFilterClick(f.value)"
-          class="px-3 py-1.5 rounded-md text-xs font-medium transition"
-          :class="
-            filterStatus === f.value
-              ? 'bg-white text-stone-800 shadow-sm'
-              : 'text-stone-500 hover:text-stone-700'
-          "
-        >
-          {{ f.label }}
-        </button>
+      <!-- Search nhóm khi ở mode groups (giữ nguyên) -->
+      <div
+        v-if="mode === 'groups' && selectedClassId"
+        class="flex items-center gap-2 flex-1 min-w-[200px]"
+      >
+        <div class="relative flex-1">
+          <svg
+            class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"
+            />
+          </svg>
+          <input
+            v-model="groupSearch"
+            type="text"
+            placeholder="Tìm nhóm theo tên..."
+            class="w-full pl-8 pr-2 py-1.5 border border-stone-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500"
+          />
+        </div>
       </div>
     </div>
 
-    <!-- Chưa chọn nhóm -->
+    <!-- ── Empty state: chưa chọn lớp ── -->
     <div
-      v-if="!selectedGroupId"
+      v-if="!selectedClassId"
       class="bg-white rounded-xl border border-stone-200 p-12 text-center"
     >
       <svg
@@ -94,73 +129,245 @@
           stroke-linecap="round"
           stroke-linejoin="round"
           stroke-width="1.5"
-          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
         />
       </svg>
-      <p class="text-stone-400 font-medium">Chọn lớp và nhóm để xem công việc</p>
+      <p class="text-stone-400 font-medium">Chọn lớp để xem các nhóm</p>
     </div>
 
-    <!-- Loading tasks -->
-    <div v-else-if="loadingTasks" class="flex justify-center py-20">
+    <!-- ── Loading ── -->
+    <div v-else-if="loadingGroups || loadingTasks" class="flex justify-center py-20">
       <div class="w-8 h-8 border-4 border-teal-200 border-t-teal-600 rounded-full animate-spin" />
     </div>
 
-    <template v-else>
-      <!-- Stats -->
-      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
-        <div
-          v-for="(stat, key) in statItems"
-          :key="key"
-          class="bg-white rounded-xl border border-stone-200 p-4 text-center"
-        >
-          <p class="text-2xl font-bold" :class="stat.color">{{ stats[key] || 0 }}</p>
-          <p class="text-xs text-stone-400 mt-1">{{ stat.label }}</p>
+    <!-- ════════════════════════════════════════════ -->
+    <!-- ✅ MODE 1: GROUPS LIST (mới)                  -->
+    <!-- ════════════════════════════════════════════ -->
+    <template v-else-if="mode === 'groups'">
+      <!-- Class overview -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <div class="bg-white rounded-xl border border-stone-200 p-4 text-center">
+          <p class="text-2xl font-bold text-stone-700">{{ groups.length }}</p>
+          <p class="text-xs text-stone-400 mt-1">Tổng nhóm</p>
+        </div>
+        <div class="bg-white rounded-xl border border-stone-200 p-4 text-center">
+          <p class="text-2xl font-bold text-stone-700">{{ classOverallStats.total }}</p>
+          <p class="text-xs text-stone-400 mt-1">Tổng công việc</p>
+        </div>
+        <div class="bg-white rounded-xl border border-stone-200 p-4 text-center">
+          <p class="text-2xl font-bold text-emerald-600">{{ classOverallStats.done }}</p>
+          <p class="text-xs text-stone-400 mt-1">Đã hoàn thành</p>
+        </div>
+        <div class="bg-white rounded-xl border border-stone-200 p-4 text-center">
+          <p class="text-2xl font-bold text-red-600">{{ classOverallStats.late }}</p>
+          <p class="text-xs text-stone-400 mt-1">Trễ hạn</p>
         </div>
       </div>
 
-      <!-- Info thành viên đang xem -->
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm font-bold text-stone-700 uppercase tracking-wide">
+          👥 Danh sách nhóm ({{ filteredGroups.length }})
+        </h3>
+      </div>
+
+      <!-- Empty groups -->
       <div
-        v-if="filterMemberId"
-        class="mb-4 flex items-center gap-2 px-4 py-2.5 bg-teal-50 border border-teal-200 rounded-xl"
+        v-if="!filteredGroups.length"
+        class="bg-white rounded-xl border border-stone-200 p-12 text-center"
       >
-        <div
-          class="w-7 h-7 rounded-full bg-teal-100 flex items-center justify-center text-xs font-bold text-teal-700"
-        >
-          {{ selectedMember?.name?.charAt(0) }}
+        <p class="text-stone-400">
+          {{ groupSearch ? 'Không tìm thấy nhóm phù hợp' : 'Lớp chưa có nhóm nào' }}
+        </p>
+      </div>
+
+      <!-- Groups grid -->
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <GroupProgressCard
+          v-for="g in filteredGroups"
+          :key="g.id"
+          :group="g"
+          :stats="groupStatsMap[g.id] ?? emptyStats"
+          @click="openGroupDetail"
+        />
+      </div>
+    </template>
+
+    <!-- ════════════════════════════════════════════ -->
+    <!-- MODE 2: MEMBERS LIST (giữ nguyên logic)    -->
+    <!-- ════════════════════════════════════════════ -->
+    <template v-else-if="mode === 'members'">
+      <!-- Group overview -->
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
+        <div class="bg-white rounded-xl border border-stone-200 p-4 text-center">
+          <p class="text-2xl font-bold text-stone-700">{{ overallStats.total }}</p>
+          <p class="text-xs text-stone-400 mt-1">Tổng nhiệm vụ</p>
         </div>
-        <div>
-          <span class="text-sm font-semibold text-teal-800">{{ selectedMember?.name }}</span>
-          <span
-            v-if="selectedMember?.role === 'leader'"
-            class="ml-2 px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded"
-            >Trưởng nhóm</span
+        <div class="bg-white rounded-xl border border-stone-200 p-4 text-center">
+          <p class="text-2xl font-bold text-stone-500">{{ overallStats.todo }}</p>
+          <p class="text-xs text-stone-400 mt-1">Cần làm</p>
+        </div>
+        <div class="bg-white rounded-xl border border-stone-200 p-4 text-center">
+          <p class="text-2xl font-bold text-blue-600">{{ overallStats.doing }}</p>
+          <p class="text-xs text-stone-400 mt-1">Đang làm</p>
+        </div>
+        <div class="bg-white rounded-xl border border-stone-200 p-4 text-center">
+          <p class="text-2xl font-bold text-emerald-600">{{ overallStats.done }}</p>
+          <p class="text-xs text-stone-400 mt-1">Hoàn thành</p>
+        </div>
+        <div class="bg-white rounded-xl border border-stone-200 p-4 text-center">
+          <p class="text-2xl font-bold text-red-600">{{ overallStats.late }}</p>
+          <p class="text-xs text-stone-400 mt-1">Trễ hạn</p>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm font-bold text-stone-700 uppercase tracking-wide">
+          👥 Thành viên nhóm ({{ sortedMembers.length }})
+        </h3>
+        <p class="text-xs text-stone-400">
+          Tổng tiến độ nhóm: <strong :class="groupProgressColor">{{ groupProgress }}%</strong>
+        </p>
+      </div>
+
+      <!-- Empty members -->
+      <div
+        v-if="!sortedMembers.length"
+        class="bg-white rounded-xl border border-stone-200 p-12 text-center"
+      >
+        <p class="text-stone-400">Nhóm chưa có thành viên</p>
+      </div>
+
+      <!-- Member cards grid -->
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <MemberProgressCard
+          v-for="m in sortedMembers"
+          :key="m.id"
+          :member="m"
+          :stats="memberStats(m.id)"
+          @click="openMemberDetail"
+        />
+      </div>
+    </template>
+
+    <!-- ════════════════════════════════════════════ -->
+    <!--MODE 3: DETAIL VIEW (Kanban)               -->
+    <!-- ════════════════════════════════════════════ -->
+    <template v-else-if="mode === 'detail' && selectedMember">
+      <!-- Member info card -->
+      <div class="bg-white rounded-2xl border border-stone-200 p-5 mb-5 flex items-center gap-4">
+        <div class="relative flex-shrink-0">
+          <img
+            v-if="selectedMember.avatar_url || selectedMember.avatar"
+            :src="selectedMember.avatar_url || selectedMember.avatar"
+            class="w-16 h-16 rounded-full object-cover border-2"
+            :class="selectedMember.role === 'leader' ? 'border-amber-400' : 'border-stone-100'"
+          />
+          <div
+            v-else
+            class="w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold text-white border-2"
+            :class="
+              selectedMember.role === 'leader'
+                ? 'bg-gradient-to-br from-amber-400 to-orange-500 border-amber-400'
+                : 'bg-gradient-to-br from-teal-400 to-cyan-500 border-stone-100'
+            "
           >
-          <span class="text-xs text-teal-600 ml-2">{{ filteredTasks.length }} công việc</span>
+            {{ selectedMember.name?.charAt(0) }}
+          </div>
+          <span
+            v-if="selectedMember.role === 'leader'"
+            class="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-amber-400 flex items-center justify-center shadow"
+          >
+            👑
+          </span>
         </div>
-        <button
-          @click="clearMemberFilter"
-          class="ml-auto text-teal-500 hover:text-teal-700 text-xs"
-        >
-          ✕ Bỏ lọc
-        </button>
+
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="text-lg font-bold text-stone-800">{{ selectedMember.name }}</h3>
+            <span
+              v-if="selectedMember.role === 'leader'"
+              class="px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded uppercase"
+            >
+              Trưởng nhóm
+            </span>
+          </div>
+          <p class="text-xs text-stone-400 font-mono mt-1">{{ selectedMember.code }}</p>
+
+          <div class="mt-3 flex items-center gap-3">
+            <div class="flex-1 h-2 bg-stone-100 rounded-full overflow-hidden max-w-xs">
+              <div
+                class="h-full rounded-full transition-all duration-500"
+                :class="memberProgressBarClass"
+                :style="{ width: `${memberPercentage}%` }"
+              />
+            </div>
+            <span class="text-sm font-bold" :class="memberProgressColor"
+              >{{ memberPercentage }}%</span
+            >
+          </div>
+        </div>
+
+        <div class="hidden sm:flex gap-2 text-center flex-shrink-0">
+          <div class="px-3 py-2 bg-stone-50 rounded-lg">
+            <p class="text-lg font-bold text-stone-700">{{ memberCurrentStats.total }}</p>
+            <p class="text-[10px] text-stone-400">Tổng</p>
+          </div>
+          <div class="px-3 py-2 bg-stone-50 rounded-lg">
+            <p class="text-lg font-bold text-emerald-600">{{ memberCurrentStats.done }}</p>
+            <p class="text-[10px] text-stone-400">Xong</p>
+          </div>
+          <div class="px-3 py-2 bg-stone-50 rounded-lg">
+            <p
+              class="text-lg font-bold"
+              :class="memberCurrentStats.late > 0 ? 'text-red-600' : 'text-stone-400'"
+            >
+              {{ memberCurrentStats.late }}
+            </p>
+            <p class="text-[10px] text-stone-400">Trễ</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status filter -->
+      <div class="flex justify-end mb-4">
+        <div class="flex gap-1 bg-stone-100 rounded-lg p-1">
+          <button
+            v-for="f in statusFilters"
+            :key="f.value"
+            @click="filterStatus = f.value"
+            class="px-3 py-1.5 rounded-md text-xs font-medium transition"
+            :class="
+              filterStatus === f.value
+                ? 'bg-white text-stone-800 shadow-sm'
+                : 'text-stone-500 hover:text-stone-700'
+            "
+          >
+            {{ f.label }}
+          </button>
+        </div>
       </div>
 
       <!-- Empty -->
       <div
-        v-if="!filteredTasks.length"
+        v-if="!memberFilteredTasks.length"
         class="bg-white rounded-xl border border-stone-200 p-12 text-center"
       >
-        <p class="text-stone-400">Không có công việc nào</p>
+        <p class="text-stone-400">
+          {{
+            filterStatus
+              ? 'Không có công việc ở trạng thái này'
+              : 'Thành viên chưa có công việc nào'
+          }}
+        </p>
       </div>
 
-      <!-- Kanban Board (view-only) -->
+      <!-- Kanban -->
       <div v-else class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div
           v-for="col in columns"
           :key="col.status"
           class="bg-stone-50 rounded-xl border border-stone-200 p-4"
         >
-          <!-- Column header -->
           <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-2">
               <span class="text-sm font-semibold text-stone-700">{{ col.label }}</span>
@@ -171,7 +378,6 @@
             <div class="w-2 h-2 rounded-full" :class="col.dotClass" />
           </div>
 
-          <!-- Tasks -->
           <div class="space-y-3">
             <div
               v-if="!getColumnTasks(col.status).length"
@@ -186,7 +392,6 @@
               class="bg-white rounded-xl border border-stone-200 p-4 cursor-pointer hover:shadow-sm hover:border-teal-300 transition"
               @click="openTaskDetail(task)"
             >
-              <!-- Priority badge -->
               <div class="flex items-center justify-between mb-2">
                 <span
                   class="px-2 py-0.5 text-[10px] font-bold rounded-full uppercase"
@@ -201,53 +406,19 @@
                   Trễ hạn
                 </span>
               </div>
-
-              <!-- Title -->
               <p class="text-sm font-semibold text-stone-800 mb-2 leading-snug">{{ task.title }}</p>
-
-              <!-- Assignee + deadline -->
               <div class="flex items-center justify-between mt-3">
-                <div class="flex items-center gap-1.5">
-                  <div
-                    class="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center text-[10px] font-bold text-teal-700"
-                  >
-                    {{ task.assignee?.name?.charAt(0) ?? '?' }}
-                  </div>
-                  <span class="text-xs text-stone-500">{{
-                    task.assignee?.name ?? 'Chưa giao'
-                  }}</span>
-                </div>
+                <span class="text-xs text-stone-500">{{ task.assignee?.name ?? 'Chưa giao' }}</span>
                 <span v-if="task.deadline" class="text-[10px] text-stone-400">
                   {{ formatDate(task.deadline) }}
                 </span>
-              </div>
-
-              <!-- Progress bar nếu có weight -->
-              <div v-if="task.weight" class="mt-2 flex items-center gap-1.5">
-                <div class="flex-1 h-1 bg-stone-100 rounded-full">
-                  <div
-                    class="h-1 rounded-full transition-all"
-                    :class="
-                      task.status === 'done'
-                        ? 'bg-emerald-500'
-                        : task.status === 'doing'
-                          ? 'bg-blue-500'
-                          : 'bg-stone-300'
-                    "
-                    :style="{
-                      width:
-                        task.status === 'done' ? '100%' : task.status === 'doing' ? '50%' : '0%',
-                    }"
-                  />
-                </div>
-                <span class="text-[10px] text-stone-400">W{{ task.weight }}</span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Trễ hạn column riêng nếu có -->
+      <!-- Late tasks -->
       <div v-if="getColumnTasks('late').length" class="mt-4">
         <div class="bg-red-50 rounded-xl border border-red-200 p-4">
           <div class="flex items-center gap-2 mb-3">
@@ -276,7 +447,7 @@
       </div>
     </template>
 
-    <!-- Modal: Chi tiết task (view-only, không có edit/delete) -->
+    <!-- ── Task detail modal ── -->
     <Teleport to="body">
       <div
         v-if="showDetailModal && currentTask"
@@ -289,7 +460,6 @@
         <div
           class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col"
         >
-          <!-- Header -->
           <div class="p-6 border-b border-stone-100 flex items-start justify-between flex-shrink-0">
             <div>
               <div class="flex items-center gap-2 mb-1">
@@ -325,7 +495,6 @@
             </button>
           </div>
 
-          <!-- Body -->
           <div class="flex-1 overflow-y-auto p-6 space-y-5">
             <p
               v-if="currentTask.description"
@@ -334,20 +503,12 @@
               {{ currentTask.description }}
             </p>
 
-            <!-- Info grid -->
             <div class="grid grid-cols-2 gap-3 text-sm">
               <div class="p-3 bg-stone-50 rounded-xl">
                 <p class="text-stone-400 text-xs mb-1">Giao cho</p>
-                <div class="flex items-center gap-2">
-                  <div
-                    class="w-6 h-6 rounded-full bg-teal-100 flex items-center justify-center text-[10px] font-bold text-teal-700"
-                  >
-                    {{ currentTask.assignee?.name?.charAt(0) ?? '?' }}
-                  </div>
-                  <p class="font-medium text-stone-700">
-                    {{ currentTask.assignee?.name || 'Chưa giao' }}
-                  </p>
-                </div>
+                <p class="font-medium text-stone-700">
+                  {{ currentTask.assignee?.name || 'Chưa giao' }}
+                </p>
               </div>
               <div class="p-3 bg-stone-50 rounded-xl">
                 <p class="text-stone-400 text-xs mb-1">Người tạo</p>
@@ -368,59 +529,6 @@
                   {{ formatDate(currentTask.deadline) }}
                 </p>
               </div>
-              <div v-if="currentTask.weight" class="p-3 bg-stone-50 rounded-xl">
-                <p class="text-stone-400 text-xs mb-1">Trọng số</p>
-                <p class="font-medium text-stone-700">{{ currentTask.weight }}/10</p>
-              </div>
-            </div>
-
-            <!-- Activities -->
-            <div v-if="currentTask.activities?.length">
-              <p class="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">
-                Lịch sử hoạt động
-              </p>
-              <div class="space-y-2 max-h-40 overflow-y-auto">
-                <div
-                  v-for="a in currentTask.activities"
-                  :key="a.id"
-                  class="flex items-start gap-2 text-xs"
-                >
-                  <div class="w-1.5 h-1.5 rounded-full bg-teal-400 mt-1.5 flex-shrink-0" />
-                  <div>
-                    <span class="font-medium text-stone-600">{{ a.user?.name }}</span>
-                    <span class="text-stone-400">
-                      · {{ activityLabel(a.action) }} · {{ formatTime(a.created_at) }}</span
-                    >
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Comments (read-only) -->
-            <div v-if="currentTask.comments?.length">
-              <p class="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">
-                Bình luận ({{ currentTask.comments.length }})
-              </p>
-              <div class="space-y-3 max-h-60 overflow-y-auto">
-                <div v-for="comment in currentTask.comments" :key="comment.id" class="flex gap-3">
-                  <div
-                    class="w-7 h-7 rounded-full bg-stone-200 flex items-center justify-center text-xs font-bold text-stone-600 flex-shrink-0"
-                  >
-                    {{ comment.user?.name?.charAt(0) }}
-                  </div>
-                  <div class="flex-1 bg-stone-50 rounded-xl p-3">
-                    <div class="flex items-center gap-2 mb-1">
-                      <span class="text-xs font-semibold text-stone-700">{{
-                        comment.user?.name
-                      }}</span>
-                      <span class="text-[10px] text-stone-400">{{
-                        formatTime(comment.created_at)
-                      }}</span>
-                    </div>
-                    <p class="text-sm text-stone-600">{{ comment.content }}</p>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -434,27 +542,39 @@ import { ref, computed, onMounted, watch } from 'vue'
 import axiosClient from '@/api/axiosClient'
 import { useLecturerStore } from '@/stores/lecturer/lecturerStore'
 import { useToastStore } from '@/stores/toast'
-
+import GroupProgressCard from '../components/task/GroupProgressCard.vue'
+import MemberProgressCard from './MemberProgressCard.vue'
+import SearchableSelect from '@/components/common/SearchableSelect.vue'
 const lecturerStore = useLecturerStore()
 const toast = useToastStore()
 
-// ── State ──────────────────────────────────────────────
+// ─── State ──────────────────────────────────
+const mode = ref('groups') // 'groups' | 'members' | 'detail'
+
 const selectedClassId = ref(lecturerStore.selectedClassId || '')
-const selectedGroupId = ref('')
-const filterMemberId = ref('')
+const selectedGroup = ref(null)
+const selectedMember = ref(null)
 const filterStatus = ref('')
 
+const groupSearch = ref('')
 const groups = ref([])
+const groupStatsMap = ref({}) // { groupId: { total, todo, doing, done, late } }
 const members = ref([])
 const allTasks = ref([])
-const stats = ref({ total: 0, todo: 0, doing: 0, done: 0, late: 0 })
 const currentTask = ref(null)
 
 const loadingGroups = ref(false)
 const loadingTasks = ref(false)
 const showDetailModal = ref(false)
 
-// ── Config ─────────────────────────────────────────────
+const emptyStats = { total: 0, todo: 0, doing: 0, done: 0, late: 0 }
+const classOptions = computed(() =>
+  lecturerStore.classes.map((c) => ({
+    id: c.id,
+    label: `${c.code} - ${c.name}`, // Hiển thị "K01 - Đại số tuyến tính 1"
+  })),
+)
+// ─── Config ─────────────────────────────────
 const statusFilters = [
   { value: '', label: 'Tất cả' },
   { value: 'todo', label: 'Cần làm' },
@@ -484,114 +604,109 @@ const columns = [
   },
 ]
 
-const statItems = {
-  total: { label: 'Tổng', color: 'text-stone-700' },
-  todo: { label: 'Cần làm', color: 'text-stone-500' },
-  doing: { label: 'Đang làm', color: 'text-blue-600' },
-  done: { label: 'Hoàn thành', color: 'text-emerald-600' },
-  late: { label: 'Trễ hạn', color: 'text-red-600' },
-}
+// ─── Computed ───────────────────────────────
+const pageTitle = computed(() => {
+  if (mode.value === 'detail') return `Công việc của ${selectedMember.value?.name ?? ''}`
+  if (mode.value === 'members') return `Thành viên ${selectedGroup.value?.name ?? ''}`
+  return 'Công việc nhóm'
+})
 
-// ── Computed ───────────────────────────────────────────
-const selectedMember = computed(() =>
-  members.value.find((m) => m.id === Number(filterMemberId.value)),
-)
+const pageSubtitle = computed(() => {
+  if (mode.value === 'detail') return 'Xem chi tiết các nhiệm vụ thành viên'
+  if (mode.value === 'members') return 'Click vào thành viên để xem chi tiết công việc'
+  return 'Chọn nhóm để xem chi tiết công việc'
+})
 
-const filteredTasks = computed(() => {
-  let list = allTasks.value
-  if (filterMemberId.value) {
-    list = list.filter((t) => t.assignee?.id === Number(filterMemberId.value))
-  }
+// Filter groups theo search
+const filteredGroups = computed(() => {
+  if (!groupSearch.value.trim()) return groups.value
+  const q = groupSearch.value.toLowerCase()
+  return groups.value.filter(
+    (g) =>
+      g.name?.toLowerCase().includes(q) ||
+      g.invitation_code?.toLowerCase().includes(q) ||
+      g.leader?.name?.toLowerCase().includes(q),
+  )
+})
+
+// Stats tổng cả lớp
+const classOverallStats = computed(() => {
+  let total = 0,
+    done = 0,
+    late = 0
+  Object.values(groupStatsMap.value).forEach((s) => {
+    total += s.total ?? 0
+    done += s.done ?? 0
+    late += s.late ?? 0
+  })
+  return { total, done, late }
+})
+
+// Members sorted (leader đầu)
+const sortedMembers = computed(() => {
+  return [...members.value].sort((a, b) => {
+    if (a.role === 'leader' && b.role !== 'leader') return -1
+    if (a.role !== 'leader' && b.role === 'leader') return 1
+    return (a.name ?? '').localeCompare(b.name ?? '', 'vi')
+  })
+})
+
+// Stats nhóm hiện tại
+const overallStats = computed(() => calcStats(allTasks.value))
+
+const groupProgress = computed(() => {
+  if (!overallStats.value.total) return 0
+  return Math.round((overallStats.value.done / overallStats.value.total) * 100)
+})
+
+const groupProgressColor = computed(() => {
+  const p = groupProgress.value
+  if (p >= 80) return 'text-emerald-600'
+  if (p >= 50) return 'text-blue-600'
+  if (p >= 30) return 'text-amber-600'
+  return 'text-stone-500'
+})
+
+// Detail
+const memberFilteredTasks = computed(() => {
+  if (!selectedMember.value) return []
+  let list = allTasks.value.filter((t) => t.assignee?.id === selectedMember.value.id)
   if (filterStatus.value) {
     list = list.filter((t) => t.status === filterStatus.value)
   }
   return list
 })
 
-const handleFilterClick = (value) => {
-  filterStatus.value = value
-  applyFilters()
-}
-const clearMemberFilter = () => {
-  filterMemberId.value = ''
-  applyFilters()
-}
-// ── Lifecycle ──────────────────────────────────────────
-onMounted(() => {
-  if (selectedClassId.value) loadGroups(selectedClassId.value)
+const memberCurrentStats = computed(() => {
+  if (!selectedMember.value) return emptyStats
+  return memberStats(selectedMember.value.id)
 })
 
-// Sync với lecturerStore khi GV đổi lớp từ topbar
-watch(
-  () => lecturerStore.selectedClassId,
-  (id) => {
-    if (id && id !== selectedClassId.value) {
-      selectedClassId.value = id
-      onClassChange()
-    }
-  },
-)
+const memberPercentage = computed(() => {
+  if (!memberCurrentStats.value.total) return 0
+  return Math.round((memberCurrentStats.value.done / memberCurrentStats.value.total) * 100)
+})
 
-// ── Actions ────────────────────────────────────────────
-async function onClassChange() {
-  selectedGroupId.value = ''
-  filterMemberId.value = ''
-  filterStatus.value = ''
-  groups.value = []
-  members.value = []
-  allTasks.value = []
-  if (selectedClassId.value) await loadGroups(selectedClassId.value)
-}
+const memberProgressColor = computed(() => {
+  const p = memberPercentage.value
+  if (p >= 80) return 'text-emerald-600'
+  if (p >= 50) return 'text-blue-600'
+  if (p >= 30) return 'text-amber-600'
+  return 'text-stone-500'
+})
 
-async function onGroupChange() {
-  filterMemberId.value = ''
-  filterStatus.value = ''
-  members.value = []
-  allTasks.value = []
-  if (selectedGroupId.value) {
-    await loadGroupMembers(selectedGroupId.value)
-    await loadTasks(selectedGroupId.value)
-  }
-}
+const memberProgressBarClass = computed(() => {
+  const p = memberPercentage.value
+  if (p >= 80) return 'bg-gradient-to-r from-emerald-400 to-emerald-600'
+  if (p >= 50) return 'bg-gradient-to-r from-blue-400 to-blue-600'
+  if (p >= 30) return 'bg-gradient-to-r from-amber-400 to-amber-600'
+  return 'bg-stone-300'
+})
 
-async function loadGroups(classId) {
-  // openClassId.value = classId
-  groups.value = []
-  loadingGroups.value = true
-  try {
-    const { data } = await axiosClient.get(`/lecturer/classes/${classId}/groups`)
-    console.log('groups response:', data) // ← xem console
-    // Thử tất cả key có thể
-    groups.value = data.groups ?? data.data ?? data ?? []
-  } catch (e) {
-    console.error('loadGroups error:', e.response?.data)
-    groups.value = []
-  } finally {
-    loadingGroups.value = false
-  }
-}
-
-async function loadGroupMembers(groupId) {
-  try {
-    const { data } = await axiosClient.get(`/lecturer/groups/${groupId}/members`)
-    members.value = data.members ?? data.data ?? data
-  } catch {
-    members.value = []
-  }
-}
-
-async function loadTasks(groupId) {
-  loadingTasks.value = true
-  try {
-    const { data } = await axiosClient.get(`/lecturer/groups/${groupId}/tasks`)
-    allTasks.value = data.tasks ?? data.data?.tasks ?? data.data ?? []
-    stats.value = data.stats ?? data.data?.stats ?? calcStats(allTasks.value)
-  } catch {
-    allTasks.value = []
-    toast.error('Không thể tải công việc nhóm')
-  } finally {
-    loadingTasks.value = false
-  }
+// ─── Helpers ────────────────────────────────
+function memberStats(memberId) {
+  const list = allTasks.value.filter((t) => t.assignee?.id === memberId)
+  return calcStats(list)
 }
 
 function calcStats(list) {
@@ -604,12 +719,128 @@ function calcStats(list) {
   }
 }
 
-function applyFilters() {
-  // filteredTasks là computed — tự động reactive
+function getColumnTasks(status) {
+  return memberFilteredTasks.value.filter((t) => t.status === status)
 }
 
-function getColumnTasks(status) {
-  return filteredTasks.value.filter((t) => t.status === status)
+// ─── Lifecycle ──────────────────────────────
+onMounted(() => {
+  if (selectedClassId.value) loadGroups(selectedClassId.value)
+})
+
+watch(
+  () => lecturerStore.selectedClassId,
+  (id) => {
+    if (id && id !== selectedClassId.value) {
+      selectedClassId.value = id
+      onClassChange()
+    }
+  },
+)
+
+// ─── Actions ────────────────────────────────
+async function onClassChange() {
+  // Reset toàn bộ
+  selectedGroup.value = null
+  selectedMember.value = null
+  filterStatus.value = ''
+  groupSearch.value = ''
+  mode.value = 'groups'
+  groups.value = []
+  groupStatsMap.value = {}
+  members.value = []
+  allTasks.value = []
+
+  if (selectedClassId.value) {
+    await loadGroups(selectedClassId.value)
+  }
+}
+
+async function loadGroups(classId) {
+  groups.value = []
+  loadingGroups.value = true
+
+  try {
+    const { data } = await axiosClient.get(`/lecturer/classes/${classId}/groups`)
+    const list = data.groups ?? data.data ?? data ?? []
+    groups.value = list
+
+    //Load tasks song song để tính stats cho từng nhóm
+    await Promise.all(list.map((g) => loadGroupStats(g.id)))
+  } catch (e) {
+    console.error('loadGroups error:', e.response?.data)
+    groups.value = []
+    toast.error('Không thể tải danh sách nhóm')
+  } finally {
+    loadingGroups.value = false
+  }
+}
+
+async function loadGroupStats(groupId) {
+  try {
+    const { data } = await axiosClient.get(`/lecturer/groups/${groupId}/tasks`)
+    const tasks = data.tasks ?? data.data?.tasks ?? data.data ?? []
+    groupStatsMap.value[groupId] = calcStats(tasks)
+  } catch {
+    groupStatsMap.value[groupId] = { ...emptyStats }
+  }
+}
+
+async function loadGroupMembers(groupId) {
+  try {
+    const { data } = await axiosClient.get(`/lecturer/groups/${groupId}/members`)
+    members.value = data.members ?? data.data ?? data ?? []
+  } catch {
+    members.value = []
+  }
+}
+
+async function loadTasks(groupId) {
+  loadingTasks.value = true
+  try {
+    const { data } = await axiosClient.get(`/lecturer/groups/${groupId}/tasks`)
+    allTasks.value = data.tasks ?? data.data?.tasks ?? data.data ?? []
+  } catch {
+    allTasks.value = []
+    toast.error('Không thể tải công việc nhóm')
+  } finally {
+    loadingTasks.value = false
+  }
+}
+
+// ── Mode switching ──
+async function openGroupDetail(group) {
+  selectedGroup.value = group
+  selectedMember.value = null
+  filterStatus.value = ''
+  mode.value = 'members'
+  members.value = []
+  allTasks.value = []
+  await Promise.all([loadGroupMembers(group.id), loadTasks(group.id)])
+}
+
+function openMemberDetail(member) {
+  selectedMember.value = member
+  filterStatus.value = ''
+  mode.value = 'detail'
+}
+
+function backToGroups() {
+  mode.value = 'groups'
+  selectedGroup.value = null
+  selectedMember.value = null
+  filterStatus.value = ''
+}
+
+function backToMembers() {
+  mode.value = 'members'
+  selectedMember.value = null
+  filterStatus.value = ''
+}
+
+function handleBack() {
+  if (mode.value === 'detail') backToMembers()
+  else if (mode.value === 'members') backToGroups()
 }
 
 async function openTaskDetail(task) {
@@ -622,7 +853,7 @@ async function openTaskDetail(task) {
   showDetailModal.value = true
 }
 
-// ── Formatters ─────────────────────────────────────────
+// ─── Formatters ─────────────────────────────
 function formatDate(d) {
   if (!d) return ''
   return new Date(d).toLocaleString('vi-VN', {
@@ -632,16 +863,6 @@ function formatDate(d) {
     hour: '2-digit',
     minute: '2-digit',
   })
-}
-
-function formatTime(d) {
-  if (!d) return ''
-  const date = new Date(d)
-  return (
-    date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) +
-    ' · ' +
-    date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })
-  )
 }
 
 function priorityClass(p) {
@@ -672,18 +893,5 @@ function statusClass(s) {
 
 function statusLabel(s) {
   return { todo: 'Cần làm', doing: 'Đang làm', done: 'Hoàn thành', late: 'Trễ hạn' }[s] ?? s
-}
-
-function activityLabel(action) {
-  return (
-    {
-      created: 'đã tạo task',
-      status_changed: 'đổi trạng thái',
-      updated: 'cập nhật task',
-      commented: 'đã bình luận',
-      comment_updated: 'sửa bình luận',
-      comment_deleted: 'xóa bình luận',
-    }[action] ?? action
-  )
 }
 </script>
