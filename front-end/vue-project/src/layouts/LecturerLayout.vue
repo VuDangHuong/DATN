@@ -29,122 +29,18 @@
         </div>
       </div>
 
-      <!-- ✅ User info với dropdown -->
-      <div v-if="lecturer" class="px-4 py-3.5 border-b border-stone-100 relative">
-        <!-- Click vào card → mở dropdown -->
-        <div
-          class="flex items-center gap-3 cursor-pointer rounded-xl hover:bg-stone-50 p-1 -m-1 transition"
-          @click.stop="showUserMenu = !showUserMenu"
-        >
-          <!-- Avatar -->
-          <img
-            v-if="lecturer.avatar_url"
-            :src="getAvatarUrl(lecturer)"
-            class="w-9 h-9 rounded-full object-cover border-2 border-stone-100 flex-shrink-0"
-            alt="avatar"
-          />
-          <div
-            v-else
-            class="w-9 h-9 rounded-full bg-teal-100 flex items-center justify-center text-sm font-bold text-teal-700 flex-shrink-0"
-          >
-            {{ lecturer.name?.charAt(0) }}
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-semibold text-stone-800 truncate">{{ lecturer.name }}</p>
-            <p class="text-xs text-stone-400 truncate">{{ lecturer.email }}</p>
-          </div>
-          <svg
-            class="w-3.5 h-3.5 text-stone-400 transition-transform flex-shrink-0"
-            :class="showUserMenu ? 'rotate-180' : ''"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
-        </div>
-
-        <!-- Dropdown — z-[60] cao hơn sidebar -->
-        <div
-          v-if="showUserMenu"
-          class="absolute left-3 right-3 top-full mt-1 z-[60] bg-white rounded-xl border border-stone-200 shadow-lg overflow-hidden"
-        >
-          <!-- Đổi avatar -->
-          <button
-            @click="openAvatarModal"
-            class="w-full flex items-center gap-3 px-4 py-3 text-sm text-stone-700 hover:bg-stone-50 transition text-left"
-          >
-            <svg
-              class="w-4 h-4 text-stone-400 flex-shrink-0"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="1.5"
-                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-              />
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="1.5"
-                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-            </svg>
-            Đổi ảnh đại diện
-          </button>
-
-          <!-- Hồ sơ cá nhân -->
-          <router-link
-            to="/lecturer/profile"
-            @click="showUserMenu = false"
-            class="flex items-center gap-3 px-4 py-3 text-sm text-stone-700 hover:bg-stone-50 transition border-t border-stone-100"
-          >
-            <svg
-              class="w-4 h-4 text-stone-400 flex-shrink-0"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="1.5"
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-              />
-            </svg>
-            Hồ sơ cá nhân
-          </router-link>
-
-          <!-- Đổi mật khẩu -->
-          <router-link
-            to="/lecturer/change-password"
-            @click="showUserMenu = false"
-            class="flex items-center gap-3 px-4 py-3 text-sm text-stone-700 hover:bg-stone-50 transition border-t border-stone-100"
-          >
-            <svg
-              class="w-4 h-4 text-stone-400 flex-shrink-0"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="1.5"
-                d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-              />
-            </svg>
-            Đổi mật khẩu
-          </router-link>
-        </div>
+      <!-- User info với dropdown -->
+      <div v-if="lecturer" class="px-3 py-3.5 border-b border-stone-100 relative">
+        <SearchableSelect
+          v-if="lecturerStore.classes.length > 0"
+          v-model="selectedClassId"
+          :options="classOptions"
+          label-key="label"
+          value-key="id"
+          placeholder="-- Lớp đang xem --"
+          search-placeholder="Tìm lớp..."
+          class="w-full"
+        />
       </div>
 
       <!-- Navigation -->
@@ -308,9 +204,8 @@
 
     <!-- ── Main content ── -->
     <div class="flex-1 lg:ml-64 flex flex-col min-h-screen">
-      <!-- Topbar -->
       <header
-        class="h-16 bg-white border-b border-stone-200 flex items-center justify-between px-6 sticky top-0 z-10"
+        class="h-16 bg-white border-b border-stone-200 flex items-center justify-between px-6 sticky top-0 z-50"
       >
         <button
           @click="sidebarOpen = !sidebarOpen"
@@ -330,29 +225,117 @@
           <span class="text-stone-800 font-medium">{{ currentPageTitle }}</span>
         </div>
 
-        <div class="flex items-center gap-3">
-          <select
-            v-if="lecturerStore.classes.length > 0"
-            v-model="selectedClassId"
-            class="text-sm border border-stone-200 rounded-lg px-3 py-1.5 bg-white text-stone-700 focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-          >
-            <option v-for="c in lecturerStore.classes" :key="c.id" :value="c.id">
-              {{ c.code }} - {{ c.name }}
-            </option>
-          </select>
-
-          <!-- Avatar topbar -->
-          <img
-            v-if="authStore.user?.avatar_url"
-            :src="getAvatarUrl(authStore.user)"
-            class="w-10 h-10 rounded-full object-cover border-2 border-slate-100 flex-shrink-0"
-            alt="avatar"
-          />
+        <div class="flex items-center gap-3 relative">
           <div
-            v-else
-            class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-sm font-bold text-teal-700"
+            class="flex items-center gap-3 cursor-pointer rounded-xl hover:bg-stone-50 p-1 -m-1 transition"
+            @click.stop="showUserMenu = !showUserMenu"
           >
-            {{ lecturer?.name?.charAt(0) }}
+            <img
+              v-if="lecturer.avatar_url"
+              :src="getAvatarUrl(lecturer)"
+              class="w-9 h-9 rounded-full object-cover border-2 border-stone-100 flex-shrink-0"
+              alt="avatar"
+            />
+            <div
+              v-else
+              class="w-9 h-9 rounded-full bg-teal-100 flex items-center justify-center text-sm font-bold text-teal-700 flex-shrink-0"
+            >
+              {{ lecturer.name?.charAt(0) }}
+            </div>
+
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-stone-800 truncate">{{ lecturer.name }}</p>
+              <p class="text-xs text-stone-400 truncate">{{ lecturer.email }}</p>
+            </div>
+
+            <svg
+              class="w-3.5 h-3.5 text-stone-400 transition-transform flex-shrink-0"
+              :class="showUserMenu ? 'rotate-180' : ''"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </div>
+
+          <div
+            v-if="showUserMenu"
+            @click.stop
+            class="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl border border-stone-200 shadow-lg overflow-hidden"
+          >
+            <button
+              @click="openAvatarModal"
+              class="w-full flex items-center gap-3 px-4 py-3 text-sm text-stone-700 hover:bg-stone-50 transition text-left"
+            >
+              <svg
+                class="w-4 h-4 text-stone-400 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+              Đổi ảnh đại diện
+            </button>
+
+            <router-link
+              to="/lecturer/profile"
+              @click="showUserMenu = false"
+              class="flex items-center gap-3 px-4 py-3 text-sm text-stone-700 hover:bg-stone-50 transition border-t border-stone-100"
+            >
+              <svg
+                class="w-4 h-4 text-stone-400 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
+              </svg>
+              Hồ sơ cá nhân
+            </router-link>
+
+            <router-link
+              to="/lecturer/change-password"
+              @click="showUserMenu = false"
+              class="flex items-center gap-3 px-4 py-3 text-sm text-stone-700 hover:bg-stone-50 transition border-t border-stone-100"
+            >
+              <svg
+                class="w-4 h-4 text-stone-400 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+                />
+              </svg>
+              Đổi mật khẩu
+            </router-link>
           </div>
         </div>
       </header>
@@ -375,6 +358,8 @@ import { useLecturerStore } from '@/stores/lecturer/lecturerStore'
 import AvatarModal from '@/components/modal/AvatarModal.vue'
 import axiosClient from '@/api/axiosClient'
 import { getAvatarUrl } from '@/utils/imageHelper'
+import SearchableSelect from '@/components/common/SearchableSelect.vue'
+
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
@@ -384,7 +369,12 @@ const sidebarOpen = ref(false)
 const pendingCount = ref(0)
 const showUserMenu = ref(false)
 const showAvatarModal = ref(false)
-
+const classOptions = computed(() =>
+  lecturerStore.classes.map((c) => ({
+    id: c.id,
+    label: `${c.code} - ${c.name}`,
+  })),
+)
 // ✅ lecturer luôn reactive với authStore.user
 const lecturer = computed(() => authStore.user)
 
