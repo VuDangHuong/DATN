@@ -8,6 +8,8 @@ import { useToastStore } from '@/stores/toast'
 import SvgIcon from '@/components/icons/SVG.vue'
 import UserForm from './components/UserForm.vue'
 import { getAvatarUrl, handleImageError } from '@/utils/imageHelper'
+import { useConfirm } from '@/composables/useConfirm'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
 
 /* =======================
    STORES
@@ -15,7 +17,14 @@ import { getAvatarUrl, handleImageError } from '@/utils/imageHelper'
 const userStore = useUserStore()
 const authStore = useAuthStore()
 const toast = useToastStore()
-
+const {
+  state: confirmState,
+  confirmDelete,
+  setLoading: setConfirmLoading,
+  close: closeConfirm,
+  _handleConfirm,
+  _handleCancel,
+} = useConfirm()
 const { users, loading, pagination, filters } = storeToRefs(userStore)
 
 /* =======================
@@ -112,13 +121,35 @@ const handleSaveUser = async (data) => {
 }
 
 // Delete
-const handleDelete = async (id) => {
-  if (!confirm('Bạn có chắc muốn xóa người dùng này?')) return
+const handleDelete = async (user) => {
+  // ✅ Mở modal xác nhận - chờ user click
+  const ok = await confirmDelete(user.name, {
+    title: 'Xóa người dùng',
+    message:
+      'Hành động này sẽ xóa vĩnh viễn người dùng và toàn bộ dữ liệu liên quan. Không thể hoàn tác.',
+    warningText: `Mã: ${user.code} · Email: ${user.email}`,
+    confirmText: 'Xóa người dùng',
+    cancelText: 'Hủy',
+    // Có thể thêm nếu muốn user phải gõ tên để confirm:
+    // requireTypeConfirm: user.code,
+  })
+  if (!ok) return
 
-  const result = await userStore.deleteUser(id)
-  result.success ? toast.success(result.message) : toast.error(result.message)
+  // ✅ Bật loading state trên modal
+  setConfirmLoading(true)
+  try {
+    const result = await userStore.deleteUser(user.id)
+    if (result.success) {
+      toast.success(result.message)
+    } else {
+      toast.error(result.message)
+    }
+  } catch (e) {
+    toast.error('Lỗi khi xóa: ' + (e.message ?? 'Unknown'))
+  } finally {
+    closeConfirm() // Đóng modal sau khi xong
+  }
 }
-
 // Status
 const handleStatusToggle = async (user) => {
   try {
@@ -329,7 +360,7 @@ onMounted(userStore.fetchUsers)
                   <SvgIcon name="edit" class="h-4 w-4 mr-1" />
                   Sửa
                 </button>
-                <button @click="handleDelete(user.id)" class="text-red-600 hover:text-red-900">
+                <button @click="handleDelete(user)" class="text-red-600 hover:text-red-900">
                   <SvgIcon name="trash" class="h-4 w-4 mr-1" />
                   Xóa
                 </button>
@@ -422,7 +453,7 @@ onMounted(userStore.fetchUsers)
                   Sửa
                 </button>
                 <button
-                  @click="handleDelete(user.id)"
+                  @click="handleDelete(user)"
                   class="text-red-600 hover:text-red-900 text-sm font-medium flex items-center"
                 >
                   <SvgIcon name="trash" class="h-4 w-4 mr-1" />
@@ -528,5 +559,19 @@ onMounted(userStore.fetchUsers)
         </div>
       </div>
     </div>
+    <ConfirmModal
+      v-model="confirmState.show"
+      :title="confirmState.title"
+      :message="confirmState.message"
+      :item-name="confirmState.itemName"
+      :warning-text="confirmState.warningText"
+      :confirm-text="confirmState.confirmText"
+      :cancel-text="confirmState.cancelText"
+      :variant="confirmState.variant"
+      :loading="confirmState.loading"
+      :require-type-confirm="confirmState.requireTypeConfirm"
+      @confirm="_handleConfirm"
+      @cancel="_handleCancel"
+    />
   </div>
 </template>

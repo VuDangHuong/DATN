@@ -279,18 +279,23 @@
             @click="switchToAdd"
             class="w-full py-2.5 border-2 border-dashed border-teal-300 text-teal-600 rounded-xl text-sm font-medium hover:bg-teal-50 transition flex items-center justify-center gap-2"
           >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
+            <SvgICon name="plus" class="w-4 h-4 text-teal-600" />
             Thêm sinh viên vào nhóm
           </button>
         </div>
       </div>
+      <ConfirmModal
+        v-model="confirmState.show"
+        :title="confirmState.title"
+        :message="confirmState.message"
+        :item-name="confirmState.itemName"
+        :warning-text="confirmState.warningText"
+        :confirm-text="confirmState.confirmText"
+        :variant="confirmState.variant"
+        :loading="confirmState.loading"
+        @confirm="_handleConfirm"
+        @cancel="_handleCancel"
+      />
     </div>
   </Teleport>
 </template>
@@ -299,7 +304,16 @@
 import { ref, computed, watch } from 'vue'
 import axiosClient from '@/api/axiosClient'
 import SvgICon from '@/components/icons/SVG.vue'
-
+import { useConfirm } from '@/composables/useConfirm'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
+const {
+  state: confirmState,
+  confirmDelete,
+  setLoading: setConfirmLoading,
+  close: closeConfirm,
+  _handleConfirm,
+  _handleCancel,
+} = useConfirm()
 const props = defineProps({
   show: { type: Boolean, default: false },
   group: { type: Object, default: null },
@@ -445,20 +459,40 @@ async function handleAddStudent(sv) {
 
 // Xóa thành viên
 async function handleRemoveMember(member) {
-  if (!confirm(`Xóa ${member.name} khỏi nhóm?`)) return
+  // Dùng confirmDelete thay cho confirm() native
+  const ok = await confirmDelete(member.name, {
+    title: 'Xóa thành viên khỏi nhóm',
+    message: 'Thành viên này sẽ bị xóa khỏi nhóm và có thể tham gia nhóm khác.',
+    warningText:
+      member.role === 'leader' ? 'Đây là trưởng nhóm! Hãy chuyển quyền trước khi xóa.' : '',
+    confirmText: 'Xóa thành viên',
+    variant: member.role === 'leader' ? 'warning' : 'danger',
+  })
+
+  if (!ok) return
+
+  // Bật loading trên modal
+  setConfirmLoading(true)
   removing.value = member.id
+
   try {
     await axiosClient.delete(`/lecturer/groups/${props.group.id}/members/${member.id}`)
+
     localMembers.value = localMembers.value.filter((m) => m.id !== member.id)
+
     // Thêm lại vào available nếu đang ở tab list
     if (addMode.value === 'list') {
       availableStudents.value.push(member)
     }
+
     emit('updated', props.group.id)
+
+    toast.success(`Đã xóa ${member.name} khỏi nhóm`)
   } catch (e) {
-    alert(e.response?.data?.message ?? 'Lỗi khi xóa thành viên')
+    toast.error(e.response?.data?.message ?? 'Lỗi khi xóa thành viên')
   } finally {
     removing.value = null
+    closeConfirm() // Đóng modal sau khi xong
   }
 }
 
