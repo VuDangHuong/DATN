@@ -17,21 +17,33 @@ use App\Models\Sign\LecturerSignProfile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Services\AdminDashboardService;
 class AdminDashboardController extends Controller
 {
+    public function __construct(
+        private readonly AdminDashboardService $service
+    ) {}
     /**
      * GET /api/admin/dashboard
      */
     public function index(): JsonResponse
     {
-        return response()->json([
-            'stats'              => $this->buildStats(),
-            'charts'             => $this->buildCharts(),
-            'recent_users'       => $this->getRecentUsers(),
-            'recent_classes'     => $this->getRecentClasses(),
-            'recent_activities'  => $this->buildRecentActivities(),
-            'top_lecturers'      => $this->getTopLecturers(),
-        ]);
+        try {
+            $data = $this->service->getDashboard();
+            return response()->json([
+                'message' => 'Dashboard admin',
+                ...$data,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Admin dashboard failed: ' . $e->getMessage(), [
+                'file'  => $e->getFile(),
+                'line'  => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'message' => 'Lỗi: ' . $e->getMessage(),
+            ], 500);
+        }
     }
  
     // ─── Stats cards ─────────────────────────
@@ -259,7 +271,7 @@ class AdminDashboardController extends Controller
             ->get()
             ->map(fn($r) => [
                 'type'     => 'sign_request',
-                'icon'     => '✅',
+                'icon'     => 'check',
                 'title'    => "{$r->lecturer?->name} đã ký tài liệu",
                 'subtitle' => "Cho: " . ($r->requester?->name ?? '—'),
                 'time'     => $r->signed_at,
