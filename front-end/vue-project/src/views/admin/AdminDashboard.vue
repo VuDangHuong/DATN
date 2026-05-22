@@ -5,7 +5,7 @@
     <div class="bg-gradient-to-r from-rose-500 to-pink-600 rounded-2xl p-6 text-white shadow-sm">
       <div class="flex items-center justify-between">
         <div>
-          <h2 class="text-2xl font-bold mb-1">👑 Trang Quản Trị</h2>
+          <h2 class="text-2xl font-bold mb-1">Trang Quản Trị</h2>
           <p class="text-rose-50 text-sm">
             {{ formatToday() }} · Xin chào, {{ user?.name || 'Admin' }}
           </p>
@@ -32,76 +32,99 @@
     <template v-else>
       <!-- ─── Section: Users ─── -->
       <div>
-        <h3 class="text-xs font-bold text-stone-500 uppercase tracking-wider mb-3">
-          👥 Người dùng
+        <h3
+          class="flex items-center gap-1.5 text-xs font-bold text-stone-500 uppercase tracking-wider mb-3"
+        >
+          <SvgICon name="users" class="w-4 h-4 text-gray-600" /> Người dùng
         </h3>
         <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
           <StatCard
-            icon="👥"
+            icon="users"
             label="Tổng user"
             :value="stats.total_users"
             color="indigo"
             link="/admin/users"
           />
-          <StatCard icon="👑" label="Admin" :value="stats.total_admins" color="red" />
-          <StatCard icon="👨‍🏫" label="Giảng viên" :value="stats.total_lecturers" color="teal" />
-          <StatCard icon="👨‍🎓" label="Sinh viên" :value="stats.total_students" color="blue" />
-          <StatCard icon="✅" label="Đang hoạt động" :value="stats.active_users" color="emerald" />
+          <StatCard icon="crown" label="Admin" :value="stats.total_admins" color="red" />
+          <StatCard icon="users" label="Giảng viên" :value="stats.total_lecturers" color="teal" />
+          <StatCard icon="users" label="Sinh viên" :value="stats.total_students" color="blue" />
+          <StatCard
+            icon="check"
+            label="Đang hoạt động"
+            :value="stats.active_users"
+            color="emerald"
+          />
         </div>
       </div>
 
       <!-- ─── Section: Academic ─── -->
       <div>
-        <h3 class="text-xs font-bold text-stone-500 uppercase tracking-wider mb-3">🎓 Học vụ</h3>
+        <h3
+          class="flex items-center gap-1.5 text-xs font-bold text-stone-500 uppercase tracking-wider mb-3"
+        >
+          <SvgICon name="graduation-cap" class="w-4 h-4 text-gray-600" /> Học vụ
+        </h3>
         <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
           <StatCard
-            icon="🎓"
+            icon="graduation-cap"
             label="Lớp học"
             :value="stats.total_classes"
             color="purple"
             link="/admin/classes"
           />
-          <StatCard icon="📅" label="Lớp hoạt động" :value="stats.active_classes" color="emerald" />
           <StatCard
-            icon="📚"
+            icon="building"
+            label="Lớp hoạt động"
+            :value="stats.active_classes"
+            color="emerald"
+          />
+          <StatCard
+            icon="class-book-open"
             label="Môn học"
             :value="stats.total_subjects"
             color="amber"
             link="/admin/subjects"
           />
           <StatCard
-            icon="🗓️"
+            icon="class-book"
             label="Học kỳ"
             :value="stats.total_semesters"
             color="cyan"
             link="/admin/semesters"
           />
-          <StatCard icon="👥" label="Nhóm" :value="stats.total_groups" color="indigo" />
+          <StatCard icon="group-users" label="Nhóm" :value="stats.total_groups" color="indigo" />
         </div>
       </div>
 
       <!-- ─── Section: Activity ─── -->
       <div>
-        <h3 class="text-xs font-bold text-stone-500 uppercase tracking-wider mb-3">
-          📊 Hoạt động hệ thống
+        <h3
+          class="flex items-center gap-1.5 text-xs font-bold text-stone-500 uppercase tracking-wider mb-3"
+        >
+          <SvgICon name="chart-bar" class="w-5 h-5 text-pink-600" />Hoạt động hệ thống
         </h3>
         <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-          <StatCard icon="📝" label="Bài tập" :value="stats.total_assignments" color="blue" />
-          <StatCard icon="📥" label="Bài nộp" :value="stats.total_submissions" color="cyan" />
+          <StatCard icon="document" label="Bài tập" :value="stats.total_assignments" color="blue" />
           <StatCard
-            icon="⏳"
+            icon="document-check"
+            label="Bài nộp"
+            :value="stats.total_submissions"
+            color="cyan"
+          />
+          <StatCard
+            icon="loading-time"
             label="Bài chờ duyệt"
             :value="stats.submissions_pending"
             color="amber"
           />
           <StatCard
-            icon="📝"
+            icon="edit-pencil"
             label="Yêu cầu ký"
             :value="stats.total_sign_requests"
             color="indigo"
           />
           <StatCard
-            icon="✅"
+            icon="check"
             label="GV có chữ ký số"
             :value="stats.lecturers_with_pki"
             color="emerald"
@@ -117,14 +140,14 @@
             <div
               class="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center text-teal-700"
             >
-              📈
+              <SvgICon name="chart-line" class="w-5 h-5 text-indigo-600" />
             </div>
             <div>
               <h3 class="text-sm font-bold text-stone-800">Tăng trưởng user 12 tháng</h3>
               <p class="text-[10px] text-stone-400">User đăng ký mới theo tháng</p>
             </div>
           </div>
-          <LineChart :data="charts.users_growth_12months" />
+          <LineChartAdmin :data="charts.users_growth_12months" />
         </div>
 
         <div class="bg-white rounded-2xl border border-stone-200 p-5">
@@ -132,14 +155,14 @@
             <div
               class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700"
             >
-              ⚡
+              <SvgICon name="bolt" class="w-5 h-5 text-yellow-500" />
             </div>
             <div>
               <h3 class="text-sm font-bold text-stone-800">Hoạt động 30 ngày qua</h3>
               <p class="text-[10px] text-stone-400">Bài nộp + Yêu cầu ký theo ngày</p>
             </div>
           </div>
-          <LineChart :data="charts.system_activity_30days" />
+          <LineChartAdmin :data="charts.system_activity_30days" />
         </div>
       </div>
 
@@ -150,11 +173,11 @@
             <div
               class="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-700"
             >
-              👥
+              <SvgICon name="group-users" class="w-5 h-5" />
             </div>
             <h3 class="text-sm font-bold text-stone-800">User theo vai trò</h3>
           </div>
-          <DonutChart :data="charts.users_by_role" />
+          <DonutChartAdmin :data="charts.users_by_role" />
         </div>
 
         <div class="bg-white rounded-2xl border border-stone-200 p-5">
@@ -162,11 +185,11 @@
             <div
               class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-700"
             >
-              📝
+              <SvgICon name="edit-pencil" class="w-5 h-5" />
             </div>
             <h3 class="text-sm font-bold text-stone-800">Trạng thái ký số</h3>
           </div>
-          <DonutChart :data="charts.sign_requests_status" />
+          <DonutChartAdmin :data="charts.sign_requests_status" />
         </div>
 
         <div class="bg-white rounded-2xl border border-stone-200 p-5">
@@ -174,11 +197,11 @@
             <div
               class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700"
             >
-              📥
+              <SvgICon name="upload" class="w-5 h-5" />
             </div>
             <h3 class="text-sm font-bold text-stone-800">Trạng thái bài nộp</h3>
           </div>
-          <DonutChart :data="charts.submissions_status" />
+          <DonutChartAdmin :data="charts.submissions_status" />
         </div>
 
         <div class="bg-white rounded-2xl border border-stone-200 p-5">
@@ -186,11 +209,11 @@
             <div
               class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-700"
             >
-              📊
+              <SvgICon name="chart-line" class="w-5 h-5 text-indigo-600" />
             </div>
             <h3 class="text-sm font-bold text-stone-800">Top lớp nhiều nhóm</h3>
           </div>
-          <BarChart :data="charts.top_classes_by_groups" />
+          <BarChartAdmin :data="charts.top_classes_by_groups" />
         </div>
       </div>
 
@@ -203,7 +226,7 @@
               <div
                 class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700"
               >
-                👤
+                <SvgICon name="users" class="w-5 h-5" />
               </div>
               <div>
                 <h3 class="text-sm font-bold text-stone-800">User mới nhất</h3>
@@ -251,7 +274,7 @@
               <div
                 class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-700"
               >
-                🎓
+                <SvgICon name="graduation-cap" class="w-5 h-5" />
               </div>
               <div>
                 <h3 class="text-sm font-bold text-stone-800">Lớp mới nhất</h3>
@@ -348,7 +371,7 @@
             <div
               class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-700"
             >
-              ⚡
+              <SvgICon name="bolt" class="w-5 h-5 text-yellow-500" />
             </div>
             <div>
               <h3 class="text-sm font-bold text-stone-800">Hoạt động gần đây</h3>
@@ -367,7 +390,9 @@
               :to="a.link"
               class="flex items-start gap-3 p-2 -mx-2 rounded-lg hover:bg-stone-50 transition group"
             >
-              <div class="text-lg flex-shrink-0">{{ a.icon }}</div>
+              <div class="text-lg flex-shrink-0">
+                <SvgICon name="check-circle" class="w-5 h-5 text-green-700" />
+              </div>
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium text-stone-700 group-hover:text-rose-600 transition">
                   {{ a.title }}
@@ -390,10 +415,11 @@ import { computed, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAdminDashboardStore } from '@/stores/admin/adminDashboardStore'
 import { useAuthStore } from '@/stores/auth'
-import LineChart from '../lecturer/components/dashboard/StatCard.vue'
-import DonutChart from '../lecturer/components/dashboard/StatCard.vue'
-import BarChart from '../lecturer/components/dashboard/StatCard.vue'
 import StatCard from '../lecturer/components/dashboard/StatCard.vue'
+import SvgICon from '@/components/icons/SVG.vue'
+import LineChartAdmin from './components/charts/LineChartAdmin.vue'
+import BarChartAdmin from './components/charts/BarChartAdmin.vue'
+import DonutChartAdmin from './components/charts/DonutChartAdmin.vue'
 
 const store = useAdminDashboardStore()
 const authStore = useAuthStore()
