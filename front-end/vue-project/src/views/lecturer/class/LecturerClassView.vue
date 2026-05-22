@@ -57,20 +57,7 @@
               class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition"
               :class="lecturerStore.selectedClassId === cls.id ? 'bg-teal-600' : 'bg-teal-100'"
             >
-              <svg
-                class="w-5 h-5 transition"
-                :class="lecturerStore.selectedClassId === cls.id ? 'text-white' : 'text-teal-600'"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="1.5"
-                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                />
-              </svg>
+              <SvgIcon name="class-book-open" class="w-5 h-5 text-white" />
             </div>
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
@@ -80,16 +67,17 @@
                 </span>
                 <span
                   v-if="lecturerStore.selectedClassId === cls.id"
-                  class="px-2 py-0.5 bg-teal-100 text-teal-700 text-[10px] font-bold rounded-full"
+                  class="px-2 py-0.5 bg-teal-100 text-teal-700 text-[12px] font-bold rounded-full"
                 >
                   Đang chọn
                 </span>
 
                 <!-- Badge định mức TV/nhóm -->
                 <span
-                  class="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded-full flex items-center gap-1"
+                  class="px-4 py-0.5 bg-indigo-100 text-indigo-700 text-[12px] font-bold rounded-full flex items-center gap-1"
                 >
-                  👥 {{ cls.max_members_per_group ?? 5 }}/nhóm
+                  <SvgIcon name="group-users" class="w-5 h-5 text-blue-600" />
+                  {{ cls.max_members_per_group ?? 5 }}/nhóm
                 </span>
               </div>
               <div class="flex items-center gap-4 mt-1 text-xs text-slate-400">
@@ -102,11 +90,11 @@
             <div class="hidden sm:flex items-center gap-6 text-center flex-shrink-0">
               <div>
                 <p class="text-lg font-bold text-slate-700">{{ cls.current_count ?? 0 }}</p>
-                <p class="text-[10px] text-slate-400">Sinh viên</p>
+                <p class="text-[12px] text-slate-400">Sinh viên</p>
               </div>
               <div>
                 <p class="text-lg font-bold text-teal-600">{{ groupCounts[cls.id] ?? '–' }}</p>
-                <p class="text-[10px] text-slate-400">Nhóm</p>
+                <p class="text-[12px] text-slate-400">Nhóm</p>
               </div>
             </div>
           </div>
@@ -154,20 +142,7 @@
                   class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-medium transition border border-indigo-200"
                   title="Cài đặt định mức thành viên mỗi nhóm"
                 >
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                    />
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
+                  <SvgIcon name="settings" class="w-4 h-4 text-blue-600" />
                   Định mức: {{ cls.max_members_per_group ?? 5 }} TV/nhóm
                 </button>
               </div>
@@ -199,7 +174,7 @@
                     </p>
                   </div>
                   <span
-                    class="px-2 py-0.5 text-[10px] font-bold rounded-full"
+                    class="px-2 py-0.5 text-[12px] font-bold rounded-full"
                     :class="
                       group.is_locked
                         ? 'bg-red-100 text-red-600'
@@ -212,7 +187,7 @@
 
                 <div class="flex items-center gap-2 mb-3">
                   <div
-                    class="w-6 h-6 rounded-full bg-teal-100 flex items-center justify-center text-[10px] font-bold text-teal-700 flex-shrink-0"
+                    class="w-6 h-6 rounded-full bg-teal-100 flex items-center justify-center text-[12px] font-bold text-teal-700 flex-shrink-0"
                   >
                     {{ group.leader?.name?.charAt(0) }}
                   </div>
@@ -220,7 +195,7 @@
                     <p class="text-xs font-medium text-slate-700 truncate">
                       {{ group.leader?.name }}
                     </p>
-                    <p class="text-[10px] text-slate-400">Trưởng nhóm</p>
+                    <p class="text-[12px] text-slate-400">Trưởng nhóm</p>
                   </div>
                 </div>
 
@@ -258,7 +233,7 @@
                   </span>
                 </div>
                 <p
-                  class="text-[10px] text-teal-600 mt-2 opacity-0 group-hover:opacity-100 transition"
+                  class="text-[12px] text-teal-600 mt-2 opacity-0 group-hover:opacity-100 transition"
                 >
                   Click để xem chi tiết →
                 </p>
@@ -295,6 +270,7 @@ import { useLecturerStore } from '@/stores/lecturer/lecturerStore'
 import axiosClient from '@/api/axiosClient'
 import ModalGroupDetailView from '../components/ModalGroupDetailView.vue'
 import MaxMembersPerGroupModal from '../components/class/MaxMembersPerGroupModal.vue'
+import SvgIcon from '@/components/icons/SVG.vue'
 
 const lecturerStore = useLecturerStore()
 

@@ -12,14 +12,7 @@
         @click="openCreate"
         class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition flex items-center gap-2"
       >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
+        <SvgIcon name="plus" class="w-4 h-4" />
         Tạo đợt nộp
       </button>
     </div>
@@ -55,6 +48,7 @@ import { useToastStore } from '@/stores/toast'
 import AssignmentDetail from '../components/assignment/AssignmentDetail.vue'
 import AssignmentFormModal from '../components/assignment/AssignmentFormModal.vue'
 import AssignmentList from '../components/assignment/AssignmentList.vue'
+import SvgIcon from '@/components/icons/SVG.vue'
 
 const store = useLecturerAssignmentStore()
 const lecturerStore = useLecturerStore()

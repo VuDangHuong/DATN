@@ -9,7 +9,7 @@
         <!-- Header -->
         <div class="flex items-start gap-3 mb-4 flex-shrink-0">
           <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
-            <span class="text-xl">📤</span>
+            <SvgIcon name="upload" class="w-5 h-5" />
           </div>
           <div>
             <h3 class="text-lg font-bold text-stone-800">
@@ -188,6 +188,7 @@
 import { ref, computed, watch } from 'vue'
 import { useMaterialStore } from '@/stores/lecturer/materialStore'
 import { useToastStore } from '@/stores/toast'
+import SvgIcon from '@/components/icons/SVG.vue'
 
 const props = defineProps({
   show: { type: Boolean, default: false },

@@ -8,9 +8,9 @@
   >
     <div class="flex items-start justify-between mb-2">
       <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl" :class="iconBg">
-        {{ icon }}
+        <SvgIcon :name="icon" class="w-5 h-5" />
       </div>
-      <svg
+      <!-- <svg
         v-if="link"
         class="w-4 h-4 text-stone-300"
         fill="none"
@@ -18,7 +18,7 @@
         viewBox="0 0 24 24"
       >
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-      </svg>
+      </svg> -->
     </div>
     <p class="text-2xl font-bold text-stone-800">{{ formatNumber(value) }}</p>
     <p class="text-xs text-stone-500 mt-0.5">{{ label }}</p>
@@ -26,6 +26,7 @@
 </template>
 
 <script setup>
+import SvgIcon from '@/components/icons/SVG.vue'
 import { computed } from 'vue'
 
 const props = defineProps({

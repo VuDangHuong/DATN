@@ -7,9 +7,9 @@
       </h3>
       <button
         @click="showGenerateTest = true"
-        class="text-xs px-3 py-1.5 border border-teal-200 text-teal-700 rounded-lg hover:bg-teal-50 font-medium transition"
+        class="text-sm px-3 py-1.5 border border-teal-200 text-teal-700 rounded-lg hover:bg-teal-50 font-medium transition"
       >
-        🧪 Tạo chữ ký test
+        Tạo chữ ký test
       </button>
     </div>
     <p class="text-sm text-stone-500 mb-5">Upload file .crt và .key được cấp bởi CA.</p>

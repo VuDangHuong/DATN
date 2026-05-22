@@ -50,14 +50,7 @@
         </p>
 
         <router-link to="/lecturer/dashboard" class="nav-link" active-class="nav-active">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="1.5"
-              d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-            />
-          </svg>
+          <SvgIcon name="dashboard" class="w-4 h-4" />
           <span>Dashboard</span>
         </router-link>
 
@@ -66,38 +59,17 @@
         </p>
 
         <router-link to="/lecturer/classes" class="nav-link" active-class="nav-active">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="1.5"
-              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-            />
-          </svg>
+          <SvgIcon name="building" class="w-4 h-4 text-gray-600" />
           <span>Quản lý lớp</span>
         </router-link>
 
         <router-link to="/lecturer/materials" class="nav-link" active-class="nav-active">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="1.5"
-              d="M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 006.5 22H20v-5M4 19.5v-15A2.5 2.5 0 016.5 2H20v15"
-            />
-          </svg>
+          <SvgIcon name="document" class="w-4 h-4" />
           <span>Tài liệu lớp học</span>
         </router-link>
 
         <router-link to="/lecturer/tasks" class="nav-link" active-class="nav-active">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="1.5"
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-            />
-          </svg>
+          <SvgIcon name="tasks" class="w-4 h-4" />
           <span>Công việc nhóm</span>
         </router-link>
 
@@ -106,26 +78,12 @@
         </p>
 
         <router-link to="/lecturer/assignments" class="nav-link" active-class="nav-active">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="1.5"
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
+          <SvgIcon name="class-book-open" class="w-4 h-4" />
           <span>Đợt nộp bài</span>
         </router-link>
 
         <router-link to="/lecturer/reviews" class="nav-link" active-class="nav-active">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="1.5"
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-            />
-          </svg>
+          <SvgIcon name="check-circle" class="w-4 h-4" />
           <span>Duyệt bài nộp</span>
           <span
             v-if="pendingCount > 0"
@@ -140,38 +98,17 @@
         </p>
 
         <router-link to="/lecturer/sign-requests" class="nav-link" active-class="nav-active">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="1.5"
-              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-            />
-          </svg>
+          <SvgIcon name="edit-pencil" class="w-4 h-4" />
           <span>Yêu cầu ký số</span>
         </router-link>
 
         <router-link to="/lecturer/sign-history" class="nav-link" active-class="nav-active">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="1.5"
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-            />
-          </svg>
+          <SvgIcon name="clipboard" class="w-4 h-4" />
           <span>Lịch sử ký số</span>
         </router-link>
 
         <router-link to="/lecturer/sign-profile" class="nav-link" active-class="nav-active">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="1.5"
-              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-            />
-          </svg>
+          <SvgIcon name="shield-check" class="w-4 h-4" />
           <span>Chữ ký số của tôi</span>
         </router-link>
       </nav>
@@ -182,14 +119,7 @@
           @click="logout"
           class="nav-link w-full text-red-500 hover:bg-red-50 hover:text-red-600"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="1.5"
-              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-            />
-          </svg>
+          <SvgIcon name="logout" class="w-4 h-4" />
           <span>Đăng xuất</span>
         </button>
       </div>
@@ -359,7 +289,7 @@ import AvatarModal from '@/components/modal/AvatarModal.vue'
 import axiosClient from '@/api/axiosClient'
 import { getAvatarUrl } from '@/utils/imageHelper'
 import SearchableSelect from '@/components/common/SearchableSelect.vue'
-
+import SvgIcon from '@/components/icons/SVG.vue'
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()

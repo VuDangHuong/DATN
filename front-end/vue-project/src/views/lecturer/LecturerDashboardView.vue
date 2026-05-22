@@ -5,7 +5,7 @@
     <div class="bg-gradient-to-r from-teal-500 to-cyan-600 rounded-2xl p-6 text-white shadow-sm">
       <div class="flex items-center justify-between">
         <div>
-          <h2 class="text-2xl font-bold mb-1">👋 Chào {{ user?.name || 'Giảng viên' }}!</h2>
+          <h2 class="text-2xl font-bold mb-1">Xin Chào {{ user?.name || 'Giảng viên' }}!</h2>
           <p class="text-teal-50 text-sm">{{ formatToday() }}</p>
         </div>
         <div class="hidden md:block text-right">
@@ -40,7 +40,7 @@
           <div
             class="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center text-teal-700"
           >
-            📈
+            <SvgICon name="chart-line" class="w-5 h-5 text-indigo-600" />
           </div>
           <div>
             <h3 class="text-sm font-bold text-stone-800">Hoạt động ký số 7 ngày qua</h3>
@@ -58,7 +58,7 @@
             <div
               class="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-700"
             >
-              📝
+              <SvgICon name="document-check" class="w-5 h-5 text-blue-600" />
             </div>
             <div>
               <h3 class="text-sm font-bold text-stone-800">Yêu cầu ký số</h3>
@@ -74,7 +74,7 @@
             <div
               class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700"
             >
-              📥
+              <SvgICon name="upload" class="w-5 h-5 text-yellow-500" />
             </div>
             <div>
               <h3 class="text-sm font-bold text-stone-800">Bài nộp</h3>
@@ -90,7 +90,7 @@
             <div
               class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center text-purple-700"
             >
-              📊
+              <SvgICon name="chart-bar" class="w-5 h-5 text-pink-600" />
             </div>
             <div>
               <h3 class="text-sm font-bold text-stone-800">Bài nộp theo lớp</h3>
@@ -110,7 +110,7 @@
               <div
                 class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700"
               >
-                📥
+                <SvgICon name="upload" class="w-5 h-5 text-pink-600" />
               </div>
               <div>
                 <h3 class="text-sm font-bold text-stone-800">Bài nộp chờ duyệt</h3>
@@ -137,7 +137,16 @@
             >
               <div class="flex items-center justify-between gap-3">
                 <div class="flex items-center gap-3 min-w-0">
-                  <span class="text-base">{{ s.submitter_type === 'group' ? '👥' : '👤' }}</span>
+                  <span class="flex items-center justify-center">
+                    <SvgICon
+                      :name="s.submitter_type === 'group' ? 'group-users' : 'users'"
+                      :class="
+                        s.submitter_type === 'group'
+                          ? 'w-4 h-4 text-purple-600'
+                          : 'w-4 h-4 text-blue-600'
+                      "
+                    />
+                  </span>
                   <div class="min-w-0">
                     <p class="text-sm font-semibold text-stone-800 truncate">
                       {{ s.submitter_name }}
@@ -162,7 +171,7 @@
               <div
                 class="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-700"
               >
-                📝
+                <SvgICon name="document" class="w-5 h-5 text-blue-600" />
               </div>
               <div>
                 <h3 class="text-sm font-bold text-stone-800">Yêu cầu ký số</h3>
@@ -179,7 +188,7 @@
 
           <div class="divide-y divide-stone-100 max-h-80 overflow-y-auto">
             <div v-if="!pendingSignRequests.length" class="p-6 text-center text-sm text-stone-400">
-              ✨ Không có yêu cầu nào đang chờ
+              Không có yêu cầu nào đang chờ
             </div>
             <router-link
               v-for="r in pendingSignRequests"
@@ -228,7 +237,7 @@
             <div
               class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-700"
             >
-              ⚡
+              <SvgICon name="bolt" class="w-5 h-5 text-yellow-500" />
             </div>
             <div>
               <h3 class="text-sm font-bold text-stone-800">Hoạt động gần đây</h3>
@@ -248,7 +257,12 @@
               :to="a.link"
               class="flex items-start gap-3 p-2 -mx-2 rounded-lg hover:bg-stone-50 transition group"
             >
-              <div class="text-lg flex-shrink-0">{{ a.icon }}</div>
+              <div class="flex-shrink-0">
+                <SvgICon
+                  :name="a.icon"
+                  class="w-5 h-5 text-stone-500 group-hover:text-teal-600 transition"
+                />
+              </div>
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium text-stone-700 group-hover:text-teal-600 transition">
                   {{ a.title }}
@@ -275,6 +289,7 @@ import StatCard from './components/dashboard/StatCard.vue'
 import BarChart from './components/dashboard/BarChart.vue'
 import LineChart from './components/dashboard/LineChart.vue'
 import DonutChart from './components/dashboard/DonutChart.vue'
+import SvgICon from '@/components/icons/SVG.vue'
 
 const store = useLecturerDashboardStore()
 const authStore = useAuthStore()
@@ -287,24 +302,30 @@ const user = computed(() => authStore.user)
 const statCards = [
   {
     key: 'classes_count',
-    icon: '🎓',
+    icon: 'graduation-cap',
     label: 'Lớp giảng dạy',
     color: 'teal',
     link: '/lecturer/classes',
   },
-  { key: 'students_count', icon: '👨‍🎓', label: 'Sinh viên', color: 'blue', link: null },
-  { key: 'groups_count', icon: '👥', label: 'Nhóm', color: 'purple', link: null },
-  { key: 'submissions_pending', icon: '📥', label: 'Bài chờ duyệt', color: 'amber', link: null },
+  { key: 'students_count', icon: 'users', label: 'Sinh viên', color: 'blue', link: null },
+  { key: 'groups_count', icon: 'group-users', label: 'Nhóm', color: 'purple', link: null },
+  {
+    key: 'submissions_pending',
+    icon: 'document-check',
+    label: 'Bài chờ duyệt',
+    color: 'amber',
+    link: null,
+  },
   {
     key: 'sign_requests_pending',
-    icon: '📝',
+    icon: 'document-check',
     label: 'Chờ ký số',
     color: 'indigo',
     link: '/lecturer/sign-requests',
   },
   {
     key: 'sign_requests_signed_today',
-    icon: '✅',
+    icon: 'check-circle',
     label: 'Đã ký hôm nay',
     color: 'emerald',
     link: null,

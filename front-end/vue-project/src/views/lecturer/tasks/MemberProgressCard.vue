@@ -32,7 +32,7 @@
           class="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-amber-400 flex items-center justify-center text-xs shadow"
           title="Trưởng nhóm"
         >
-          👑
+          <SvgIcon name="crown" class="w-3.5 h-3.5 text-amber-800" />
         </span>
       </div>
 
@@ -107,6 +107,7 @@
 </template>
 
 <script setup>
+import SvgIcon from '@/components/icons/SVG.vue'
 import { computed } from 'vue'
 
 const props = defineProps({

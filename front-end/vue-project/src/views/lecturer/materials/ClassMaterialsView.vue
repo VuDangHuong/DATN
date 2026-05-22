@@ -1,6 +1,6 @@
 <!-- src/views/lecturer/materials/ClassMaterialsView.vue -->
 <template>
-  <div class="max-w-6xl mx-auto p-6">
+  <div class="w-full p-6">
     <!-- Header -->
     <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
       <div>
@@ -15,13 +15,15 @@
           @click="openCopyModal(selectedIds)"
           class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold flex items-center gap-2"
         >
-          📋 Sao chép ({{ selectedIds.length }})
+          <SvgICon name="copy" class="w-4 h-4" />
+          Sao chép ({{ selectedIds.length }})
         </button>
         <button
           @click="openCreateModal"
           class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold flex items-center gap-2"
         >
-          📤 Upload tài liệu
+          <SvgICon name="upload" class="w-4 h-4" />
+          Upload tài liệu
         </button>
       </div>
     </div>
@@ -92,10 +94,12 @@
     <!-- Empty -->
     <div
       v-else-if="!materialStore.materials.length"
-      class="bg-white rounded-2xl border p-12 text-center"
+      class="bg-white rounded-2xl border p-12 text-center flex flex-col items-center"
     >
-      <p class="text-5xl mb-3">📚</p>
+      <SvgICon name="class-book-open" class="w-10 h-10 text-stone-400 mb-3" />
+
       <p class="text-stone-500 font-medium">Chưa có tài liệu nào</p>
+
       <button
         @click="openCreateModal"
         class="mt-3 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700"
@@ -134,9 +138,10 @@
 
               <span
                 v-if="m.is_copied"
-                class="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded-full"
+                class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded-full"
               >
-                📋 Copy
+                <SvgICon name="copy" class="w-3 h-3" />
+                <span>Copy</span>
               </span>
             </div>
 
@@ -158,59 +163,29 @@
               class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
               title="Thêm file"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
+              <SvgICon name="plus" class="w-4 h-4" />
             </button>
             <button
               @click.stop="openCopyModal([m.id])"
               class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition"
               title="Sao chép"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                />
-              </svg>
+              <SvgICon name="copy" class="w-4 h-4" />
             </button>
             <button
               @click.stop="handleDeleteMaterial(m)"
               class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition"
               title="Xóa tài liệu"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                />
-              </svg>
+              <SvgICon name="trash" class="w-4 h-4" />
             </button>
 
-            <svg
-              class="w-5 h-5 text-stone-400 transition-transform cursor-pointer ml-1"
+            <SvgICon
+              name="chevron-down"
+              class="w-4 h-4 transition-transform duration-200 cursor-pointer"
               :class="{ 'rotate-180': expandedIds.includes(m.id) }"
               @click="toggleExpand(m.id)"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
+            />
           </div>
         </div>
 
@@ -226,8 +201,7 @@
               :key="f.id"
               class="px-4 py-2.5 flex items-center gap-3 hover:bg-stone-50 transition"
             >
-              <span class="text-xl flex-shrink-0">{{ f.icon }}</span>
-
+              <SvgICon name="document" class="w-5 h-5 text-blue-600" />
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium text-stone-700 truncate">{{ f.file_name }}</p>
                 <p class="text-[11px] text-stone-400">
@@ -239,31 +213,17 @@
               <div class="flex items-center gap-1 flex-shrink-0">
                 <button
                   @click="handleDownload(f, m.id)"
-                  class="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
+                  class="p-1.5 hover:bg-emerald-50 rounded-lg transition"
                   title="Tải xuống"
                 >
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                    />
-                  </svg>
+                  <SvgICon name="download" class="w-5 h-5 text-emerald-600" />
                 </button>
                 <button
                   @click="handleDeleteFile(f, m.id)"
                   class="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition"
                   title="Xóa file"
                 >
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
+                  <SvgICon name="x-circle" class="w-5 h-5 text-red-600" />
                 </button>
               </div>
             </div>
@@ -298,6 +258,7 @@ import { useMaterialStore } from '@/stores/lecturer/materialStore'
 import { useToastStore } from '@/stores/toast'
 import UploadMaterialModal from '../components/materials/UploadMaterialModal.vue'
 import CopyMaterialModal from '../components/materials/CopyMaterialModal.vue'
+import SvgICon from '@/components/icons/SVG.vue'
 
 const props = defineProps({
   classId: { type: Number, required: true },
@@ -317,11 +278,11 @@ const searchInput = ref('')
 let searchTimeout
 
 const categories = {
-  lecture: '📚 Slide',
-  exercise: '✍️ Bài tập',
-  reference: '📖 Tham khảo',
-  exam: '📝 Đề thi',
-  other: '📎 Khác',
+  lecture: 'Slide',
+  exercise: 'Bài tập',
+  reference: 'Tham khảo',
+  exam: 'Đề thi',
+  other: 'Khác',
 }
 
 onMounted(loadMaterials)

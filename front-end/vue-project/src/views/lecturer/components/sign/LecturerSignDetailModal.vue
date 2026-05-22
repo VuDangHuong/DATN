@@ -112,20 +112,7 @@
                 v-if="store.previewing"
                 class="w-3.5 h-3.5 border-2 border-stone-300 border-t-stone-600 rounded-full animate-spin"
               />
-              <svg
-                v-else
-                class="w-3.5 h-3.5 text-blue-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                />
-              </svg>
+              <SvgIcon name="download" class="w-4 h-4" />
               {{ store.previewing ? 'Đang tải...' : 'Tải file gốc để ký' }}
             </button>
           </div>
@@ -173,7 +160,9 @@
             v-if="store.selectedRequest.status === 'signed'"
             class="border border-blue-200 rounded-xl p-4 bg-blue-50"
           >
-            <p class="text-sm font-semibold text-blue-700 mb-1">✅ Đã ký thành công</p>
+            <p class="flex items-center gap-1 text-sm font-semibold text-blue-700 mb-1">
+              <SvgIcon name="check-circle" class="w-4 h-4 text-green-700" />Đã ký thành công
+            </p>
             <p class="text-xs text-blue-600">
               Đã ký lúc {{ formatDate(store.selectedRequest.signed_at) }}. Đang chờ Admin phát hành
               cho sinh viên.
@@ -210,6 +199,7 @@ import { useLecturerSignStore } from '@/stores/lecturer/lecturerSignStore'
 import LecturerSignConfirmForm from './LecturerSignConfirmForm.vue'
 import LecturerSignRejectForm from './LecturerSignRejectForm.vue'
 import { useToastStore } from '@/stores/toast'
+import SvgIcon from '@/components/icons/SVG.vue'
 
 const store = useLecturerSignStore()
 const toast = useToastStore()
@@ -217,13 +207,13 @@ const toast = useToastStore()
 function handleClose() {
   store.closeDetail()
 }
-// ✅ Thêm: callback khi ký thành công
+// Thêm: callback khi ký thành công
 async function onSignSuccess() {
   await store.loadRequests() // reload list
   store.closeDetail() // đóng modal
 }
 
-// ✅ Thêm: callback khi từ chối thành công
+// Thêm: callback khi từ chối thành công
 async function onRejectSuccess() {
   await store.loadRequests()
   store.closeDetail()

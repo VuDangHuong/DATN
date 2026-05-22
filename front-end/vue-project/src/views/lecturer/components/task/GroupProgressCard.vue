@@ -45,7 +45,9 @@
         {{ group.leader.name?.charAt(0) }}
       </div>
       <div class="flex-1 min-w-0">
-        <p class="text-xs font-medium text-stone-700 truncate">👑 {{ group.leader.name }}</p>
+        <p class="text-xs flex items-center gap-1 font-medium text-stone-700 truncate">
+          <SvgIcon name="crown" class="w-3.5 h-3.5 text-amber-500" /> {{ group.leader.name }}
+        </p>
         <p class="text-[10px] text-stone-400">Trưởng nhóm</p>
       </div>
     </div>
@@ -90,14 +92,7 @@
     <!-- Member count + CTA -->
     <div class="mt-3 pt-3 border-t border-stone-100 flex items-center justify-between">
       <div class="flex items-center gap-1.5 text-xs text-stone-500">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
-          />
-        </svg>
+        <SvgIcon name="group-users" class="w-3.5 h-3.5" />
         <span>{{ memberCount }} thành viên</span>
       </div>
       <svg
@@ -113,6 +108,7 @@
 </template>
 
 <script setup>
+import SvgIcon from '@/components/icons/SVG.vue'
 import { computed } from 'vue'
 
 const props = defineProps({

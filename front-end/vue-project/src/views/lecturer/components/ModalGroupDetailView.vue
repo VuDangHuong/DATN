@@ -95,9 +95,10 @@
                   <p class="text-sm font-medium text-slate-800 truncate">{{ member.name }}</p>
                   <span
                     v-if="member.role === 'leader'"
-                    class="px-1.5 py-0.5 bg-teal-100 text-teal-700 text-[10px] font-bold rounded flex-shrink-0"
+                    class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-teal-100 text-teal-700 text-[10px] font-bold rounded flex-shrink-0"
                   >
-                    👑 Trưởng nhóm
+                    <SvgICon name="crown" class="w-3.5 h-3.5 text-amber-500" />
+                    <span>Trưởng nhóm</span>
                   </span>
                 </div>
                 <p class="text-xs text-slate-400 font-mono mt-0.5">{{ member.code }}</p>
@@ -297,6 +298,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import axiosClient from '@/api/axiosClient'
+import SvgICon from '@/components/icons/SVG.vue'
 
 const props = defineProps({
   show: { type: Boolean, default: false },

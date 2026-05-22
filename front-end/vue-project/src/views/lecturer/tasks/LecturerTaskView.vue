@@ -51,16 +51,9 @@
       <button
         v-if="mode !== 'groups'"
         @click="handleBack"
-        class="px-4 py-2 border border-stone-200 hover:bg-stone-50 rounded-xl text-sm font-medium text-stone-700 flex items-center gap-2"
+        class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
       >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M15 19l-7-7 7-7"
-          />
-        </svg>
+        <SvgIcon name="back-arrow" class="w-4 h-4" />
         Quay lại
       </button>
     </div>
@@ -165,8 +158,12 @@
       </div>
 
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-sm font-bold text-stone-700 uppercase tracking-wide">
-          👥 Danh sách nhóm ({{ filteredGroups.length }})
+        <h3
+          class="text-sm flex items-center gap-1.5 font-bold text-stone-700 uppercase tracking-wide"
+        >
+          <SvgIcon name="group-users" class="w-5 h-5" /> Danh sách nhóm ({{
+            filteredGroups.length
+          }})
         </h3>
       </div>
 
@@ -221,8 +218,12 @@
       </div>
 
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-sm font-bold text-stone-700 uppercase tracking-wide">
-          👥 Thành viên nhóm ({{ sortedMembers.length }})
+        <h3
+          class="flex items-center gap-1.5 text-sm font-bold text-stone-700 uppercase tracking-wide"
+        >
+          <SvgIcon name="group-users" class="w-3.5 h-3.5" /> Thành viên nhóm ({{
+            sortedMembers.length
+          }})
         </h3>
         <p class="text-xs text-stone-400">
           Tổng tiến độ nhóm: <strong :class="groupProgressColor">{{ groupProgress }}%</strong>
@@ -277,7 +278,7 @@
             v-if="selectedMember.role === 'leader'"
             class="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-amber-400 flex items-center justify-center shadow"
           >
-            👑
+            <SvgIcon name="crown" class="w-3.5 h-3.5 text-amber-500" />
           </span>
         </div>
 
@@ -545,6 +546,8 @@ import { useToastStore } from '@/stores/toast'
 import GroupProgressCard from '../components/task/GroupProgressCard.vue'
 import MemberProgressCard from './MemberProgressCard.vue'
 import SearchableSelect from '@/components/common/SearchableSelect.vue'
+import SvgIcon from '@/components/icons/SVG.vue'
+
 const lecturerStore = useLecturerStore()
 const toast = useToastStore()
 

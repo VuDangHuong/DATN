@@ -1,6 +1,6 @@
 <!-- src/views/lecturer/sign/LecturerSignProfileView.vue -->
 <template>
-  <div class="max-w-4xl mx-auto">
+  <div class="max-w-full mx-auto">
     <!-- Header -->
     <div class="mb-6">
       <h2 class="text-2xl font-bold text-stone-800">Chữ ký số của tôi</h2>
@@ -63,39 +63,24 @@
                 class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                 :class="iconBgClass"
               >
-                <svg
+                <SvgICon
                   v-if="store.isValid && !store.isPendingDeactivation"
+                  name="shield-check"
                   class="w-6 h-6 text-emerald-600"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-                <svg
+                />
+
+                <SvgICon
                   v-else
+                  name="warning"
                   class="w-6 h-6"
                   :class="store.isPendingDeactivation ? 'text-amber-600' : 'text-red-600'"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
+                />
               </div>
               <div>
                 <div class="flex items-center gap-2 mb-1">
                   <h3 class="text-lg font-bold text-stone-800">Chữ ký số</h3>
                   <span
-                    class="px-2 py-0.5 text-[10px] font-bold rounded-full"
+                    class="px-2 py-0.5 text-[12px] font-bold rounded-full"
                     :class="statusBadgeClass"
                   >
                     {{ statusLabel }}
@@ -111,7 +96,7 @@
             <button
               v-if="!store.isPendingDeactivation"
               @click="showDeactivateModal = true"
-              class="px-3 py-1.5 border border-red-200 text-red-600 rounded-lg text-xs font-medium hover:bg-red-50 transition"
+              class="px-4 py-2 border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition"
             >
               Yêu cầu vô hiệu hóa
             </button>
@@ -233,19 +218,7 @@
               <div
                 class="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center flex-shrink-0"
               >
-                <svg
-                  class="w-4 h-4 text-stone-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
+                <SvgICon name="clock" class="w-4 h-4" />
               </div>
               <div class="min-w-0">
                 <p class="text-sm font-mono font-medium text-stone-700 truncate">
@@ -257,7 +230,7 @@
               </div>
             </div>
             <span
-              class="px-2 py-0.5 bg-stone-100 text-stone-500 text-[10px] font-bold rounded-full flex-shrink-0"
+              class="px-2 py-0.5 bg-stone-100 text-stone-500 text-[12px] font-bold rounded-full flex-shrink-0"
             >
               Cũ
             </span>
@@ -277,7 +250,7 @@
             <div class="flex items-start justify-between gap-3 mb-1">
               <p class="text-xs text-stone-500">Gửi lúc {{ formatDateTime(req.created_at) }}</p>
               <span
-                class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase flex-shrink-0"
+                class="px-2 py-0.5 rounded-full text-[12px] font-bold uppercase flex-shrink-0"
                 :class="reqStatusClass(req.status)"
               >
                 {{ reqStatusLabel(req.status) }}
@@ -289,7 +262,7 @@
             <p v-if="req.admin_note" class="text-xs text-red-600 mt-1">
               <span class="font-semibold">Admin từ chối:</span> {{ req.admin_note }}
             </p>
-            <p v-if="req.resolved_at" class="text-[10px] text-stone-400 mt-1">
+            <p v-if="req.resolved_at" class="text-[12px] text-stone-400 mt-1">
               Xử lý lúc {{ formatDateTime(req.resolved_at) }}
               <span v-if="req.admin">· bởi {{ req.admin.name }}</span>
             </p>
@@ -385,6 +358,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useSignProfileStore } from '@/stores/lecturer/signProfileStore'
 import { useToastStore } from '@/stores/toast'
 import SignProfileRegisterForm from '../components/sign/SignProfileRegisterForm.vue'
+import SvgICon from '@/components/icons/SVG.vue'
 
 const store = useSignProfileStore()
 const toast = useToastStore()

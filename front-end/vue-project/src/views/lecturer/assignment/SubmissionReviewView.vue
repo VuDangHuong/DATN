@@ -83,16 +83,9 @@
         </div>
         <button
           @click="$router.back()"
-          class="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 transition"
+          class="inline-flex items-center gap-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
+          <SvgIcon name="back-arrow" class="w-4 h-4" />
           Quay lại
         </button>
       </div>
@@ -248,7 +241,10 @@
 
               <!-- File info -->
               <div class="flex items-center gap-3 text-xs text-slate-400">
-                <span>📎 {{ sub.file_name }}</span>
+                <span class="flex items-center gap-1"
+                  ><SvgIcon name="document" class="w-4 h-4 text-blue-600" />
+                  {{ sub.file_name }}</span
+                >
                 <span>{{ sub.file_size }}</span>
                 <span>{{ formatDate(sub.submitted_at) }}</span>
               </div>
@@ -330,14 +326,7 @@
                   v-if="downloadingId === sub.id"
                   class="w-4 h-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"
                 />
-                <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                  />
-                </svg>
+                <SvgIcon name="download" class="w-4 h-4" />
               </button>
               <button
                 v-if="sub.status === 'pending'"
@@ -435,6 +424,7 @@ import { lecturerAssignmentApi } from '@/api/lecturer/lecturerAssignmentApi'
 import { useToastStore } from '@/stores/toast'
 import axiosClient from '@/api/axiosClient'
 import ReviewModal from '../components/review/ReviewModal.vue'
+import SvgIcon from '@/components/icons/SVG.vue'
 
 const props = defineProps({
   assignmentId: { type: Number, default: null },

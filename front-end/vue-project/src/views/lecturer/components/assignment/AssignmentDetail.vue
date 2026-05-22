@@ -2,15 +2,15 @@
 <template>
   <div>
     <!-- Back button -->
-    <button
-      @click="$emit('back')"
-      class="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 mb-5 transition"
-    >
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-      </svg>
-      Quay lại
-    </button>
+    <div class="flex justify-end mb-4">
+      <button
+        @click="$emit('back')"
+        class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+      >
+        <SvgIcon name="back-arrow" class="w-4 h-4" />
+        <span>Quay lại</span>
+      </button>
+    </div>
 
     <!-- Assignment info + stats -->
     <div class="bg-white rounded-2xl border border-slate-200 p-5 mb-5">
@@ -99,14 +99,7 @@
           target="_blank"
           class="flex items-center gap-1.5 px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50 transition"
         >
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-            />
-          </svg>
+          <SvgIcon name="download" class="w-4 h-4" />
           Tải về
         </a>
       </div>
@@ -149,6 +142,7 @@
 import { ref } from 'vue'
 import { useLecturerAssignmentStore } from '@/stores/lecturer/lecturerAssignmentStore'
 import { lecturerAssignmentApi } from '@/api/lecturer/lecturerAssignmentApi'
+import SvgIcon from '@/components/icons/SVG.vue'
 
 const store = useLecturerAssignmentStore()
 const activeTab = ref('submitted')
