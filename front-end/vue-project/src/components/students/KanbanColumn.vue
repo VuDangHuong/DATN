@@ -2,7 +2,7 @@
   <div class="bg-slate-50 rounded-2xl border border-slate-200 flex flex-col">
     <div class="p-4 flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <span class="text-base">{{ icon }}</span>
+        <SvgIcon :name="icon" />
         <h3 class="text-sm font-bold text-slate-700">{{ title }}</h3>
         <span
           class="px-2 py-0.5 bg-white border border-slate-200 rounded-full text-xs font-bold text-slate-500"
@@ -10,11 +10,11 @@
           {{ localTasks.length }}
         </span>
       </div>
-      <div class="w-2 h-2 rounded-full" :class="color" />
+      <div class="w-2 h-2 rounded-full" :style="{ backgroundColor: color }" />
     </div>
 
     <div class="flex-1 px-3 pb-3 overflow-y-auto max-h-[60vh]">
-      <!-- ✅ v-for thường + ref cho sortable -->
+      <!-- v-for thường + ref cho sortable -->
       <div ref="listRef" class="space-y-2 min-h-[60px]">
         <div
           v-for="task in localTasks"
@@ -27,15 +27,15 @@
           <div class="flex items-center gap-1.5 mb-2">
             <span
               :class="priorityClass(task.priority)"
-              class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
+              class="px-4 py-2 rounded-full text-[10px] font-bold uppercase"
             >
-              {{ task.priority }}
+              {{ priorityText(task.priority) }}
             </span>
             <span
               v-if="task.is_overdue"
-              class="px-2 py-0.5 bg-red-50 text-red-600 rounded-full text-[10px] font-bold"
+              class="flex items-center gap-1 px-4 py-2 bg-red-50 text-red-600 rounded-full text-[10px] font-bold"
             >
-              ⏰ Quá hạn
+              <SvgIcon name="clock" class="w-3.5 h-3.5" /> Quá hạn
             </span>
           </div>
           <h4
@@ -71,23 +71,26 @@
               <button
                 v-if="task.status === 'todo'"
                 @click.stop="emit('changeStatus', task.id, 'doing')"
-                class="action-btn bg-blue-50 text-blue-600 hover:bg-blue-100"
+                class="action-btn flex items-center gap-1 bg-blue-50 text-blue-600 hover:bg-blue-100"
               >
-                ▶ Bắt đầu
+                <SvgIcon name="play" class="w-4 h-4" />
+                Bắt đầu
               </button>
               <button
                 v-if="task.status === 'doing'"
                 @click.stop="emit('changeStatus', task.id, 'done')"
-                class="action-btn bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                class="action-btn flex items-center gap-1 bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
               >
-                ✓ Hoàn thành
+                <SvgIcon name="check" class="w-4 h-4" />
+                Hoàn thành
               </button>
               <button
                 v-if="task.status === 'done' || task.status === 'late'"
                 @click.stop="emit('changeStatus', task.id, 'doing')"
-                class="action-btn bg-amber-50 text-amber-600 hover:bg-amber-100"
+                class="action-btn flex items-center gap-1 bg-amber-50 text-amber-600 hover:bg-amber-100"
               >
-                ↩ Mở lại
+                <SvgIcon name="reply" class="w-4 h-4" />
+                Mở lại
               </button>
             </template>
             <button
@@ -95,7 +98,7 @@
               @click.stop="emit('deleteTask', task.id)"
               class="action-btn bg-red-50 text-red-500 hover:bg-red-100 ml-auto"
             >
-              🗑
+              <SvgIcon name="trash" class="w-3 h-3" />
             </button>
           </div>
         </div>
@@ -111,7 +114,7 @@
 <script setup>
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 import Sortable from 'sortablejs'
-
+import SvgIcon from '@/components/icons/SVG.vue'
 const props = defineProps({
   title: { type: String },
   color: { type: String },
@@ -190,7 +193,16 @@ function priorityClass(p) {
     }[p] || ''
   )
 }
-
+function priorityText(p) {
+  return (
+    {
+      urgent: 'Khẩn cấp',
+      high: 'Cao',
+      medium: 'Trung bình',
+      low: 'Thấp',
+    }[p] || 'Không rõ'
+  )
+}
 function formatDeadline(d) {
   if (!d) return ''
   return new Date(d).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })

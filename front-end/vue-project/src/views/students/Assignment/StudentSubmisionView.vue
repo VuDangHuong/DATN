@@ -223,6 +223,8 @@ import { useDashboardStore } from '@/stores/students/dashboardStore'
 import SubmissionCard from '@/components/students/SubmissionCard.vue'
 import { useStudentAssignmentStore } from '@/stores/students/studentAssignmentStore'
 import { useToastStore } from '@/stores/toast'
+import SvgICon from '@/components/icons/SVG.vue'
+
 const dashboardStore = useDashboardStore()
 const store = useStudentAssignmentStore()
 const toast = useToastStore()

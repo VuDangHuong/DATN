@@ -39,10 +39,10 @@ export const useDashboardStore = defineStore('dashboard', () => {
       console.log('classes[0].class.id:', classes.value[0]?.class?.id)
 
       // Tự chọn lớp đầu tiên nếu chưa chọn
-      if (!selectedClassId.value && classes.value.length > 0) {
-        selectedClassId.value = classes.value[0].class.id
-        console.log('selectedClassId sau khi set:', selectedClassId.value)
-      }
+      // if (!selectedClassId.value && classes.value.length > 0) {
+      //   selectedClassId.value = classes.value[0].class.id
+      //   console.log('selectedClassId sau khi set:', selectedClassId.value)
+      // }
     } catch (err) {
       error.value = err.response?.data?.message || 'Không thể tải dữ liệu'
     } finally {

@@ -1,6 +1,6 @@
 <!-- src/components/students/task/TaskStats.vue -->
 <template>
-  <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
+  <div class="grid grid-cols-3 md:grid-cols-6 gap-3 mb-6">
     <div
       v-for="(item, key) in items"
       :key="key"

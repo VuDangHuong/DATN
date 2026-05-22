@@ -11,28 +11,14 @@
           @click="openCreateModal"
           class="px-4 py-2.5 bg-white border border-indigo-200 text-indigo-700 rounded-xl text-sm font-semibold hover:bg-indigo-50 transition flex items-center gap-2"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
+          <SvgIcon name="plus" class="w-4 h-4" />
           Tạo 1 việc
         </button>
         <button
           @click="showBulkModal = true"
           class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition flex items-center gap-2"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-            />
-          </svg>
+          <SvgIcon name="tasks" class="w-4 h-4" />
           Tạo nhiều việc
         </button>
       </div>
@@ -125,7 +111,7 @@ import TaskStats from '../components/task/TaskStats.vue'
 import TaskFormModal from '../components/task/TaskFormModal.vue'
 import TaskDetailModal from '../components/task/TaskDetailModal.vue'
 import BulkCreateTaskModal from '../components/task/BulkCreateTaskModal.vue'
-
+import SvgIcon from '@/components/icons/SVG.vue'
 const route = useRoute()
 const dashboardStore = useDashboardStore()
 const taskStore = useTaskStore()

@@ -30,20 +30,29 @@
             <h3 class="text-xl font-bold">{{ currentGroup.name }}</h3>
             <p class="text-indigo-100 mt-1 text-sm">
               {{ currentGroup.member_count }} thành viên
-              <span class="mx-2">·</span>
-              Mã mời: <span class="font-mono font-bold">{{ currentGroup.invitation_code }}</span>
+              <!-- <span class="mx-2">·</span>
+              Mã mời: <span class="font-mono font-bold">{{ currentGroup.invitation_code }}</span> -->
             </p>
           </div>
 
           <!-- Action buttons (leader) -->
           <div class="flex items-center gap-2">
             <span
-              class="px-3 py-1 rounded-full text-xs font-bold"
+              class="px-2.5 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 w-fit"
               :class="
-                currentGroup.is_locked ? 'bg-red-500/20 text-red-100' : 'bg-white/20 text-white'
+                currentGroup.is_locked
+                  ? 'bg-red-50 text-red-700 border border-red-200'
+                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
               "
             >
-              {{ currentGroup.is_locked ? '🔒 Đã khóa' : '🔓 Đang mở' }}
+              <SvgIcon
+                :name="currentGroup.is_locked ? 'lock' : 'unlock'"
+                class="w-3.5 h-3.5 flex-shrink-0"
+              />
+
+              <span>
+                {{ currentGroup.is_locked ? 'Đã khóa' : 'Đang mở' }}
+              </span>
             </span>
 
             <!-- Dropdown menu -->
@@ -147,7 +156,7 @@
       <!-- Leader info -->
       <div class="px-6 py-4 border-b border-slate-100 flex items-center gap-3">
         <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
-          <span class="text-amber-600 text-sm">👑</span>
+          <SvgIcon name="crown" class="w-5 h-5 text-amber-500" />
         </div>
         <div>
           <p class="text-xs text-slate-400">Nhóm trưởng</p>
@@ -168,14 +177,7 @@
             @click="showAddMemberModal = true"
             class="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1"
           >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-              />
-            </svg>
+            <SvgIcon name="add-user" class="w-4 h-4" />
             Thêm thành viên
           </button>
         </div>
@@ -198,11 +200,18 @@
                 {{ member.name?.charAt(0) }}
               </div>
               <div>
-                <p class="text-sm font-medium text-slate-700">
+                <p class="text-sm font-medium text-slate-700 flex items-center gap-1">
                   {{ member.name }}
-                  <span v-if="member.role === 'leader'" class="ml-1 text-amber-500 text-xs"
-                    >👑 Leader</span
+
+                  <span
+                    v-if="member.role === 'leader'"
+                    class="inline-flex items-center gap-1 ml-1 text-amber-500 text-xs font-semibold"
                   >
+                    <span class="w-3.5 h-3.5 flex items-center justify-center">
+                      <SvgIcon name="crown" />
+                    </span>
+                    <span>Trưởng nhóm</span>
+                  </span>
                 </p>
                 <p class="text-xs text-slate-400">{{ member.code }}</p>
               </div>
@@ -215,14 +224,7 @@
               class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
               title="Xóa khỏi nhóm"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                />
-              </svg>
+              <SvgIcon name="trash" class="h-4 w-4 mr-1" />
             </button>
           </div>
         </div>
@@ -232,15 +234,17 @@
       <div class="px-6 pb-6 flex gap-3">
         <router-link
           :to="`/student/chat?group_id=${currentGroup.id}`"
-          class="flex-1 py-2.5 bg-emerald-50 text-emerald-700 text-sm font-semibold rounded-xl text-center hover:bg-emerald-100 transition-colors"
+          class="flex-1 py-2.5 bg-emerald-50 text-emerald-700 text-sm font-semibold rounded-xl text-center hover:bg-emerald-100 transition-colors flex items-center justify-center gap-1.5"
         >
-          💬 Chat nhóm
+          <SvgIcon name="chat" class="w-4 h-4" />
+          Chat nhóm
         </router-link>
         <router-link
           :to="`/student/tasks?group_id=${currentGroup.id}`"
-          class="flex-1 py-2.5 bg-indigo-50 text-indigo-700 text-sm font-semibold rounded-xl text-center hover:bg-indigo-100 transition-colors"
+          class="flex-1 py-2.5 bg-indigo-50 text-indigo-700 text-sm font-semibold rounded-xl text-center hover:bg-indigo-100 transition-colors flex items-center justify-center gap-1.5"
         >
-          📋 Công việc
+          <SvgIcon name="tasks" class="w-4 h-4" />
+          Công việc
         </router-link>
       </div>
     </div>
@@ -437,12 +441,16 @@ import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useDashboardStore } from '@/stores/students/dashboardStore'
 import { useGroupStore } from '@/stores/students/groupStore'
+import { useAuthStore } from '@/stores/auth' // ✅ Import thêm authStore để lấy user chuẩn reactive
 import { storeToRefs } from 'pinia'
+import SvgIcon from '@/components/icons/SVG.vue'
 
 const route = useRoute()
 const router = useRouter()
 const dashboardStore = useDashboardStore()
 const groupStore = useGroupStore()
+const authStore = useAuthStore() // ✅ Sử dụng authStore thay cho localStorage thủ công
+
 const { selectedClass, myGroup, selectedClassId } = storeToRefs(dashboardStore)
 const { currentGroup, loading } = storeToRefs(groupStore)
 
@@ -460,25 +468,23 @@ const editForm = ref({ name: '', is_locked: false })
 const selectedTransferId = ref(null)
 const modalError = ref('')
 
-const user = JSON.parse(localStorage.getItem('user') || '{}')
+// ✅ Lấy thông tin user an toàn, reactive từ AuthStore
+const user = computed(() => authStore.user || JSON.parse(localStorage.getItem('user') || '{}'))
+
 const isLeader = computed(() => {
-  return Number(currentGroup.value?.leader?.id) === Number(user.id)
+  return Number(currentGroup.value?.leader?.id) === Number(user.value?.id)
 })
+
 const nonLeaderMembers = computed(() =>
   (currentGroup.value?.members || []).filter((m) => m.role !== 'leader'),
 )
-watch(currentGroup, (val) => {
-  console.log('USER:', user)
-  console.log('GROUP:', val)
-  console.log('LEADER CODE:', val?.leader?.code)
-  console.log('USER CODE:', user.code)
-  console.log('isLeader:', isLeader.value)
-})
+
 // ── Load group ───────────────────────────────
+// ✅ SỬA LỖI: Chỉ watch thuộc tính .id để tránh bị lặp lặp vô hạn (Infinite Loop)
 watch(
-  myGroup,
-  (g) => {
-    if (g?.id) groupStore.fetchGroupDetail(g.id)
+  () => myGroup.value?.id,
+  (newGroupId) => {
+    if (newGroupId) groupStore.fetchGroupDetail(newGroupId)
   },
   { immediate: true },
 )
@@ -514,14 +520,16 @@ async function handleCreateGroup() {
 
 function openEditModal() {
   showDropdown.value = false
+  // ✅ SỬA LỖI: Thêm .value cho currentGroup
   editForm.value = {
-    name: currentGroup.value.name,
-    is_locked: currentGroup.value.is_locked,
+    name: currentGroup.value?.name || '',
+    is_locked: currentGroup.value?.is_locked || false,
   }
   showEditModal.value = true
 }
 
 async function handleUpdateGroup() {
+  // ✅ SỬA LỖI: Thêm .value cho currentGroup
   const result = await groupStore.updateGroup(currentGroup.value.id, editForm.value)
   if (result.success) {
     showEditModal.value = false
@@ -531,6 +539,7 @@ async function handleUpdateGroup() {
 
 async function handleToggleLock() {
   showDropdown.value = false
+  // ✅ SỬA LỖI: Thêm .value cho currentGroup
   const newLocked = !currentGroup.value.is_locked
   await groupStore.updateGroup(currentGroup.value.id, { is_locked: newLocked })
 }
@@ -568,6 +577,7 @@ async function handleAddMember() {
 
 async function handleRemoveMember(member) {
   if (!confirm(`Xóa ${member.name} khỏi nhóm?`)) return
+  // ✅ SỬA LỖI: Thêm .value cho currentGroup
   await groupStore.removeMember(currentGroup.value.id, member.id)
 }
 

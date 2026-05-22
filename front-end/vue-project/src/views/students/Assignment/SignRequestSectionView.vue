@@ -12,19 +12,7 @@
       <!-- Chưa có yêu cầu → hiện nút tạo -->
       <div v-if="!signRequest">
         <div class="flex items-center gap-2 mb-2">
-          <svg
-            class="w-4 h-4 text-violet-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="1.5"
-              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-            />
-          </svg>
+          <SvgIcon name="edit-pencil" class="w-4 h-4 text-indigo-600" />
           <span class="text-xs font-semibold text-violet-700">Yêu cầu ký số tài liệu</span>
           <span class="px-1.5 py-0.5 bg-violet-100 text-violet-600 text-[10px] font-bold rounded">
             {{ assignment.document_category_label }}
@@ -42,14 +30,7 @@
             v-if="creating"
             class="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"
           />
-          <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
+          <SvgIcon name="plus" class="h-3 w-3" />
           {{ creating ? 'Đang gửi...' : 'Gửi yêu cầu ký số' }}
         </button>
       </div>
@@ -85,7 +66,7 @@
           </div>
         </div>
 
-        <!-- ✅ Timeline mới — 3 bước theo UC-11 (bỏ Admin) -->
+        <!--Timeline mới — 3 bước theo UC-11 (bỏ Admin) -->
         <div class="mt-2 flex items-center gap-1 overflow-x-auto pb-1">
           <div
             v-for="(step, idx) in steps"
@@ -165,7 +146,8 @@
             <div class="flex items-center justify-between gap-2 mb-1">
               <span class="text-[10px] font-bold text-blue-700 uppercase">🔍 Serial chứng thư</span>
               <button @click="copySerial" class="text-[10px] text-blue-600 hover:underline">
-                📋 Copy
+                <SvgIcon name="copy" class="w-5 h-5 text-indigo-600" />
+                Copy
               </button>
             </div>
             <p class="text-[10px] font-mono text-blue-800 break-all leading-relaxed">
@@ -176,7 +158,7 @@
               target="_blank"
               class="block mt-1.5 text-[10px] text-blue-600 hover:underline"
             >
-              → Xác thực file đã ký tại trang công khai
+              Xác thực file đã ký tại trang công khai
             </a>
           </div>
         </div>
@@ -206,6 +188,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useToastStore } from '@/stores/toast'
 import { useStudentAssignmentStore } from '@/stores/students/studentAssignmentStore'
+import SvgIcon from '@/components/icons/SVG.vue'
 
 const props = defineProps({
   submissionId: { type: Number, required: true },

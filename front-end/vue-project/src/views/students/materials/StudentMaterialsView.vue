@@ -1,66 +1,82 @@
 <!-- src/views/students/materials/StudentMaterialsView.vue -->
 <template>
-  <div class="max-w-5xl mx-auto p-6">
+  <div>
     <!-- Header -->
     <div class="mb-6">
       <!-- Breadcrumb -->
-      <div class="flex items-center gap-2 text-xs text-stone-500 mb-3">
+      <div class="flex items-center gap-2 text-xs text-slate-500 mb-3">
         <router-link to="/student/materials" class="hover:text-indigo-600 transition">
           Tài liệu
         </router-link>
+
         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
         </svg>
-        <span class="text-stone-800 font-medium">{{ classInfo?.name ?? `Lớp #${classId}` }}</span>
+
+        <span class="text-slate-800 font-medium">
+          {{ classInfo?.name ?? `Lớp #${classId}` }}
+        </span>
       </div>
 
-      <div class="flex items-start justify-between flex-wrap gap-3">
+      <div class="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h2 class="text-2xl font-bold text-stone-800">
-            📚 {{ classInfo?.name ?? 'Tài liệu lớp học' }}
+          <h2 class="text-2xl font-bold text-slate-800">
+            {{ classInfo?.name ?? 'Tài liệu lớp học' }}
           </h2>
-          <p class="text-sm text-stone-500 mt-1">
-            {{ materialStore.totalMaterials }} tài liệu · {{ materialStore.totalFiles }} file
-            <span v-if="classInfo?.lecturer?.name" class="ml-1">
-              · GV: <strong>{{ classInfo.lecturer.name }}</strong>
-            </span>
+
+          <p class="text-sm text-slate-500 mt-1 flex items-center gap-2 flex-wrap">
+            <span> {{ materialStore.totalMaterials }} tài liệu </span>
+
+            <span>•</span>
+
+            <span> {{ materialStore.totalFiles }} file </span>
+
+            <template v-if="classInfo?.lecturer?.name">
+              <span>•</span>
+
+              <span class="flex items-center gap-1.5">
+                <span class="w-4 h-4 flex items-center justify-center text-slate-400">
+                  <SvgIcon name="user-profile" class="w-4 h-4" />
+                </span>
+
+                <span class="font-medium text-slate-700">
+                  {{ classInfo.lecturer.name }}
+                </span>
+              </span>
+            </template>
           </p>
         </div>
 
         <router-link
           to="/student/materials"
-          class="px-3 py-2 text-xs text-stone-600 hover:bg-stone-100 rounded-xl flex items-center gap-1"
+          class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
         >
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-          Quay lại danh sách lớp
+          <SvgICon name="back-arrow" class="w-4 h-4" />
+          <span>Quay lại danh sách lớp</span>
         </router-link>
       </div>
     </div>
 
-    <!-- Stats by category -->
+    <!-- Category stats -->
     <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
       <button
         v-for="(label, key) in categories"
         :key="key"
         @click="toggleCategoryFilter(key)"
-        class="bg-white rounded-xl border p-3 text-left transition"
+        class="bg-white rounded-2xl border p-4 text-left transition-all"
         :class="
           materialStore.filters.category === key
             ? 'border-indigo-500 ring-2 ring-indigo-100'
-            : 'border-stone-200 hover:border-stone-300'
+            : 'border-slate-200 hover:border-slate-300'
         "
       >
-        <p class="text-xs text-stone-500 truncate">{{ label }}</p>
+        <p class="text-xs text-slate-500 truncate">
+          {{ label }}
+        </p>
+
         <p
           class="text-2xl font-bold mt-1"
-          :class="materialStore.filters.category === key ? 'text-indigo-600' : 'text-stone-800'"
+          :class="materialStore.filters.category === key ? 'text-indigo-600' : 'text-slate-800'"
         >
           {{ materialStore.categoryStats[key] ?? 0 }}
         </p>
@@ -68,10 +84,10 @@
     </div>
 
     <!-- Search -->
-    <div class="flex gap-3 mb-4 flex-wrap">
+    <div class="flex gap-3 mb-5 flex-wrap">
       <div class="relative flex-1 min-w-48">
         <svg
-          class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400"
+          class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -83,25 +99,27 @@
             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"
           />
         </svg>
+
         <input
           v-model="searchInput"
           @input="onSearch"
           type="text"
           placeholder="Tìm tài liệu hoặc file..."
-          class="w-full pl-9 pr-3 py-2 border border-stone-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+          class="w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
         />
       </div>
+
       <button
         v-if="materialStore.filters.category || materialStore.filters.search"
         @click="clearFilters"
-        class="px-3 py-2 text-xs text-stone-600 hover:bg-stone-100 rounded-xl"
+        class="px-3 py-2 text-xs text-slate-600 hover:bg-slate-100 rounded-xl transition"
       >
         Xóa lọc
       </button>
     </div>
 
     <!-- Loading -->
-    <div v-if="materialStore.loading" class="flex justify-center py-12">
+    <div v-if="materialStore.loading" class="flex justify-center py-20">
       <div
         class="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"
       />
@@ -110,10 +128,13 @@
     <!-- Empty -->
     <div
       v-else-if="!materialStore.materials.length"
-      class="bg-white rounded-2xl border p-12 text-center"
+      class="bg-white rounded-2xl border border-slate-200 p-12 text-center"
     >
-      <p class="text-5xl mb-3">📭</p>
-      <p class="text-stone-500 font-medium">
+      <div class="w-12 h-12 mx-auto text-slate-300 mb-3">
+        <SvgIcon name="class-book" />
+      </div>
+
+      <p class="text-slate-500">
         {{
           materialStore.filters.search || materialStore.filters.category
             ? 'Không tìm thấy tài liệu phù hợp'
@@ -122,91 +143,123 @@
       </p>
     </div>
 
-    <!-- Material list (accordion) -->
-    <div v-else class="space-y-3">
+    <!-- Materials -->
+    <div v-else class="space-y-4">
       <div
         v-for="m in materialStore.materials"
         :key="m.id"
-        class="bg-white rounded-2xl border border-stone-200 transition hover:shadow-md"
+        class="bg-white rounded-2xl border border-slate-200 overflow-hidden transition hover:shadow-sm"
       >
-        <div class="p-4 flex items-center gap-3 cursor-pointer" @click="toggleExpand(m.id)">
-          <div
-            class="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center flex-shrink-0"
-          >
-            <span class="text-xl">{{ categoryIcons[m.category] ?? '📚' }}</span>
-          </div>
-
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 flex-wrap">
-              <p class="text-sm font-bold text-stone-800">{{ m.title }}</p>
-              <span
-                class="px-2 py-0.5 bg-stone-100 text-stone-600 text-[10px] font-bold rounded-full"
-              >
-                {{ m.file_count }} file
+        <!-- Material header -->
+        <div class="p-5 border-b border-slate-100 cursor-pointer" @click="toggleExpand(m.id)">
+          <div class="flex items-start gap-4">
+            <!-- Icon -->
+            <div
+              class="w-11 h-11 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0"
+            >
+              <span class="text-xl">
+                <SvgICon name="class-book" class="w-4 h-4 text-violet-600" />
               </span>
             </div>
 
-            <p v-if="m.description" class="text-xs text-stone-600 mt-0.5 line-clamp-1">
-              {{ m.description }}
-            </p>
+            <!-- Info -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+                <h3 class="font-semibold text-slate-800 text-base">
+                  {{ m.title }}
+                </h3>
 
-            <div class="flex items-center gap-2 mt-1 text-xs text-stone-400 flex-wrap">
-              <span>{{ m.category_label }}</span>
-              <span>· {{ formatSize(m.total_size) }}</span>
-              <span>· {{ formatDate(m.created_at) }}</span>
-              <span v-if="m.uploader?.name">· 👤 {{ m.uploader.name }}</span>
+                <span
+                  class="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full"
+                >
+                  {{ m.file_count }} file
+                </span>
+              </div>
+
+              <p v-if="m.description" class="text-sm text-slate-500 mb-2 line-clamp-2">
+                {{ m.description }}
+              </p>
+
+              <div class="flex items-center gap-4 text-xs text-slate-500 flex-wrap">
+                <span>{{ m.category_label }}</span>
+
+                <span>
+                  {{ formatSize(m.total_size) }}
+                </span>
+
+                <span>
+                  {{ formatDate(m.created_at) }}
+                </span>
+
+                <span v-if="m.uploader?.name" class="flex items-center gap-1">
+                  <SvgIcon name="user-profile" class="w-3.5 h-3.5" />
+
+                  {{ m.uploader.name }}
+                </span>
+              </div>
             </div>
-          </div>
 
-          <svg
-            class="w-5 h-5 text-stone-400 transition-transform flex-shrink-0"
-            :class="{ 'rotate-180': expandedIds.includes(m.id) }"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
+            <!-- Expand -->
+            <svg
+              class="w-5 h-5 text-slate-400 transition-transform flex-shrink-0 mt-1"
+              :class="{ 'rotate-180': expandedIds.includes(m.id) }"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </div>
         </div>
 
-        <!-- Files list (expanded) -->
-        <div v-if="expandedIds.includes(m.id)" class="border-t border-stone-100">
-          <div v-if="!m.files?.length" class="p-4 text-center text-stone-400 text-xs">
+        <!-- Files -->
+        <div v-if="expandedIds.includes(m.id)">
+          <div v-if="!m.files?.length" class="p-5 text-center text-slate-400 text-sm">
             Chưa có file
           </div>
 
-          <div v-else class="divide-y divide-stone-100">
+          <div v-else class="divide-y divide-slate-100">
             <div
               v-for="f in m.files"
               :key="f.id"
-              class="px-4 py-3 flex items-center gap-3 hover:bg-stone-50 transition"
+              class="px-5 py-4 flex items-center gap-3 hover:bg-slate-50 transition"
             >
-              <span class="text-2xl flex-shrink-0">{{ f.icon }}</span>
+              <!-- File icon -->
+              <div
+                class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center flex-shrink-0 text-lg"
+              >
+                <SvgICon name="document" class="w-4 h-4 text-slate-400" />
+              </div>
 
+              <!-- File info -->
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-stone-700 truncate">{{ f.file_name }}</p>
-                <p class="text-xs text-stone-400 mt-0.5">
+                <p class="text-sm font-medium text-slate-700 truncate">
+                  {{ f.file_name }}
+                </p>
+
+                <p class="text-xs text-slate-400 mt-0.5">
                   {{ f.file_size_formatted }}
-                  <span v-if="f.download_count > 0" class="ml-1"
-                    >· 📥 {{ f.download_count }} lượt tải</span
-                  >
+
+                  <span v-if="f.download_count > 0"> · {{ f.download_count }} lượt tải </span>
                 </p>
               </div>
 
+              <!-- Download -->
               <button
                 @click="handleDownload(f, m.id)"
                 :disabled="downloadingId === f.id"
-                class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-semibold hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-1.5 flex-shrink-0"
+                class="px-3 py-2 bg-indigo-600 text-white rounded-xl text-xs font-semibold hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-1.5 flex-shrink-0 transition"
               >
                 <div
                   v-if="downloadingId === f.id"
                   class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"
                 />
+
                 <svg
                   v-else
                   class="w-3.5 h-3.5"
@@ -221,6 +274,7 @@
                     d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                   />
                 </svg>
+
                 Tải xuống
               </button>
             </div>
@@ -236,6 +290,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useStudentMaterialStore } from '@/stores/students/materialStore'
 import { useToastStore } from '@/stores/toast'
 import axiosClient from '@/api/axiosClient'
+import SvgICon from '@/components/icons/SVG.vue'
 
 const props = defineProps({
   classId: { type: Number, required: true },
@@ -251,20 +306,20 @@ const searchInput = ref('')
 let searchTimeout
 
 const categories = {
-  lecture: '📚 Slide',
-  exercise: '✍️ Bài tập',
-  reference: '📖 Tham khảo',
-  exam: '📝 Đề thi',
-  other: '📎 Khác',
+  lecture: 'Slide',
+  exercise: 'Bài tập',
+  reference: 'Tham khảo',
+  exam: ' Đề thi',
+  other: ' Khác',
 }
 
-const categoryIcons = {
-  lecture: '📚',
-  exercise: '✍️',
-  reference: '📖',
-  exam: '📝',
-  other: '📎',
-}
+// const categoryIcons = {
+//   lecture: '📚',
+//   exercise: '✍️',
+//   reference: '📖',
+//   exam: '📝',
+//   other: '📎',
+// }
 
 onMounted(async () => {
   await loadClassInfo()

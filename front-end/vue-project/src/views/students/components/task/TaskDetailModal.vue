@@ -14,7 +14,7 @@
                 <span
                   :class="priorityClass(task.priority)"
                   class="px-2 py-0.5 rounded-full text-xs font-bold uppercase"
-                  >{{ task.priority }}</span
+                  >{{ priorityText(task.priority) }}</span
                 >
                 <h3 class="text-lg font-bold text-slate-800 mt-2">{{ task.title }}</h3>
               </div>
@@ -72,9 +72,9 @@
               <button
                 v-if="isLeader"
                 @click="$emit('edit-task', task)"
-                class="flex-1 py-2 bg-slate-100 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-200"
+                class="flex flex-1 items-center justify-center gap-1 py-2 bg-slate-100 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-200"
               >
-                ✏️ Sửa
+                <SvgIcon name="edit" class="w-4 h-4 shrink-0" /> <span>Sửa</span>
               </button>
               <select
                 v-if="canChangeStatus"
@@ -82,9 +82,9 @@
                 @change="$emit('change-status', task.id, $event.target.value)"
                 class="flex-1 py-2 border border-slate-200 rounded-xl text-sm font-medium text-center cursor-pointer"
               >
-                <option value="todo">📋 Cần làm</option>
-                <option value="doing">🔄 Đang làm</option>
-                <option v-if="isLeader" value="done">✅ Hoàn thành (override)</option>
+                <option value="todo">Cần làm</option>
+                <option value="doing">Đang làm</option>
+                <option v-if="isLeader" value="done">Hoàn thành (override)</option>
               </select>
             </div>
             <TaskReviewSection
@@ -212,6 +212,7 @@
 import TaskCommentItem from './TaskCommentItem.vue'
 import CommentAttachmentInput from './CommentAttachmentInput.vue'
 import TaskReviewSection from './TaskReviewSection.vue'
+import SvgIcon from '@/components/icons/SVG.vue'
 
 defineProps({
   show: { type: Boolean, default: false },
@@ -290,7 +291,16 @@ function priorityClass(p) {
     }[p] || ''
   )
 }
-
+function priorityText(p) {
+  return (
+    {
+      urgent: 'Khẩn cấp',
+      high: 'Cao',
+      medium: 'Trung bình',
+      low: 'Thấp',
+    }[p] || 'Không rõ'
+  )
+}
 function statusClass(s) {
   return (
     {

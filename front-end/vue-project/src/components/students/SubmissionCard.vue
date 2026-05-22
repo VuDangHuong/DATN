@@ -7,19 +7,7 @@
           <div
             class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0"
           >
-            <svg
-              class="w-5 h-5 text-indigo-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="1.5"
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
+            <SvgICon name="document" class="w-5 h-5 text-indigo-600" />
           </div>
           <div class="min-w-0">
             <p class="text-sm font-medium text-slate-800 truncate">{{ submission.file_name }}</p>
@@ -108,7 +96,7 @@
         </div>
       </div>
 
-      <!-- ✅ Khu vực ký số — chỉ hiện khi approved + requires_signing = true -->
+      <!-- Khu vực ký số — chỉ hiện khi approved + requires_signing = true -->
       <SignRequestSectionView
         v-if="submission.status === 'approved' && assignment.requires_signing"
         :submission-id="submission.id"
@@ -241,6 +229,8 @@
 import axiosClient from '@/api/axiosClient'
 import SignRequestSectionView from '@/views/students/Assignment/SignRequestSectionView.vue'
 import { ref, computed, onMounted } from 'vue'
+import SvgICon from '../icons/SVG.vue'
+
 const props = defineProps({
   submission: { type: Object, default: null },
   assignment: { type: Object, required: true },

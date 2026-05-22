@@ -46,7 +46,7 @@
     <!-- ─── Leader: Status = pending_review → Duyệt / Từ chối ─── -->
     <div v-else-if="canReview" class="space-y-3">
       <div class="flex items-start gap-2">
-        <span class="text-lg">📋</span>
+        <SvgIcon name="clipboard" class="h-4 w-4" />
         <div class="flex-1">
           <p class="text-sm font-semibold text-stone-700">Yêu cầu xác nhận hoàn thành</p>
           <p class="text-xs text-stone-500 mt-0.5">
@@ -67,13 +67,13 @@
           @click="showRejectModal = true"
           class="flex-1 py-2 border border-red-200 text-red-700 rounded-xl text-sm font-semibold hover:bg-red-50"
         >
-          ❌ Từ chối
+          Từ chối
         </button>
         <button
           @click="showApproveModal = true"
           class="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700"
         >
-          ✅ Duyệt hoàn thành
+          Duyệt hoàn thành
         </button>
       </div>
     </div>
@@ -83,7 +83,7 @@
       v-else-if="task.reviewed_at && (task.status === 'done' || task.status === 'late')"
       class="flex items-start gap-2"
     >
-      <span class="text-lg">✅</span>
+      <SvgIcon name="check" class="w-4 h-4" />
       <div class="flex-1">
         <p class="text-sm font-semibold text-emerald-700">Đã được duyệt hoàn thành</p>
         <p class="text-xs text-stone-500 mt-0.5">
@@ -166,7 +166,7 @@
           @click="showApproveModal = false"
         />
         <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-          <h3 class="text-lg font-bold text-stone-800 mb-1">✅ Duyệt hoàn thành</h3>
+          <h3 class="text-lg font-bold text-stone-800 mb-1">Duyệt hoàn thành</h3>
           <p class="text-xs text-stone-500 mb-4">
             Xác nhận <strong>{{ task.assignee?.name }}</strong> đã hoàn thành công việc?
           </p>
@@ -252,7 +252,7 @@
 import { ref, computed } from 'vue'
 import { useTaskStore } from '@/stores/students/taskStore'
 import { useToastStore } from '@/stores/toast'
-
+import SvgIcon from '@/components/icons/SVG.vue'
 const props = defineProps({
   task: { type: Object, required: true },
   currentUserId: { type: Number, required: true },

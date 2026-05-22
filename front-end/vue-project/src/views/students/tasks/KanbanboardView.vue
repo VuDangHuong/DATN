@@ -69,7 +69,7 @@
               : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
           "
         >
-          <span class="text-sm">👥</span>
+          <SvgIcon name="group-users" class="w-4 h-4" />
           Tất cả
         </button>
 
@@ -170,10 +170,12 @@
 </template>
 
 <script setup>
+import SvgIcon from '@/components/icons/SVG.vue'
 import KanbanColumn from '@/components/students/KanbanColumn.vue'
 import { ref, computed } from 'vue'
-
 const props = defineProps({
+  title: String,
+  icon: String,
   tasks: { type: Array, default: () => [] },
   members: { type: Array, default: () => [] },
   isLeader: { type: Boolean, default: false },
@@ -186,11 +188,11 @@ const search = ref('')
 const selectedAssigneeIds = ref([]) //Array các user_id đang được filter
 
 const columns = [
-  { status: 'todo', title: 'Cần làm', color: 'bg-slate-500', icon: '📋' },
-  { status: 'doing', title: 'Đang làm', color: 'bg-blue-500', icon: '🔄' },
-  { status: 'pending_review', title: 'Chờ duyệt', color: 'bg-amber-500', icon: '⏳' },
-  { status: 'done', title: 'Hoàn thành', color: 'bg-emerald-500', icon: '✅' },
-  { status: 'late', title: 'Trễ hạn', color: 'bg-red-500', icon: '⚠️' },
+  { status: 'todo', title: 'Cần làm', color: '#64748b', icon: 'tasks' }, // Slate 500
+  { status: 'doing', title: 'Đang làm', color: '#3b82f6', icon: 'sync' }, // Blue 500
+  { status: 'pending_review', title: 'Chờ duyệt', color: '#f59e0b', icon: 'loading-time' }, // Amber 500
+  { status: 'done', title: 'Hoàn thành', color: '#10b981', icon: 'success' }, // Emerald 500
+  { status: 'late', title: 'Trễ hạn', color: '#ef4444', icon: 'warning' }, // Red 500
 ]
 
 // ─── Filter logic ─────────────────────────────
