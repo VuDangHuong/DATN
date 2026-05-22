@@ -163,7 +163,7 @@ const handleDelete = async (id) => {
                 <SvgIcon name="edit" class="h-4 w-4 mr-1" />
                 Sửa
               </button>
-              <button @click="handleDelete(item.id)" class="text-red-600 hover:underline">
+              <button @click="handleDelete(item)" class="text-red-600 hover:underline">
                 <SvgIcon name="trash" class="h-4 w-4 mr-1" />
                 Xóa
               </button>
