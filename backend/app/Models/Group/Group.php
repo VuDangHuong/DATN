@@ -36,9 +36,9 @@ class Group extends Model
         return $this->belongsTo(User::class, 'leader_id');
     }
 
-    public function members(): HasMany
+    public function members()
     {
-        return $this->hasMany(GroupMember::class);
+        return $this->hasMany(GroupMember::class, 'group_id');
     }
      public function users()
     {
