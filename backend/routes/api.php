@@ -152,8 +152,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         // Xem tất cả yêu cầu + filter theo status
         // Route::get('/sign-requests/stats',          [AdminSignController::class, 'stats']);    // ← trước {id}
-        // Route::get('/sign-requests', [AdminSignController::class, 'index']);
-        // Route::get('/sign-requests/{id}', [AdminSignController::class, 'show']);
+        Route::get('/sign-requests', [AdminSignController::class, 'index']);
+        Route::get('/sign-requests/{id}', [AdminSignController::class, 'show']);
         // // Duyệt & chuyển cho GV
         // Route::post('/sign-requests/{id}/forward', [AdminSignController::class, 'forward']);
         // // Từ chối
