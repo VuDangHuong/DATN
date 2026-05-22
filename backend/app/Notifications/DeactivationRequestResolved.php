@@ -58,7 +58,7 @@ class DeactivationRequestResolved extends Notification
             'title'    => $isApproved
                 ? 'Yêu cầu vô hiệu hóa được chấp thuận'
                 : 'Yêu cầu vô hiệu hóa bị từ chối',
-            'body'     => $isApproved
+            'content'     => $isApproved
                 ? 'Chữ ký số của bạn đã ngừng hoạt động'
                 : ('Lý do: ' . ($this->request->admin_note ?? '—')),
             'link'     => '/lecturer/sign-profile',

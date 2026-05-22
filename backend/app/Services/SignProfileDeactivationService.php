@@ -272,7 +272,7 @@ class SignProfileDeactivationService
                     break;
                 case 'expired':
                     $query->where('is_active', true)
-                          ->where('cert_valid_to', '<', now());
+                          ->where('cert_expires_at', '<', now());
                     break;
             }
         }
@@ -301,7 +301,7 @@ class SignProfileDeactivationService
         $pendingDeactivation= LecturerSignProfile::where('pending_deactivation', true)->count();
         $inactive           = LecturerSignProfile::where('is_active', false)->count();
         $expired            = LecturerSignProfile::where('is_active', true)
-                                                 ->where('cert_valid_to', '<', now())->count();
+                                                 ->where('cert_expires_at', '<', now())->count();
 
         $pendingRequests    = SignProfileDeactivationRequest::where('status', 'pending')->count();
 
@@ -348,7 +348,7 @@ class SignProfileDeactivationService
                 'id'             => $r->profile->id,
                 'subject_cn'     => $r->profile->subject_cn,
                 'serial_number'  => $r->profile->serial_number,
-                'cert_valid_to'  => $r->profile->cert_valid_to,
+                'cert_valid_to'  => $r->profile->cert_expires_at,
             ] : null,
             'reason'      => $r->reason,
             'status'      => $r->status,
@@ -367,7 +367,7 @@ class SignProfileDeactivationService
             $status = 'inactive';
         } elseif ($p->pending_deactivation) {
             $status = 'pending_deactivation';
-        } elseif ($p->cert_valid_to && $p->cert_valid_to->lt(now())) {
+        } elseif ($p->cert_expires_at && $p->cert_expires_at->lt(now())) {
             $status = 'expired';
         }
 
@@ -385,7 +385,7 @@ class SignProfileDeactivationService
             'serial_number'       => $p->serial_number,
             'algorithm'           => $p->algorithm,
             'cert_valid_from'     => $p->cert_valid_from,
-            'cert_valid_to'       => $p->cert_valid_to,
+            'cert_valid_to'       => $p->cert_expires_at,
             'is_active'           => $p->is_active,
             'pending_deactivation'=> $p->pending_deactivation,
             'status'              => $status,
