@@ -195,7 +195,7 @@ class LecturerDashboardController extends Controller
             ->get()
             ->map(fn($s) => [
                 'type'     => 'submission',
-                'icon'     => '📥',
+                'icon'     => 'upload',
                 'title'    => ($s->group?->name ?? $s->student?->name) . ' nộp bài',
                 'subtitle' => $s->assignment?->title,
                 'time'     => $s->created_at,
@@ -217,7 +217,7 @@ class LecturerDashboardController extends Controller
                 };
                 return [
                     'type'     => 'sign_request',
-                    'icon'     => $r->status === 'signed' ? '✅' : ($r->status === 'rejected' ? '❌' : '📝'),
+                    'icon'     => $r->status === 'signed' ? 'check-circle' : ($r->status === 'rejected' ? 'x-circle' : 'document'),
                     'title'    => "{$r->requester?->name} {$statusText}",
                     'subtitle' => $r->document_category_label,
                     'time'     => $r->updated_at,
