@@ -4,7 +4,16 @@ import { useCategoryStore } from '@/stores/admin/category'
 import { categoryApi } from '@/api/admin/category'
 import { useToastStore } from '@/stores/toast'
 import SvgIcon from '@/components/icons/SVG.vue'
-
+import { useConfirm } from '@/composables/useConfirm'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
+const {
+  state: confirmState,
+  confirmDelete,
+  setLoading: setConfirmLoading,
+  close: closeConfirm,
+  _handleConfirm,
+  _handleCancel,
+} = useConfirm()
 const store = useCategoryStore()
 const toast = useToastStore()
 
@@ -51,14 +60,25 @@ const handleSave = async () => {
   }
 }
 
-const handleDelete = async (id) => {
-  if (!confirm('Bạn có chắc muốn xóa ngành này?')) return
+const handleDelete = async (major) => {
+  const ok = await confirmDelete(major.name, {
+    title: 'Xóa ngành học',
+    message: 'Hành động này sẽ xóa ngành cùng tất cả môn học thuộc ngành. Không thể hoàn tác.',
+    warningText: `Mã ngành: ${major.code}`,
+    confirmText: 'Xóa ngành',
+  })
+
+  if (!ok) return
+
+  setConfirmLoading(true)
   try {
-    await categoryApi.deleteMajor(id)
+    await categoryApi.deleteMajor(major.id)
     toast.success('Đã xóa ngành')
     loadMajors()
   } catch (e) {
-    toast.error(e.response?.data?.message)
+    toast.error(e.response?.data?.message || 'Không thể xóa ngành')
+  } finally {
+    closeConfirm()
   }
 }
 
@@ -108,7 +128,7 @@ onMounted(() => {
               <SvgIcon name="edit" class="h-4 w-4 mr-1" />
               Sửa
             </button>
-            <button @click="handleDelete(item.id)" class="text-red-600 hover:underline">
+            <button @click="handleDelete(item)" class="text-red-600 hover:underline">
               <SvgIcon name="trash" class="h-4 w-4 mr-1" />
               Xóa
             </button>
@@ -155,5 +175,18 @@ onMounted(() => {
         </div>
       </div>
     </div>
+    <ConfirmModal
+      v-model="confirmState.show"
+      :title="confirmState.title"
+      :message="confirmState.message"
+      :item-name="confirmState.itemName"
+      :warning-text="confirmState.warningText"
+      :confirm-text="confirmState.confirmText"
+      :cancel-text="confirmState.cancelText"
+      :variant="confirmState.variant"
+      :loading="confirmState.loading"
+      @confirm="_handleConfirm"
+      @cancel="_handleCancel"
+    />
   </div>
 </template>

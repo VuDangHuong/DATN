@@ -5,7 +5,16 @@ import { useSemesterStore } from '@/stores/admin/semester'
 import { useToastStore } from '@/stores/toast'
 import SvgIcon from '@/components/icons/SVG.vue'
 import SemesterModal from './components/SemesterModal.vue'
-
+import { useConfirm } from '@/composables/useConfirm'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
+const {
+  state: confirmState,
+  confirmAction,
+  setLoading: setConfirmLoading,
+  close: closeConfirm,
+  _handleConfirm,
+  _handleCancel,
+} = useConfirm()
 const semesterStore = useSemesterStore()
 const toast = useToastStore()
 const { semesters, loading } = storeToRefs(semesterStore)
@@ -73,13 +82,34 @@ const handleSave = async (formData) => {
   }
 }
 
-const handleDelete = async (id) => {
-  if (!confirm('Bạn chắc chắn muốn ẩn học kỳ này?')) return
-  const result = await semesterStore.deleteSemester(id)
-  if (result.success) {
-    toast.success(result.message)
-  } else {
-    toast.error(result.message)
+const handleDelete = async (semester) => {
+  //Dùng confirmAction (warning) vì "ẩn" không phải "xóa vĩnh viễn"
+  const ok = await confirmAction(
+    'Sau khi ẩn, học kỳ sẽ không hiển thị trong các danh sách. Bạn có thể bật lại sau.',
+    {
+      title: 'Ẩn học kỳ',
+      itemName: semester.name, // ← Highlight tên học kỳ
+      warningText: `Mã: ${semester.code}`,
+      confirmText: 'Ẩn học kỳ',
+      cancelText: 'Hủy',
+      variant: 'warning', // ← Màu vàng vì là hành động "nhẹ"
+    },
+  )
+
+  if (!ok) return
+
+  setConfirmLoading(true)
+  try {
+    const result = await semesterStore.deleteSemester(semester.id)
+    if (result.success) {
+      toast.success(result.message)
+    } else {
+      toast.error(result.message)
+    }
+  } catch (e) {
+    toast.error('Lỗi: ' + (e.message ?? 'Không xác định'))
+  } finally {
+    closeConfirm()
   }
 }
 
@@ -217,7 +247,7 @@ onMounted(() => {
                 <SvgIcon name="edit" class="h-4 w-4 mr-1" /> Sửa
               </button>
               <button
-                @click="handleDelete(item.id)"
+                @click="handleDelete(item)"
                 class="text-red-600 hover:text-red-900 inline-flex items-center"
               >
                 <SvgIcon name="trash" class="h-4 w-4 mr-1" /> Ẩn
@@ -234,6 +264,19 @@ onMounted(() => {
       :errors="formErrors"
       @close="showModal = false"
       @save="handleSave"
+    />
+    <ConfirmModal
+      v-model="confirmState.show"
+      :title="confirmState.title"
+      :message="confirmState.message"
+      :item-name="confirmState.itemName"
+      :warning-text="confirmState.warningText"
+      :confirm-text="confirmState.confirmText"
+      :cancel-text="confirmState.cancelText"
+      :variant="confirmState.variant"
+      :loading="confirmState.loading"
+      @confirm="_handleConfirm"
+      @cancel="_handleCancel"
     />
   </div>
 </template>

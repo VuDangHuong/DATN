@@ -5,13 +5,13 @@
     <div class="flex items-center justify-between">
       <div>
         <h2 class="text-2xl font-bold text-stone-800">Yêu cầu vô hiệu hóa chữ ký số</h2>
-        <p class="text-sm text-stone-500 mt-1">Duyệt yêu cầu vô hiệu hóa từ giảng viên</p>
+        <p class="text-base text-stone-500 mt-1">Duyệt yêu cầu vô hiệu hóa từ giảng viên</p>
       </div>
       <router-link
         to="/admin/sign-profiles"
-        class="px-4 py-2 border border-stone-200 text-stone-700 rounded-xl text-sm font-medium hover:bg-stone-50"
+        class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
       >
-        ← Quản lý chữ ký số
+        <SvgICon name="back-arrow" class="w-5 h-5" /> Quản lý chữ ký số
       </router-link>
     </div>
 
@@ -45,7 +45,7 @@
           v-for="f in statusFilters"
           :key="f.value"
           @click="changeFilter(f.value)"
-          class="px-3 py-1.5 rounded-md text-xs font-medium transition"
+          class="px-3 py-1.5 rounded-md text-base font-medium transition"
           :class="
             filterStatus === f.value
               ? 'bg-white text-stone-800 shadow-sm'
@@ -90,7 +90,7 @@
             </div>
             <div class="min-w-0">
               <p class="text-sm font-bold text-stone-800 truncate">{{ req.lecturer?.name }}</p>
-              <p class="text-xs text-stone-500 truncate">
+              <p class="text-base text-stone-500 truncate">
                 {{ req.lecturer?.code }} · {{ req.lecturer?.email }}
               </p>
               <p class="text-[10px] text-stone-400 mt-0.5">Gửi {{ formatDate(req.created_at) }}</p>
@@ -111,7 +111,7 @@
         </div>
 
         <!-- Profile info -->
-        <div class="grid grid-cols-2 gap-2 text-xs mb-3">
+        <div class="grid grid-cols-2 gap-2 text-base mb-3">
           <div class="p-2 bg-stone-50 rounded-lg">
             <p class="text-stone-400">Chủ sở hữu</p>
             <p class="font-medium text-stone-700 truncate">{{ req.profile?.subject_cn || '—' }}</p>
@@ -134,22 +134,22 @@
         <div v-if="req.status === 'pending'" class="flex gap-2 pt-3 border-t border-stone-100">
           <button
             @click="handleReject(req)"
-            class="flex-1 py-2 border border-red-200 text-red-700 rounded-xl text-sm font-semibold hover:bg-red-50"
+            class="flex flex-1 items-center justify-center gap-1.5 py-2 border border-red-200 text-red-700 rounded-xl text-sm font-semibold hover:bg-red-50 transition"
           >
-            ❌ Từ chối
+            <SvgICon name="close" class="w-5 h-5 text-red-500" /> Từ chối
           </button>
           <button
             @click="handleApprove(req)"
-            class="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700"
+            class="flex flex-1 items-center justify-center gap-1.5 py-2 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700"
           >
-            ✅ Chấp thuận vô hiệu
+            <SvgICon name="check" class="w-5 h-5 text-green-500" /> Chấp thuận vô hiệu
           </button>
         </div>
 
         <!-- Resolved info -->
         <p
           v-else-if="req.resolved_at"
-          class="text-xs text-stone-400 pt-2 border-t border-stone-100"
+          class="text-base text-stone-400 pt-2 border-t border-stone-100"
         >
           Xử lý lúc {{ formatDate(req.resolved_at) }} bởi {{ req.admin?.name || '—' }}
         </p>
@@ -158,7 +158,7 @@
 
     <!-- Pagination -->
     <div v-if="requestsPagination.last_page > 1" class="flex items-center justify-between">
-      <p class="text-xs text-stone-500">
+      <p class="text-base text-stone-500">
         Trang {{ requestsPagination.current_page }}/{{ requestsPagination.last_page }} ·
         {{ requestsPagination.total }} kết quả
       </p>
@@ -166,14 +166,14 @@
         <button
           :disabled="requestsPagination.current_page === 1"
           @click="changePage(requestsPagination.current_page - 1)"
-          class="px-3 py-1 border border-stone-200 rounded-md text-xs hover:bg-stone-50 disabled:opacity-50"
+          class="px-3 py-1 border border-stone-200 rounded-md text-base hover:bg-stone-50 disabled:opacity-50"
         >
           ← Trước
         </button>
         <button
           :disabled="requestsPagination.current_page >= requestsPagination.last_page"
           @click="changePage(requestsPagination.current_page + 1)"
-          class="px-3 py-1 border border-stone-200 rounded-md text-xs hover:bg-stone-50 disabled:opacity-50"
+          class="px-3 py-1 border border-stone-200 rounded-md text-base hover:bg-stone-50 disabled:opacity-50"
         >
           Sau →
         </button>
@@ -186,7 +186,7 @@
         <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" @click="closeRejectModal" />
         <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
           <h3 class="text-lg font-bold text-stone-800 mb-1">Từ chối yêu cầu</h3>
-          <p class="text-xs text-stone-500 mb-4">
+          <p class="text-base text-stone-500 mb-4">
             Giảng viên <strong>{{ rejectingRequest?.lecturer?.name }}</strong>
           </p>
 
@@ -200,7 +200,7 @@
             placeholder="Nhập lý do từ chối yêu cầu..."
             class="w-full px-3 py-2 border border-stone-200 rounded-xl text-sm resize-none focus:ring-2 focus:ring-red-500 outline-none"
           />
-          <p class="text-xs text-stone-400 mt-1">Tối thiểu 5 ký tự</p>
+          <p class="text-base text-stone-400 mt-1">Tối thiểu 5 ký tự</p>
 
           <div class="flex gap-3 mt-4">
             <button
@@ -220,6 +220,19 @@
         </div>
       </div>
     </Teleport>
+    <ConfirmModal
+      v-model="confirmState.show"
+      :title="confirmState.title"
+      :message="confirmState.message"
+      :item-name="confirmState.itemName"
+      :warning-text="confirmState.warningText"
+      :confirm-text="confirmState.confirmText"
+      :cancel-text="confirmState.cancelText"
+      :variant="confirmState.variant"
+      :loading="confirmState.loading"
+      @confirm="_handleConfirm"
+      @cancel="_handleCancel"
+    />
   </div>
 </template>
 
@@ -228,7 +241,17 @@ import { ref, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useToastStore } from '@/stores/toast'
 import { useAdminSignProfileStore } from '@/stores/admin/sign/adminSignProfileStore'
-
+import SvgICon from '@/components/icons/SVG.vue'
+import { useConfirm } from '@/composables/useConfirm'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
+const {
+  state: confirmState,
+  confirm,
+  setLoading: setConfirmLoading,
+  close: closeConfirm,
+  _handleConfirm,
+  _handleCancel,
+} = useConfirm()
 const store = useAdminSignProfileStore()
 const toast = useToastStore()
 
@@ -278,14 +301,41 @@ function changePage(page) {
 
 // ── Approve ───────────────────
 async function handleApprove(req) {
-  if (!confirm(`Xác nhận chấp thuận vô hiệu hóa chữ ký số của ${req.lecturer?.name}?`)) return
+  if (!req || !req.id) {
+    toast.error('Yêu cầu không hợp lệ')
+    return
+  }
 
-  const result = await store.approveRequest(req.id)
-  if (result.success) {
-    toast.success(result.message)
-    await store.fetchRequests({ status: filterStatus.value, search: searchInput.value })
-  } else {
-    toast.error(result.message || 'Xử lý thất bại')
+  // ✅ Dùng confirm() variant 'warning' vì chấp thuận = hành động quan trọng
+  const ok = await confirm({
+    title: 'Chấp thuận vô hiệu hóa',
+    message:
+      'Sau khi chấp thuận, chữ ký số của giảng viên sẽ ngừng hoạt động hoàn toàn. Giảng viên sẽ không thể ký tài liệu cho đến khi đăng ký chữ ký mới.',
+    itemName: req.lecturer?.name,
+    warningText: req.lecturer?.code ? `Mã GV: ${req.lecturer.code}` : '',
+    confirmText: 'Chấp thuận',
+    cancelText: 'Hủy',
+    variant: 'warning', // ← Vàng (action nghiêm trọng nhưng không phải xóa)
+  })
+
+  if (!ok) return
+
+  setConfirmLoading(true)
+  try {
+    const result = await store.approveRequest(req.id)
+    if (result.success) {
+      toast.success(result.message)
+      await store.fetchRequests({
+        status: filterStatus.value,
+        search: searchInput.value,
+      })
+    } else {
+      toast.error(result.message || 'Xử lý thất bại')
+    }
+  } catch (e) {
+    toast.error(e.response?.data?.message || 'Lỗi khi chấp thuận')
+  } finally {
+    closeConfirm()
   }
 }
 

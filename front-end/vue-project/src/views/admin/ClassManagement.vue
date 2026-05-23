@@ -1,11 +1,11 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="h-screen bg-gray-50 overflow-hidden">
+    <div class="h-full w-full px-4 sm:px-6 lg:px-8 py-6 flex flex-col">
       <!-- ── Header ── -->
       <div class="flex items-center justify-between mb-6">
         <div>
           <h1 class="text-2xl font-bold text-gray-900">Quản lý lớp học phần</h1>
-          <p class="text-sm text-gray-500 mt-1">{{ store.classes.length }} lớp đang hoạt động</p>
+          <p class="text-base text-gray-500 mt-1">{{ store.classes.length }} lớp đang hoạt động</p>
         </div>
       </div>
 
@@ -68,24 +68,24 @@
               <!-- Tên lớp -->
               <td class="px-5 py-4">
                 <p class="font-medium text-gray-900">{{ cls.name }}</p>
-                <p class="text-xs text-gray-400 mt-0.5 font-mono">{{ cls.code }}</p>
+                <p class="text-base text-gray-400 mt-0.5 font-mono">{{ cls.code }}</p>
               </td>
 
               <!-- Học kỳ -->
               <td class="px-5 py-4">
                 <p class="text-gray-700">{{ cls.semester?.name }}</p>
-                <p class="text-xs text-gray-400">{{ cls.semester?.year }}</p>
+                <p class="text-base text-gray-400">{{ cls.semester?.year }}</p>
               </td>
 
               <!-- Giảng viên -->
               <td class="px-5 py-4">
                 <div class="flex items-center gap-2">
                   <div
-                    class="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-xs font-medium text-blue-700"
+                    class="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-base font-medium text-blue-700"
                   >
                     {{ cls.lecturer?.name?.charAt(0) ?? '?' }}
                   </div>
-                  <span class="text-gray-700 text-xs">{{ cls.lecturer?.name }}</span>
+                  <span class="text-gray-700 text-base">{{ cls.lecturer?.name }}</span>
                 </div>
               </td>
 
@@ -95,7 +95,7 @@
                   <span
                     v-for="s in cls.subjects"
                     :key="s.id"
-                    class="inline-block px-2 py-0.5 bg-purple-50 text-purple-700 rounded-lg text-xs font-mono"
+                    class="inline-block px-2 py-0.5 bg-purple-50 text-purple-700 rounded-lg text-base font-mono"
                   >
                     {{ s.code }}
                   </span>
@@ -106,7 +106,7 @@
               <td class="px-5 py-4 text-center">
                 <div class="inline-flex flex-col items-center">
                   <span class="text-base font-bold text-gray-900">{{ cls.current_count }}</span>
-                  <span class="text-xs text-gray-400">/ {{ getMaxMembers(cls) }}</span>
+                  <span class="text-base text-gray-400">/ {{ getMaxMembers(cls) }}</span>
                   <!-- Progress bar -->
                   <div class="w-16 h-1 bg-gray-200 rounded-full mt-1">
                     <div
@@ -155,7 +155,7 @@
                   </button>
                   <!-- Xóa -->
                   <button
-                    @click="confirmDelete(cls)"
+                    @click="handleDeleteClass(cls)"
                     class="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-600 transition"
                     title="Xóa lớp"
                   >
@@ -191,7 +191,7 @@
           <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
             <div>
               <h2 class="font-semibold text-gray-900">{{ selectedClass.name }}</h2>
-              <p class="text-xs text-gray-500 mt-0.5">
+              <p class="text-base text-gray-500 mt-0.5">
                 Sĩ số: <span class="font-medium text-gray-700">{{ store.students.length }}</span> /
                 {{ selectedClass.max_members }}
               </p>
@@ -199,7 +199,7 @@
             <div class="flex items-center gap-2">
               <button
                 @click="showImport = true"
-                class="flex items-center gap-1.5 px-3 py-2 border border-gray-300 rounded-xl text-xs font-medium text-gray-700 hover:bg-gray-50 transition"
+                class="flex items-center gap-1.5 px-3 py-2 border border-gray-300 rounded-xl text-base font-medium text-gray-700 hover:bg-gray-50 transition"
               >
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -213,7 +213,7 @@
               </button>
               <button
                 @click="showAddStudent = true"
-                class="flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white rounded-xl text-xs font-medium hover:bg-blue-700 transition"
+                class="flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white rounded-xl text-base font-medium hover:bg-blue-700 transition"
               >
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -269,20 +269,20 @@
               >
                 <div class="flex items-center gap-3">
                   <div
-                    class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-semibold text-blue-700"
+                    class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-base font-semibold text-blue-700"
                   >
                     {{ sv.name?.charAt(0) }}
                   </div>
                   <div>
                     <p class="text-sm font-medium text-gray-900">{{ sv.name }}</p>
-                    <p class="text-xs text-gray-400 font-mono">{{ sv.code }}</p>
+                    <p class="text-base text-gray-400 font-mono">{{ sv.code }}</p>
                   </div>
                 </div>
                 <div class="flex items-center gap-2">
                   <!-- Toggle has_group -->
                   <button
                     @click="store.toggleHasGroup(selectedClass.id, sv.id, !sv.has_group)"
-                    class="px-2.5 py-1 rounded-lg text-xs font-medium transition"
+                    class="px-2.5 py-1 rounded-lg text-base font-medium transition"
                     :class="
                       sv.has_group
                         ? 'bg-green-100 text-green-700 hover:bg-green-200'
@@ -345,6 +345,20 @@
       @close="showImport = false"
       @import="handleImport"
     />
+    <ConfirmModal
+      v-model="confirmState.show"
+      :title="confirmState.title"
+      :message="confirmState.message"
+      :item-name="confirmState.itemName"
+      :warning-text="confirmState.warningText"
+      :confirm-text="confirmState.confirmText"
+      :cancel-text="confirmState.cancelText"
+      :variant="confirmState.variant"
+      :loading="confirmState.loading"
+      :require-type-confirm="confirmState.requireTypeConfirm"
+      @confirm="_handleConfirm"
+      @cancel="_handleCancel"
+    />
   </div>
 </template>
 
@@ -356,6 +370,16 @@ import ModalAddStudent from '@/components/admin/classes/ModalAddStudent.vue'
 import ModalImportStudent from '@/components/admin/classes/ModalImportStudent.vue'
 import axiosClient from '@/api/axiosClient'
 import ModalUpdateClass from '@/components/admin/classes/ModalUpdateClass.vue'
+import { useConfirm } from '@/composables/useConfirm'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
+const {
+  state: confirmState,
+  confirmDelete, // ← Helper từ composable
+  setLoading: setConfirmLoading,
+  close: closeConfirm,
+  _handleConfirm,
+  _handleCancel,
+} = useConfirm()
 const store = useAdminClassStore()
 const toast = useToastStore() // ← thêm
 
@@ -434,14 +458,33 @@ async function handleClassSubmit(payload) {
   }
 }
 
-async function confirmDelete(cls) {
-  if (!confirm(`Xóa lớp "${cls.name}"?`)) return
+async function handleDeleteClass(cls) {
+  const ok = await confirmDelete(cls.name, {
+    title: 'Xóa lớp học',
+    message:
+      'Hành động này sẽ xóa lớp cùng tất cả nhóm, tài liệu và bài nộp liên quan. Không thể hoàn tác.',
+    warningText: `Mã lớp: ${cls.code}`,
+    confirmText: 'Xóa lớp',
+    // Bật dòng dưới nếu muốn an toàn cao (user phải gõ đúng mã lớp):
+    // requireTypeConfirm: cls.code,
+  })
+
+  if (!ok) return
+
+  setConfirmLoading(true)
   try {
     await store.removeClass(cls.id)
-    if (selectedClass.value?.id === cls.id) selectedClass.value = null
-    toast.success('Đã xóa lớp') // ← đổi
+
+    // Reset selected nếu đang xem lớp vừa xóa
+    if (selectedClass.value?.id === cls.id) {
+      selectedClass.value = null
+    }
+
+    toast.success('Đã xóa lớp')
   } catch (e) {
-    toast.error('Lỗi khi xóa lớp') // ← đổi
+    toast.error(e.response?.data?.message ?? 'Lỗi khi xóa lớp')
+  } finally {
+    closeConfirm()
   }
 }
 

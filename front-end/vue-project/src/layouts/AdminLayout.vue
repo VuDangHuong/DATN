@@ -40,13 +40,13 @@ const handleClickOutside = (event) => {
 
 // --- LOGIC AUTH & NAV ---
 const handleLogout = async () => {
-  if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
-    try {
-      await authStore.logout()
-    } finally {
-      window.location.href = '/login'
-    }
+  // if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+  try {
+    await authStore.logout()
+  } finally {
+    window.location.href = '/login'
   }
+  // }
 }
 
 const navigateTo = (path) => {

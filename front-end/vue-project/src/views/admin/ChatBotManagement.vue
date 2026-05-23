@@ -89,7 +89,7 @@
 
     <!-- ─── Main Content ───────────────────────────────────────────────────── -->
     <div class="flex gap-5 items-start">
-      <!-- Sidebar: Danh mục -->
+      <!-- Sidebar -->
       <div
         class="w-[220px] flex-shrink-0 bg-white rounded-[14px] p-[18px] shadow-sm border border-slate-100 sticky top-5"
       >
@@ -136,7 +136,6 @@
         <div
           class="flex flex-wrap items-center justify-between px-5 py-4 border-b border-slate-100 gap-3"
         >
-          <!-- Search -->
           <div
             class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-[9px] px-3.5 py-2 flex-1 max-w-[320px] text-slate-400"
           >
@@ -159,7 +158,6 @@
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
-            <!-- Filter: Danh mục -->
             <select
               :value="selectedCategory"
               @change="selectCategory($event.target.value === '' ? null : $event.target.value)"
@@ -171,7 +169,6 @@
               </option>
             </select>
 
-            <!-- Sort -->
             <select
               :value="sortBy"
               @change="changeSortBy($event.target.value)"
@@ -181,7 +178,6 @@
               <option value="name">Tên A-Z</option>
             </select>
 
-            <!-- Nút xóa lọc (chỉ hiện khi đang filter) -->
             <button
               v-if="selectedCategory !== null || searchQuery"
               @click="resetFilters"
@@ -201,7 +197,6 @@
               Xóa lọc
             </button>
 
-            <!-- Toggle view -->
             <div class="flex border border-slate-200 rounded-lg overflow-hidden">
               <button
                 class="px-2.5 py-[7px] border-none cursor-pointer transition-all"
@@ -241,7 +236,7 @@
           </div>
         </div>
 
-        <!-- ── Table View ── -->
+        <!-- Table View -->
         <div v-if="viewMode === 'table'" class="overflow-x-auto">
           <table class="w-full border-collapse">
             <thead class="bg-slate-50">
@@ -314,56 +309,21 @@
                   <div class="flex gap-1">
                     <button
                       class="w-[30px] h-[30px] rounded-[7px] bg-slate-50 text-slate-500 flex items-center justify-center hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
-                      title="Xem"
                       @click="viewItem(item)"
                     >
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                      >
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                        <circle cx="12" cy="12" r="3" />
-                      </svg>
+                      <SvgIcon name="eye" class="w-4 h-4" />
                     </button>
                     <button
                       class="w-[30px] h-[30px] rounded-[7px] bg-slate-50 text-slate-500 flex items-center justify-center hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
-                      title="Sửa"
                       @click="openEditModal(item)"
                     >
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                      >
-                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-                      </svg>
+                      <SvgIcon name="edit" class="w-4 h-4" />
                     </button>
                     <button
                       class="w-[30px] h-[30px] rounded-[7px] bg-slate-50 text-slate-500 flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-colors"
-                      title="Xóa"
                       @click="handleDeleteItem(item)"
                     >
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                      >
-                        <polyline points="3 6 5 6 21 6" />
-                        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
-                        <path d="M10 11v6M14 11v6" />
-                        <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
-                      </svg>
+                      <SvgIcon name="trash" class="w-4 h-4" />
                     </button>
                   </div>
                 </td>
@@ -390,7 +350,7 @@
           </div>
         </div>
 
-        <!-- ── Grid View ── -->
+        <!-- Grid View -->
         <div v-else class="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-4 p-5">
           <div
             v-for="item in pagedItems"
@@ -503,7 +463,7 @@
       </div>
     </div>
 
-    <!-- ─── View Detail Modal ──────────────────────────────────────────────── -->
+    <!-- View Detail Modal -->
     <div
       v-if="viewingItem"
       class="fixed inset-0 bg-black/55 backdrop-blur-sm z-50 flex items-center justify-center p-5"
@@ -577,7 +537,7 @@
       </div>
     </div>
 
-    <!-- ─── KnowledgeFormModal ─────────────────────────────────────────────── -->
+    <!-- KnowledgeFormModal -->
     <KnowledgeFormModal
       v-if="showFormModal"
       :model-value="editingItem"
@@ -586,170 +546,198 @@
       @saved="handleSaved"
     />
 
-    <!-- ─── ImportDocumentModal ────────────────────────────────────────────── -->
+    <!-- ImportDocumentModal -->
     <ImportDocumentModal
       v-if="showImportModal"
       @close="showImportModal = false"
       @imported="handleImported"
     />
+
+    <!-- ✅ ConfirmModal dùng chung -->
+    <ConfirmModal
+      v-model="confirmState.show"
+      :title="confirmState.title"
+      :message="confirmState.message"
+      :item-name="confirmState.itemName"
+      :warning-text="confirmState.warningText"
+      :confirm-text="confirmState.confirmText"
+      :cancel-text="confirmState.cancelText"
+      :variant="confirmState.variant"
+      :loading="confirmState.loading"
+      @confirm="_handleConfirm"
+      @cancel="_handleCancel"
+    />
   </div>
 </template>
 
-<script>
-import { mapState, mapActions } from 'pinia'
+<script setup>
+import { ref, computed, watch, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useChatbotStore } from '@/stores/admin/chat/chatBot'
+import { useConfirm } from '@/composables/useConfirm'
 import KnowledgeFormModal from './components/chat/KnowledgeFormModal.vue'
 import ImportDocumentModal from './components/chat/ImportDocumentModal.vue'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
+import SvgIcon from '@/components/icons/SVG.vue'
 
-export default {
-  name: 'ChatBotManagement',
-  components: { KnowledgeFormModal, ImportDocumentModal },
+// ─── Store ──
+const chatbotStore = useChatbotStore()
+const { items, categories, total, currentPage, totalPages, loading } = storeToRefs(chatbotStore)
 
-  data() {
-    return {
-      viewMode: 'table',
-      selectAll: false,
-      selectedItems: [],
-      showFormModal: false,
-      showImportModal: false,
-      editingItem: null,
-      viewingItem: null,
-      searchQuery: '',
-      selectedCategory: null,
-      sortBy: 'date',
-      searchTimer: null,
+// ─── useConfirm ──
+const {
+  state: confirmState,
+  confirmDelete,
+  setLoading: setConfirmLoading,
+  close: closeConfirm,
+  _handleConfirm,
+  _handleCancel,
+} = useConfirm()
 
-      stats: [
-        {
-          label: 'Tổng tri thức',
-          bg: 'linear-gradient(135deg,#6366f1,#818cf8)',
-          icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>',
-          valueKey: 'total',
-        },
-      ],
-    }
+// ─── Local State (data) ──
+const viewMode = ref('table')
+const selectAll = ref(false)
+const selectedItems = ref([])
+const showFormModal = ref(false)
+const showImportModal = ref(false)
+const editingItem = ref(null)
+const viewingItem = ref(null)
+const searchQuery = ref('')
+const selectedCategory = ref(null)
+const sortBy = ref('date')
+let searchTimer = null
+
+const stats = [
+  {
+    label: 'Tổng tri thức',
+    bg: 'linear-gradient(135deg,#6366f1,#818cf8)',
+    icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>',
+    valueKey: 'total',
   },
+]
 
-  computed: {
-    ...mapState(useChatbotStore, [
-      'items',
-      'categories',
-      'total',
-      'currentPage',
-      'totalPages',
-      'loading',
-    ]),
+// ─── Computed ──
+const pagedItems = computed(() => items.value)
 
-    pagedItems() {
-      return this.items
-    },
-    statsWithValues() {
-      return this.stats.map((s) => ({ ...s, value: s.valueKey === 'total' ? this.total : '—' }))
-    },
-  },
+const statsWithValues = computed(() =>
+  stats.map((s) => ({ ...s, value: s.valueKey === 'total' ? total.value : '—' })),
+)
 
-  watch: {
-    searchQuery(val) {
-      clearTimeout(this.searchTimer)
-      this.searchTimer = setTimeout(() => this.applyFilters({ search: val }), 400)
-    },
-  },
+// ─── Watch ──
+watch(searchQuery, (val) => {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => chatbotStore.applyFilters({ search: val }), 400)
+})
 
-  async mounted() {
-    const store = useChatbotStore()
-    await Promise.all([store.fetchCategories(), store.fetchList()])
-  },
+// ─── Lifecycle ──
+onMounted(async () => {
+  await Promise.all([chatbotStore.fetchCategories(), chatbotStore.fetchList()])
+})
 
-  methods: {
-    ...mapActions(useChatbotStore, [
-      'fetchList',
-      'goToPage',
-      'applyFilters',
-      'createItem',
-      'updateItem',
-      'deleteItem',
-      'importFile',
-    ]),
+// ─── Filters ──
+function selectCategory(catId) {
+  selectedCategory.value = catId
+  chatbotStore.applyFilters({ category: catId })
+}
 
-    // ── Filters ──────────────────────────────────────────────────────────────
-    selectCategory(catId) {
-      this.selectedCategory = catId
-      this.applyFilters({ category: catId })
-    },
+function changeSortBy(val) {
+  sortBy.value = val
+  chatbotStore.applyFilters({ sort_by: val })
+}
 
-    changeSortBy(val) {
-      this.sortBy = val
-      this.applyFilters({ sort_by: val })
-    },
+function resetFilters() {
+  selectedCategory.value = null
+  searchQuery.value = ''
+  sortBy.value = 'date'
+  chatbotStore.applyFilters({ category: null, search: '', sort_by: 'date' })
+}
 
-    resetFilters() {
-      this.selectedCategory = null
-      this.searchQuery = ''
-      this.sortBy = 'date'
-      this.applyFilters({ category: null, search: '', sort_by: 'date' })
-    },
+// ─── Modal helpers ──
+function openAddModal() {
+  editingItem.value = null
+  showFormModal.value = true
+}
 
-    // ── Modal helpers ─────────────────────────────────────────────────────────
-    openAddModal() {
-      this.editingItem = null
-      this.showFormModal = true
-    },
-    openEditModal(item) {
-      this.editingItem = { ...item }
-      this.showFormModal = true
-    },
-    openEditFromView() {
-      this.openEditModal(this.viewingItem)
-      this.viewingItem = null
-    },
-    closeFormModal() {
-      this.showFormModal = false
-      this.editingItem = null
-    },
-    viewItem(item) {
-      this.viewingItem = item
-    },
+function openEditModal(item) {
+  editingItem.value = { ...item }
+  showFormModal.value = true
+}
 
-    // ── CRUD ──────────────────────────────────────────────────────────────────
-    async handleSaved(payload) {
-      const body = {
-        title: payload.title,
-        description: payload.description,
-        content: payload.content,
-        type: payload.type,
-        tags: payload.tags,
-        category: payload.category,
-      }
-      const ok = payload.id ? await this.updateItem(payload.id, body) : await this.createItem(body)
-      if (ok) this.closeFormModal()
-    },
+function openEditFromView() {
+  openEditModal(viewingItem.value)
+  viewingItem.value = null
+}
 
-    async handleDeleteItem(item) {
-      if (!confirm(`Xóa "${item.title}"?`)) return
-      await this.deleteItem(item.id)
-    },
+function closeFormModal() {
+  showFormModal.value = false
+  editingItem.value = null
+}
 
-    async handleImported(files) {
-      for (const file of files) {
-        const ok = await this.importFile(file)
-        if (!ok) break
-      }
-    },
+function viewItem(item) {
+  viewingItem.value = item
+}
 
-    // ── Pagination ────────────────────────────────────────────────────────────
-    async changePage(page) {
-      await this.goToPage(page)
-    },
+// ─── CRUD ──
+async function handleSaved(payload) {
+  const body = {
+    title: payload.title,
+    description: payload.description,
+    content: payload.content,
+    type: payload.type,
+    tags: payload.tags,
+    category: payload.category,
+  }
+  const ok = payload.id
+    ? await chatbotStore.updateItem(payload.id, body)
+    : await chatbotStore.createItem(body)
+  if (ok) closeFormModal()
+}
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
-    toggleSelectAll() {
-      this.selectedItems = this.selectAll ? this.items.map((i) => i.id) : []
-    },
+// ✅ Dùng useConfirm thay cho confirm() native
+async function handleDeleteItem(item) {
+  if (!item || !item.id) {
+    console.error('handleDeleteItem: invalid item', item)
+    return
+  }
 
-    getCategoryColor(name) {
-      return this.categories.find((c) => c.name === name || c.id === name)?.color ?? '#6b7280'
-    },
-  },
+  const ok = await confirmDelete(item.title, {
+    title: 'Xóa tri thức',
+    message: 'Hành động này sẽ xóa vĩnh viễn mục tri thức khỏi kho. Không thể hoàn tác.',
+    warningText: item.category ? `Danh mục: ${item.category}` : '',
+    confirmText: 'Xóa',
+  })
+
+  if (!ok) return
+
+  setConfirmLoading(true)
+  try {
+    await chatbotStore.deleteItem(item.id)
+  } catch (e) {
+    console.error('Delete failed:', e)
+  } finally {
+    closeConfirm()
+  }
+}
+
+async function handleImported(files) {
+  for (const file of files) {
+    const ok = await chatbotStore.importFile(file)
+    if (!ok) break
+  }
+}
+
+// ─── Pagination ──
+async function changePage(page) {
+  await chatbotStore.goToPage(page)
+}
+
+// ─── Helpers ──
+function toggleSelectAll() {
+  selectedItems.value = selectAll.value ? items.value.map((i) => i.id) : []
+}
+
+function getCategoryColor(name) {
+  return categories.value.find((c) => c.name === name || c.id === name)?.color ?? '#6b7280'
 }
 </script>
 

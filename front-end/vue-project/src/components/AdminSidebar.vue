@@ -42,17 +42,17 @@ const menuItems = [
   { name: 'Quản lý niên khóa', path: '/admin/semesters', icon: 'semesters' },
   { name: 'Quản lý lớp học phần', path: '/admin/classes', icon: 'classes' },
   { name: 'Quản lý danh mục', path: '/admin/master-data', icon: 'master-data' },
-  { name: 'Quản lý Chat', path: '/admin/chatBot', icon: 'master-data' },
-  { name: 'Quản lý chữ ký số', path: '/admin/sign-profiles', icon: 'sign' },
+  { name: 'Quản lý Chat', path: '/admin/chatBot', icon: 'chat' },
+  { name: 'Quản lý chữ ký số', path: '/admin/sign-profiles', icon: 'edit-pencil' },
   {
     name: 'Yêu cầu vô hiệu hóa',
     path: '/admin/deactivation-requests',
-    icon: 'sign',
+    icon: 'shield-x',
     badge: 'pending',
   },
-  { name: 'Ký số tài liệu', path: '/admin/sign-requests', icon: 'sign' },
-  { name: 'Cấu hình hệ thống', path: '/admin/settings', icon: 'settings' },
-  { name: 'Giám sát & Báo cáo', path: '/admin/reports', icon: 'reports' },
+  // { name: 'Ký số tài liệu', path: '/admin/sign-requests', icon: 'sign' },
+  // { name: 'Cấu hình hệ thống', path: '/admin/settings', icon: 'settings' },
+  // { name: 'Giám sát & Báo cáo', path: '/admin/reports', icon: 'reports' },
 ]
 </script>
 

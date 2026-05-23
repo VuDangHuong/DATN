@@ -5,16 +5,17 @@
     <div class="flex items-center justify-between">
       <div>
         <h2 class="text-2xl font-bold text-stone-800">Quản lý chữ ký số</h2>
-        <p class="text-sm text-stone-500 mt-1">Danh sách chữ ký số của tất cả giảng viên</p>
+        <p class="text-base text-stone-500 mt-1">Danh sách chữ ký số của tất cả giảng viên</p>
       </div>
       <router-link
         to="/admin/deactivation-requests"
-        class="px-4 py-2 bg-rose-600 text-white rounded-xl text-sm font-semibold hover:bg-rose-700 flex items-center gap-2"
+        class="px-4 py-2 bg-rose-600 text-white rounded-xl text-base font-semibold hover:bg-rose-600 flex items-center gap-2"
       >
-        <span>📋 Yêu cầu vô hiệu</span>
+        <SvgIcon name="document" class="w-4 h-4" />
+        <span>Yêu cầu vô hiệu</span>
         <span
           v-if="stats.pending_requests > 0"
-          class="bg-white text-rose-600 px-1.5 rounded-full text-xs font-bold"
+          class="bg-white text-rose-600 px-1.5 rounded-full text-base font-bold"
         >
           {{ stats.pending_requests }}
         </span>
@@ -25,23 +26,23 @@
     <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
       <div class="bg-white rounded-xl border border-stone-200 p-4">
         <p class="text-2xl font-bold text-stone-700">{{ stats.total }}</p>
-        <p class="text-xs text-stone-500">Tổng</p>
+        <p class="text-base text-stone-500">Tổng</p>
       </div>
       <div class="bg-white rounded-xl border border-stone-200 p-4">
         <p class="text-2xl font-bold text-emerald-600">{{ stats.active }}</p>
-        <p class="text-xs text-stone-500">Đang hoạt động</p>
+        <p class="text-base text-stone-500">Đang hoạt động</p>
       </div>
       <div class="bg-white rounded-xl border border-stone-200 p-4">
         <p class="text-2xl font-bold text-amber-600">{{ stats.pending_deactivation }}</p>
-        <p class="text-xs text-stone-500">Chờ duyệt vô hiệu</p>
+        <p class="text-base text-stone-500">Chờ duyệt vô hiệu</p>
       </div>
       <div class="bg-white rounded-xl border border-stone-200 p-4">
         <p class="text-2xl font-bold text-stone-500">{{ stats.inactive }}</p>
-        <p class="text-xs text-stone-500">Đã vô hiệu</p>
+        <p class="text-base text-stone-500">Đã vô hiệu</p>
       </div>
       <div class="bg-white rounded-xl border border-stone-200 p-4">
         <p class="text-2xl font-bold text-red-600">{{ stats.expired }}</p>
-        <p class="text-xs text-stone-500">Hết hạn</p>
+        <p class="text-base text-stone-500">Hết hạn</p>
       </div>
     </div>
 
@@ -77,7 +78,7 @@
           v-for="f in statusFilters"
           :key="f.value"
           @click="changeFilter(f.value)"
-          class="px-3 py-1.5 rounded-md text-xs font-medium transition"
+          class="px-3 py-1.5 rounded-md text-base font-medium transition"
           :class="
             filterStatus === f.value
               ? 'bg-white text-stone-800 shadow-sm'
@@ -102,11 +103,11 @@
       <table v-else class="w-full text-sm">
         <thead class="bg-stone-50 border-b border-stone-200">
           <tr>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-stone-600">Giảng viên</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-stone-600">Chứng thư</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-stone-600">Hiệu lực</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-stone-600">Trạng thái</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold text-stone-600">Ngày tạo</th>
+            <th class="px-4 py-3 text-left text-base font-semibold text-stone-600">Giảng viên</th>
+            <th class="px-4 py-3 text-left text-base font-semibold text-stone-600">Chứng thư</th>
+            <th class="px-4 py-3 text-left text-base font-semibold text-stone-600">Hiệu lực</th>
+            <th class="px-4 py-3 text-left text-base font-semibold text-stone-600">Trạng thái</th>
+            <th class="px-4 py-3 text-left text-base font-semibold text-stone-600">Ngày tạo</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-stone-100">
@@ -115,7 +116,7 @@
             <td class="px-4 py-3">
               <div class="flex items-center gap-2">
                 <div
-                  class="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center text-xs font-bold text-stone-600 overflow-hidden flex-shrink-0"
+                  class="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center text-base font-bold text-stone-600 overflow-hidden flex-shrink-0"
                 >
                   <img
                     v-if="p.lecturer?.avatar_url"
@@ -126,7 +127,7 @@
                 </div>
                 <div class="min-w-0">
                   <p class="font-semibold text-stone-800 truncate">{{ p.lecturer?.name }}</p>
-                  <p class="text-xs text-stone-500 truncate">
+                  <p class="text-base text-stone-500 truncate">
                     {{ p.lecturer?.code }} · {{ p.lecturer?.email }}
                   </p>
                 </div>
@@ -136,13 +137,13 @@
             <!-- Cert -->
             <td class="px-4 py-3">
               <p
-                class="font-medium text-stone-800 text-xs truncate max-w-[200px]"
+                class="font-medium text-stone-800 text-base truncate max-w-[200px]"
                 :title="p.subject_cn"
               >
                 {{ p.subject_cn || '—' }}
               </p>
               <p
-                class="text-[10px] text-stone-400 truncate font-mono max-w-[200px]"
+                class="text-[12px] text-stone-400 truncate font-mono max-w-[200px]"
                 :title="p.serial_number"
               >
                 {{ p.serial_number?.substring(0, 30) }}...
@@ -151,11 +152,11 @@
 
             <!-- Valid -->
             <td class="px-4 py-3">
-              <p class="text-xs text-stone-600">
+              <p class="text-base text-stone-600">
                 {{ formatDate(p.cert_valid_from) }}
               </p>
               <p
-                class="text-xs"
+                class="text-base"
                 :class="isExpired(p.cert_valid_to) ? 'text-red-600 font-medium' : 'text-stone-400'"
               >
                 → {{ formatDate(p.cert_valid_to) }}
@@ -165,23 +166,24 @@
             <!-- Status -->
             <td class="px-4 py-3">
               <span
-                class="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold uppercase"
+                class="inline-block px-2 py-0.5 rounded-full text-[12px] font-bold uppercase"
                 :class="statusClass(p.status)"
               >
                 {{ statusLabel(p.status) }}
               </span>
               <p
                 v-if="p.pending_request"
-                class="text-[10px] text-amber-700 mt-1 truncate max-w-[200px]"
+                class="flex items-center gap-1 text-[12px] text-amber-700 mt-1 truncate max-w-[200px]"
                 :title="p.pending_request.reason"
               >
-                💬 {{ p.pending_request.reason }}
+                <SvgIcon name="chat" class="w-5 h-5" />
+                {{ p.pending_request.reason }}
               </p>
             </td>
 
             <!-- Created -->
             <td class="px-4 py-3">
-              <p class="text-xs text-stone-500">{{ formatDate(p.created_at) }}</p>
+              <p class="text-base text-stone-500">{{ formatDate(p.created_at) }}</p>
             </td>
           </tr>
         </tbody>
@@ -192,7 +194,7 @@
         v-if="pagination.last_page > 1"
         class="px-4 py-3 border-t border-stone-100 flex items-center justify-between"
       >
-        <p class="text-xs text-stone-500">
+        <p class="text-base text-stone-500">
           Trang {{ pagination.current_page }}/{{ pagination.last_page }} ·
           {{ pagination.total }} kết quả
         </p>
@@ -200,14 +202,14 @@
           <button
             :disabled="pagination.current_page === 1"
             @click="changePage(pagination.current_page - 1)"
-            class="px-3 py-1 border border-stone-200 rounded-md text-xs hover:bg-stone-50 disabled:opacity-50"
+            class="px-3 py-1 border border-stone-200 rounded-md text-base hover:bg-stone-50 disabled:opacity-50"
           >
             ← Trước
           </button>
           <button
             :disabled="pagination.current_page >= pagination.last_page"
             @click="changePage(pagination.current_page + 1)"
-            class="px-3 py-1 border border-stone-200 rounded-md text-xs hover:bg-stone-50 disabled:opacity-50"
+            class="px-3 py-1 border border-stone-200 rounded-md text-base hover:bg-stone-50 disabled:opacity-50"
           >
             Sau →
           </button>
@@ -221,6 +223,7 @@
 import { ref, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAdminSignProfileStore } from '@/stores/admin/sign/adminSignProfileStore'
+import SvgIcon from '@/components/icons/SVG.vue'
 
 const store = useAdminSignProfileStore()
 const { profiles, stats, pagination, loading } = storeToRefs(store)

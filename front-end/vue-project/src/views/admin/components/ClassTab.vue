@@ -5,7 +5,16 @@ import { categoryApi } from '@/api/admin/category'
 import { useToastStore } from '@/stores/toast'
 import SvgIcon from '@/components/icons/SVG.vue'
 import ClassModal from './ClassModal.vue'
-
+import { useConfirm } from '@/composables/useConfirm'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
+const {
+  state: confirmState,
+  confirmDelete,
+  setLoading: setConfirmLoading,
+  close: closeConfirm,
+  _handleConfirm,
+  _handleCancel,
+} = useConfirm()
 const store = useCategoryStore()
 const toast = useToastStore()
 
@@ -109,14 +118,38 @@ const handleSave = async (formData) => {
 }
 
 // Xóa
-const handleDelete = async (id) => {
-  if (!confirm('Bạn chắc chắn muốn hủy lớp học phần này?')) return
+const handleDelete = async (cls) => {
+  // Defensive check
+  if (!cls || !cls.id) {
+    console.error('handleDelete: class is invalid', cls)
+    toast.error('Không tìm thấy lớp học')
+    return
+  }
+
+  //
+  const ok = await confirmDelete(
+    'Sau khi hủy, lớp sẽ không hoạt động. Tất cả nhóm, bài nộp và tài liệu sẽ bị ảnh hưởng.',
+    {
+      title: 'Hủy lớp học phần',
+      itemName: cls.name,
+      warningText: `Mã lớp: ${cls.code}`,
+      confirmText: 'Hủy lớp',
+      cancelText: 'Đóng',
+      // variant: 'warning',
+    },
+  )
+
+  if (!ok) return
+
+  setConfirmLoading(true)
   try {
-    await categoryApi.deleteClass(id)
+    await categoryApi.deleteClass(cls.id)
     toast.success('Đã hủy lớp')
     loadClasses()
   } catch (e) {
-    toast.error(e.response?.data?.message)
+    toast.error(e.response?.data?.message || 'Không thể hủy lớp')
+  } finally {
+    closeConfirm()
   }
 }
 </script>
@@ -223,11 +256,11 @@ const handleDelete = async (id) => {
                 Sửa
               </button>
               <button
-                @click="handleDelete(c.id)"
+                @click="handleDelete(c)"
                 class="text-red-600 hover:text-red-800 font-medium text-sm"
               >
                 <SvgIcon name="trash" class="h-4 w-4 mr-1" />
-                Hủy
+                Xóa
               </button>
             </td>
           </tr>
@@ -243,6 +276,19 @@ const handleDelete = async (id) => {
       :lecturers="lecturerList"
       @close="showModal = false"
       @save="handleSave"
+    />
+    <ConfirmModal
+      v-model="confirmState.show"
+      :title="confirmState.title"
+      :message="confirmState.message"
+      :item-name="confirmState.itemName"
+      :warning-text="confirmState.warningText"
+      :confirm-text="confirmState.confirmText"
+      :cancel-text="confirmState.cancelText"
+      :variant="confirmState.variant"
+      :loading="confirmState.loading"
+      @confirm="_handleConfirm"
+      @cancel="_handleCancel"
     />
   </div>
 </template>

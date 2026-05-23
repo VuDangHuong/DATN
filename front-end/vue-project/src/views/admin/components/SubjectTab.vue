@@ -4,7 +4,16 @@ import { useCategoryStore } from '@/stores/admin/category'
 import { categoryApi } from '@/api/admin/category'
 import { useToastStore } from '@/stores/toast'
 import SvgIcon from '@/components/icons/SVG.vue'
-
+import { useConfirm } from '@/composables/useConfirm'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
+const {
+  state: confirmState,
+  confirmDelete,
+  setLoading: setConfirmLoading,
+  close: closeConfirm,
+  _handleConfirm,
+  _handleCancel,
+} = useConfirm()
 const store = useCategoryStore()
 const toast = useToastStore()
 
@@ -86,14 +95,26 @@ const handleSave = async () => {
   }
 }
 
-const handleDelete = async (id) => {
-  if (!confirm('Bạn chắc chắn muốn xóa môn học này?')) return
+const handleDelete = async (subject) => {
+  const ok = await confirmDelete(subject.name, {
+    title: 'Xóa môn học',
+    message:
+      'Hành động này sẽ xóa môn học cùng tất cả lớp và tài liệu liên quan. Không thể hoàn tác.',
+    warningText: `Mã môn: ${subject.code}${subject.credits ? ` · ${subject.credits} tín chỉ` : ''}`,
+    confirmText: 'Xóa môn học',
+  })
+
+  if (!ok) return
+
+  setConfirmLoading(true)
   try {
-    await categoryApi.deleteSubject(id)
+    await categoryApi.deleteSubject(subject.id)
     toast.success('Đã xóa môn học')
     loadSubjects()
   } catch (e) {
-    toast.error(e.response?.data?.message)
+    toast.error(e.response?.data?.message || 'Không thể xóa môn học')
+  } finally {
+    closeConfirm()
   }
 }
 </script>
@@ -159,11 +180,11 @@ const handleDelete = async (id) => {
               }}</span>
             </td>
             <td class="p-3 text-right space-x-2">
-              <button @click="openModal(item)" class="text-indigo-600 hover:underline">
+              <button @click="openModal(s)" class="text-indigo-600 hover:underline">
                 <SvgIcon name="edit" class="h-4 w-4 mr-1" />
                 Sửa
               </button>
-              <button @click="handleDelete(item)" class="text-red-600 hover:underline">
+              <button @click="handleDelete(s)" class="text-red-600 hover:underline">
                 <SvgIcon name="trash" class="h-4 w-4 mr-1" />
                 Xóa
               </button>
@@ -255,6 +276,19 @@ const handleDelete = async (id) => {
         </div>
       </div>
     </Teleport>
+    <ConfirmModal
+      v-model="confirmState.show"
+      :title="confirmState.title"
+      :message="confirmState.message"
+      :item-name="confirmState.itemName"
+      :warning-text="confirmState.warningText"
+      :confirm-text="confirmState.confirmText"
+      :cancel-text="confirmState.cancelText"
+      :variant="confirmState.variant"
+      :loading="confirmState.loading"
+      @confirm="_handleConfirm"
+      @cancel="_handleCancel"
+    />
   </div>
 </template>
 
