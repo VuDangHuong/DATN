@@ -337,7 +337,7 @@ const availableStudents = ref([]) // SV trong lớp chưa có nhóm/chưa trong 
 
 const tabs = [
   { key: 'members', label: 'Thành viên' },
-  { key: 'add', label: '+ Thêm SV' },
+  // { key: 'add', label: '+ Thêm SV' },
 ]
 
 const addModes = [
