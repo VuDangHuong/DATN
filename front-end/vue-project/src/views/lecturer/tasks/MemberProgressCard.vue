@@ -29,7 +29,7 @@
         <!-- Crown badge for leader -->
         <span
           v-if="isLeader"
-          class="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-amber-400 flex items-center justify-center text-xs shadow"
+          class="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-amber-400 flex items-center justify-center text-base shadow"
           title="Trưởng nhóm"
         >
           <SvgIcon name="crown" class="w-3.5 h-3.5 text-amber-800" />
@@ -48,14 +48,14 @@
             Trưởng
           </span>
         </div>
-        <p class="text-xs text-stone-400 font-mono mt-0.5">{{ member.code }}</p>
+        <p class="text-base text-stone-400 font-mono mt-0.5">{{ member.code }}</p>
       </div>
     </div>
 
     <!-- Progress bar -->
     <div class="mb-3">
       <div class="flex items-center justify-between mb-1.5">
-        <span class="text-xs text-stone-500">Tiến độ hoàn thành</span>
+        <span class="text-base text-stone-500">Tiến độ hoàn thành</span>
         <span class="text-sm font-bold" :class="progressColor"> {{ percentage }}% </span>
       </div>
       <div class="h-2 bg-stone-100 rounded-full overflow-hidden">

@@ -21,7 +21,7 @@
                 {{ store.selectedRequest.status }}
               </span> -->
             </div>
-            <p class="text-xs text-gray-400">
+            <p class="text-base text-gray-400">
               Yêu cầu #{{ store.selectedRequest.id }} ·
               {{ formatDate(store.selectedRequest.created_at) }}
             </p>
@@ -50,7 +50,7 @@
         <div class="flex-1 overflow-y-auto p-6 space-y-5">
           <!-- Thông tin sinh viên -->
           <div class="bg-gray-50 rounded-xl p-4">
-            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            <p class="text-base font-semibold text-gray-500 uppercase tracking-wider mb-3">
               Thông tin sinh viên
             </p>
             <div class="flex items-center gap-3">
@@ -63,7 +63,7 @@
                 <p class="font-semibold text-gray-900">
                   {{ store.selectedRequest.requester?.name }}
                 </p>
-                <p class="text-xs text-gray-400 font-mono">
+                <p class="text-base text-gray-400 font-mono">
                   {{ store.selectedRequest.requester?.code }} ·
                   {{ store.selectedRequest.requester?.email }}
                 </p>
@@ -73,12 +73,12 @@
 
           <!-- Thông tin tài liệu -->
           <div class="bg-gray-50 rounded-xl p-4">
-            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            <p class="text-base font-semibold text-gray-500 uppercase tracking-wider mb-3">
               Thông tin tài liệu
             </p>
             <div class="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <p class="text-xs text-gray-400">Loại tài liệu</p>
+                <p class="text-base text-gray-400">Loại tài liệu</p>
                 <p class="font-medium text-violet-700 mt-0.5">
                   {{
                     store.selectedRequest.document_category_label ??
@@ -87,22 +87,22 @@
                 </p>
               </div>
               <div>
-                <p class="text-xs text-gray-400">Định dạng file</p>
+                <p class="text-base text-gray-400">Định dạng file</p>
                 <p class="font-medium text-gray-700 mt-0.5 uppercase">
                   {{ store.selectedRequest.document_type }}
                 </p>
               </div>
               <div>
-                <p class="text-xs text-gray-400">Lớp</p>
+                <p class="text-base text-gray-400">Lớp</p>
                 <p class="font-medium text-gray-700 mt-0.5">
                   {{ store.selectedRequest.class_model?.name }}
                 </p>
               </div>
               <div>
-                <p class="text-xs text-gray-400">File gốc</p>
+                <p class="text-base text-gray-400">File gốc</p>
                 <button
                   @click="store.previewFile(store.selectedRequest.id)"
-                  class="flex items-center gap-1 text-blue-600 hover:underline text-xs mt-0.5 font-medium"
+                  class="flex items-center gap-1 text-blue-600 hover:underline text-base mt-0.5 font-medium"
                 >
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -120,14 +120,14 @@
 
           <!-- Audit log -->
           <div v-if="store.selectedRequest.logs?.length">
-            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+            <p class="text-base font-semibold text-gray-500 uppercase tracking-wider mb-2">
               Lịch sử xử lý
             </p>
             <div class="space-y-2">
               <div
                 v-for="log in store.selectedRequest.logs"
                 :key="log.id"
-                class="flex items-start gap-2 text-xs"
+                class="flex items-start gap-2 text-base"
               >
                 <div class="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 flex-shrink-0" />
                 <div>
@@ -148,11 +148,11 @@
             v-if="['forwarded', 'lecturer_reviewing'].includes(store.selectedRequest.status)"
             class="border border-blue-200 rounded-xl p-4 bg-blue-50"
           >
-            <p class="text-xs font-semibold text-blue-700 mb-1">Đã chuyển cho giảng viên</p>
+            <p class="text-base font-semibold text-blue-700 mb-1">Đã chuyển cho giảng viên</p>
             <p class="text-sm font-medium text-blue-900">
               {{ store.selectedRequest.lecturer?.name }}
             </p>
-            <p class="text-xs text-blue-600 mt-0.5">
+            <p class="text-base text-blue-600 mt-0.5">
               {{ formatDate(store.selectedRequest.forwarded_at) }}
             </p>
           </div>
@@ -169,7 +169,9 @@
             class="border border-indigo-200 rounded-xl p-4 bg-indigo-50"
           >
             <p class="text-sm font-semibold text-indigo-700 mb-1">✅ GV đã ký xong</p>
-            <p class="text-xs text-indigo-600">Bấm "Phát hành" để sinh viên có thể tải tài liệu.</p>
+            <p class="text-base text-indigo-600">
+              Bấm "Phát hành" để sinh viên có thể tải tài liệu.
+            </p>
           </div>
 
           <!-- Hoàn thành -->

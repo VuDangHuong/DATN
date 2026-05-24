@@ -21,7 +21,7 @@
       </svg> -->
     </div>
     <p class="text-2xl font-bold text-stone-800">{{ formatNumber(value) }}</p>
-    <p class="text-xs text-stone-500 mt-0.5">{{ label }}</p>
+    <p class="text-base text-stone-500 mt-0.5">{{ label }}</p>
   </component>
 </template>
 

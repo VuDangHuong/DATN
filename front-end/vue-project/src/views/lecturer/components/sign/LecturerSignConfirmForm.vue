@@ -26,12 +26,12 @@
         </svg>
         <div class="flex-1">
           <p class="text-sm font-semibold text-amber-800 mb-1">Bài nộp chưa được chấm điểm</p>
-          <p class="text-xs text-amber-700 mb-3">
+          <p class="text-base text-amber-700 mb-3">
             Bạn cần chấm điểm bài nộp này trước khi ký xác nhận tài liệu.
           </p>
           <button
             @click="goToGrade"
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 text-white rounded-lg text-xs font-medium hover:bg-amber-700"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 text-white rounded-lg text-base font-medium hover:bg-amber-700"
           >
             📝 Chấm điểm ngay →
           </button>
@@ -60,10 +60,10 @@
         </svg>
         <div class="flex-1">
           <p class="text-sm font-semibold text-amber-800 mb-1">Chưa đăng ký chữ ký số</p>
-          <p class="text-xs text-amber-700 mb-3">Bạn cần đăng ký chữ ký số trước khi ký.</p>
+          <p class="text-base text-amber-700 mb-3">Bạn cần đăng ký chữ ký số trước khi ký.</p>
           <router-link
             to="/lecturer/sign-profile"
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 text-white rounded-lg text-xs font-medium hover:bg-amber-700"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 text-white rounded-lg text-base font-medium hover:bg-amber-700"
           >
             Đăng ký ngay
           </router-link>
@@ -76,7 +76,7 @@
       <p class="text-sm font-semibold text-red-800 mb-1">Chữ ký số đã hết hạn</p>
       <router-link
         to="/lecturer/sign-profile"
-        class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-medium hover:bg-red-700"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white rounded-lg text-base font-medium hover:bg-red-700"
       >
         Cập nhật chữ ký →
       </router-link>
@@ -94,7 +94,7 @@
               clip-rule="evenodd"
             />
           </svg>
-          <span class="text-xs font-semibold text-emerald-800">Chữ ký số hợp lệ</span>
+          <span class="text-base font-semibold text-emerald-800">Chữ ký số hợp lệ</span>
         </div>
         <p class="text-[11px] text-emerald-700">
           <strong>{{ signProfile.subject_cn }}</strong>
@@ -121,7 +121,7 @@
           @keyup.enter="handleSubmit"
           class="w-full px-4 py-2.5 border border-stone-200 rounded-xl text-sm focus:ring-2 focus:ring-teal-500 outline-none"
         />
-        <p class="text-xs text-stone-400 mt-1">
+        <p class="text-base text-stone-400 mt-1">
           Mật khẩu này dùng để giải mã private key của bạn — không phải mật khẩu đăng nhập.
         </p>
       </div>
@@ -139,7 +139,7 @@
       </label>
 
       <div
-        class="flex items-center gap-2 text-xs text-stone-500 bg-blue-50 rounded-xl px-3 py-2 mb-4"
+        class="flex items-center gap-2 text-base text-stone-500 bg-blue-50 rounded-xl px-3 py-2 mb-4"
       >
         <svg
           class="w-4 h-4 text-blue-600 flex-shrink-0"

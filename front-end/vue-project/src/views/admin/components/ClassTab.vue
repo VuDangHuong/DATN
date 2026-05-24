@@ -158,14 +158,14 @@ const handleDelete = async (cls) => {
   <div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-gray-50 p-4 rounded-lg">
       <div>
-        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Lọc Khoa</label>
+        <label class="block text-base font-bold text-gray-500 uppercase mb-1">Lọc Khoa</label>
         <select v-model="filterFaculty" class="w-full border rounded p-2 text-sm">
           <option value="">-- Tất cả --</option>
           <option v-for="f in store.faculties" :key="f.id" :value="f.id">{{ f.name }}</option>
         </select>
       </div>
       <div>
-        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Lọc Ngành</label>
+        <label class="block text-base font-bold text-gray-500 uppercase mb-1">Lọc Ngành</label>
         <select
           v-model="filterMajor"
           class="w-full border rounded p-2 text-sm"
@@ -205,21 +205,21 @@ const handleDelete = async (cls) => {
           <tr v-for="c in classes" :key="c.id" class="border-b hover:bg-gray-50 text-sm">
             <td class="p-3">
               <div class="font-mono text-blue-600 font-bold">{{ c.code }}</div>
-              <div class="text-xs text-gray-500">{{ c.name }}</div>
+              <div class="text-base text-gray-500">{{ c.name }}</div>
             </td>
             <td class="p-3">
               <div class="font-medium text-gray-900">
                 <template v-if="c.subjects && c.subjects.length > 0">
                   <div v-for="sub in c.subjects" :key="sub.id" class="mb-1 last:mb-0">
                     • {{ sub.name }}
-                    <span class="text-xs text-gray-500 font-normal">({{ sub.code }})</span>
+                    <span class="text-base text-gray-500 font-normal">({{ sub.code }})</span>
                   </div>
                 </template>
 
                 <span v-else class="text-gray-400 italic">---</span>
               </div>
 
-              <div class="text-xs text-blue-600 mt-1 pt-1 border-t border-gray-100">
+              <div class="text-base text-blue-600 mt-1 pt-1 border-t border-gray-100">
                 {{ c.semester?.name }} ({{ c.semester?.year }})
               </div>
             </td>
@@ -233,7 +233,7 @@ const handleDelete = async (cls) => {
               <template v-if="c.subjects && c.subjects.length > 0">
                 <div v-for="sub in c.subjects" :key="sub.id" class="mb-1 last:mb-0">
                   <div
-                    class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                    class="inline-flex items-center px-2 py-0.5 rounded-full text-base font-medium"
                     :class="
                       (c.current_students || 0) >= (sub.pivot?.max_members || c.max_members || 60)
                         ? 'bg-red-100 text-red-800'

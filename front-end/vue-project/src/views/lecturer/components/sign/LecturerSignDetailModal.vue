@@ -21,7 +21,7 @@
                 {{ store.selectedRequest.status }}
               </span> -->
             </div>
-            <p class="text-xs text-stone-400">
+            <p class="text-base text-stone-400">
               Yêu cầu #{{ store.selectedRequest.id }} ·
               {{ formatDate(store.selectedRequest.created_at) }}
             </p>
@@ -47,7 +47,7 @@
         <div class="flex-1 overflow-y-auto p-6 space-y-5">
           <!-- Thông tin sinh viên -->
           <div class="bg-stone-50 rounded-xl p-4">
-            <p class="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">
+            <p class="text-base font-semibold text-stone-500 uppercase tracking-wider mb-3">
               Thông tin sinh viên
             </p>
             <div class="flex items-center gap-3">
@@ -60,7 +60,7 @@
                 <p class="font-semibold text-stone-900">
                   {{ store.selectedRequest.requester?.name }}
                 </p>
-                <p class="text-xs text-stone-400 font-mono">
+                <p class="text-base text-stone-400 font-mono">
                   {{ store.selectedRequest.requester?.code }} ·
                   {{ store.selectedRequest.requester?.email }}
                 </p>
@@ -70,12 +70,12 @@
 
           <!-- Thông tin tài liệu -->
           <div class="bg-stone-50 rounded-xl p-4">
-            <p class="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">
+            <p class="text-base font-semibold text-stone-500 uppercase tracking-wider mb-3">
               Thông tin tài liệu
             </p>
             <div class="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <p class="text-xs text-stone-400">Loại tài liệu</p>
+                <p class="text-base text-stone-400">Loại tài liệu</p>
                 <p class="font-medium text-violet-700 mt-0.5">
                   {{
                     store.selectedRequest.document_category_label ??
@@ -84,19 +84,19 @@
                 </p>
               </div>
               <div>
-                <p class="text-xs text-stone-400">Định dạng</p>
+                <p class="text-base text-stone-400">Định dạng</p>
                 <p class="font-medium text-stone-700 mt-0.5 uppercase">
                   {{ store.selectedRequest.document_type }}
                 </p>
               </div>
               <div>
-                <p class="text-xs text-stone-400">Lớp</p>
+                <p class="text-base text-stone-400">Lớp</p>
                 <p class="font-medium text-stone-700 mt-0.5">
                   {{ store.selectedRequest.class_model?.name }}
                 </p>
               </div>
               <!-- <div>
-                <p class="text-xs text-stone-400">Thời gian chuyển</p>
+                <p class="text-base text-stone-400">Thời gian chuyển</p>
                 <p class="font-medium text-stone-700 mt-0.5">
                   {{ formatDate(store.selectedRequest.forwarded_at) }}
                 </p>
@@ -106,7 +106,7 @@
             <button
               @click="store.previewFile()"
               :disabled="store.previewing"
-              class="mt-3 flex items-center gap-1.5 px-3 py-2 bg-white border border-stone-200 rounded-lg text-xs font-medium text-stone-700 hover:bg-stone-50 transition disabled:opacity-50"
+              class="mt-3 flex items-center gap-1.5 px-3 py-2 bg-white border border-stone-200 rounded-lg text-base font-medium text-stone-700 hover:bg-stone-50 transition disabled:opacity-50"
             >
               <div
                 v-if="store.previewing"
@@ -119,14 +119,14 @@
 
           <!-- Audit log -->
           <div v-if="store.selectedRequest.logs?.length">
-            <p class="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">
+            <p class="text-base font-semibold text-stone-500 uppercase tracking-wider mb-2">
               Lịch sử xử lý
             </p>
             <div class="space-y-2">
               <div
                 v-for="log in store.selectedRequest.logs"
                 :key="log.id"
-                class="flex items-start gap-2 text-xs"
+                class="flex items-start gap-2 text-base"
               >
                 <div class="w-1.5 h-1.5 rounded-full bg-teal-400 mt-1.5 flex-shrink-0" />
                 <div>
@@ -163,7 +163,7 @@
             <p class="flex items-center gap-1 text-sm font-semibold text-blue-700 mb-1">
               <SvgIcon name="check-circle" class="w-4 h-4 text-green-700" />Đã ký thành công
             </p>
-            <p class="text-xs text-blue-600">
+            <p class="text-base text-blue-600">
               Đã ký lúc {{ formatDate(store.selectedRequest.signed_at) }}. Đang chờ Admin phát hành
               cho sinh viên.
             </p>
@@ -175,7 +175,7 @@
             class="border border-emerald-200 rounded-xl p-4 bg-emerald-50"
           >
             <p class="text-sm font-semibold text-emerald-700 mb-1">🎉 Tài liệu đã phát hành</p>
-            <p class="text-xs text-emerald-600">Sinh viên đã có thể tải tài liệu đã ký.</p>
+            <p class="text-base text-emerald-600">Sinh viên đã có thể tải tài liệu đã ký.</p>
           </div>
 
           <!-- Bị từ chối -->
@@ -184,7 +184,7 @@
             class="border border-red-200 rounded-xl p-4 bg-red-50"
           >
             <p class="text-sm font-semibold text-red-700 mb-1">Yêu cầu đã bị từ chối</p>
-            <p v-if="store.selectedRequest.reject_reason" class="text-xs text-red-600 italic">
+            <p v-if="store.selectedRequest.reject_reason" class="text-base text-red-600 italic">
               "{{ store.selectedRequest.reject_reason }}"
             </p>
           </div>

@@ -11,7 +11,7 @@
     <button
       @click="handleReject"
       :disabled="!reason.trim() || store.rejecting"
-      class="px-4 py-2 bg-red-600 text-white rounded-lg text-xs font-medium hover:bg-red-700 disabled:opacity-50 transition flex items-center gap-2"
+      class="px-4 py-2 bg-red-600 text-white rounded-lg text-base font-medium hover:bg-red-700 disabled:opacity-50 transition flex items-center gap-2"
     >
       <div
         v-if="store.rejecting"

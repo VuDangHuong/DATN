@@ -12,8 +12,8 @@
           <div class="min-w-0">
             <p class="text-sm font-medium text-slate-800 truncate">{{ submission.file_name }}</p>
             <div class="flex items-center gap-2 mt-0.5 flex-wrap">
-              <span class="text-xs text-slate-400">{{ formatSize(submission.file_size) }}</span>
-              <span class="text-xs text-slate-400">·</span>
+              <span class="text-base text-slate-400">{{ formatSize(submission.file_size) }}</span>
+              <span class="text-base text-slate-400">·</span>
               <span
                 class="px-1.5 py-0.5 text-[10px] font-bold rounded"
                 :class="
@@ -44,7 +44,7 @@
           <button
             v-if="props.submission?.status === 'approved'"
             disabled
-            class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium text-slate-400 bg-slate-50 cursor-not-allowed"
+            class="px-3 py-1.5 border border-slate-200 rounded-lg text-base font-medium text-slate-400 bg-slate-50 cursor-not-allowed"
             title="Bài đã được chấp nhận, không thể nộp lại"
           >
             Đã chấp nhận
@@ -52,13 +52,13 @@
           <button
             v-else-if="canSubmit"
             @click="openReupload"
-            class="px-3 py-1.5 border border-indigo-200 rounded-lg text-xs font-medium text-indigo-600 hover:bg-indigo-50 transition"
+            class="px-3 py-1.5 border border-indigo-200 rounded-lg text-base font-medium text-indigo-600 hover:bg-indigo-50 transition"
           >
             Nộp lại
           </button>
           <button
             @click="$emit('showHistory')"
-            class="px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50 transition"
+            class="px-3 py-1.5 border border-slate-300 rounded-lg text-base font-medium text-slate-600 hover:bg-slate-50 transition"
           >
             Lịch sử
           </button>
@@ -67,7 +67,7 @@
 
       <p
         v-if="submission.note"
-        class="text-xs text-slate-500 mt-2 bg-slate-50 p-2 rounded-lg italic"
+        class="text-base text-slate-500 mt-2 bg-slate-50 p-2 rounded-lg italic"
       >
         "{{ submission.note }}"
       </p>
@@ -77,8 +77,8 @@
         v-if="submission.status === 'rejected' && submission.feedback"
         class="mt-2 p-2.5 bg-red-50 rounded-lg"
       >
-        <p class="text-xs text-red-700 font-medium">Nhận xét của giảng viên:</p>
-        <p class="text-xs text-red-600 mt-0.5 italic">"{{ submission.feedback }}"</p>
+        <p class="text-base text-red-700 font-medium">Nhận xét của giảng viên:</p>
+        <p class="text-base text-red-600 mt-0.5 italic">"{{ submission.feedback }}"</p>
       </div>
 
       <!-- Feedback approved + điểm -->
@@ -90,7 +90,7 @@
           <span v-if="submission.score" class="text-lg font-bold text-emerald-700">
             {{ submission.score }}/10
           </span>
-          <p v-if="submission.feedback" class="text-xs text-emerald-600 italic">
+          <p v-if="submission.feedback" class="text-base text-emerald-600 italic">
             "{{ submission.feedback }}"
           </p>
         </div>
@@ -141,7 +141,7 @@
             />
           </svg>
           <p class="text-sm text-slate-600 font-medium">Kéo thả hoặc click để chọn file</p>
-          <p class="text-xs text-slate-400 mt-1">
+          <p class="text-base text-slate-400 mt-1">
             {{ assignment.allowed_extensions?.join(', ') || 'Mọi định dạng' }} · Tối đa
             {{ assignment.max_file_size }}MB
           </p>
@@ -164,7 +164,7 @@
           <p class="text-sm font-medium text-emerald-700 truncate px-4">{{ selectedFile.name }}</p>
           <button
             @click.stop="selectedFile = null"
-            class="mt-2 text-xs text-red-500 hover:underline"
+            class="mt-2 text-base text-red-500 hover:underline"
           >
             Chọn file khác
           </button>
@@ -206,7 +206,7 @@
       </div>
 
       <div v-if="isReuploading && !selectedFile" class="mt-2 text-center">
-        <button @click="isReuploading = false" class="text-xs text-slate-500 hover:underline">
+        <button @click="isReuploading = false" class="text-base text-slate-500 hover:underline">
           Quay lại
         </button>
       </div>

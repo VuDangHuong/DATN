@@ -14,7 +14,7 @@
         <span class="text-lg">🎯</span>
         <div class="flex-1">
           <p class="text-sm font-semibold text-stone-700">Hoàn thành công việc?</p>
-          <p class="text-xs text-stone-500 mt-0.5">
+          <p class="text-base text-stone-500 mt-0.5">
             Bấm "Báo hoàn thành" để gửi cho nhóm trưởng duyệt.
           </p>
         </div>
@@ -33,10 +33,13 @@
         <span class="text-lg">⏳</span>
         <div class="flex-1">
           <p class="text-sm font-semibold text-amber-700">Đang chờ nhóm trưởng duyệt</p>
-          <p class="text-xs text-stone-500 mt-0.5">
+          <p class="text-base text-stone-500 mt-0.5">
             Gửi lúc {{ formatTime(task.submitted_for_review_at) }}
           </p>
-          <p v-if="task.submission_note" class="text-xs text-stone-600 mt-1.5 p-2 bg-white rounded">
+          <p
+            v-if="task.submission_note"
+            class="text-base text-stone-600 mt-1.5 p-2 bg-white rounded"
+          >
             <span class="font-medium">Ghi chú:</span> {{ task.submission_note }}
           </p>
         </div>
@@ -49,13 +52,13 @@
         <SvgIcon name="clipboard" class="h-4 w-4" />
         <div class="flex-1">
           <p class="text-sm font-semibold text-stone-700">Yêu cầu xác nhận hoàn thành</p>
-          <p class="text-xs text-stone-500 mt-0.5">
+          <p class="text-base text-stone-500 mt-0.5">
             {{ task.assignee?.name }} báo hoàn thành lúc
             {{ formatTime(task.submitted_for_review_at) }}
           </p>
           <p
             v-if="task.submission_note"
-            class="text-xs text-stone-600 mt-1.5 p-2 bg-white rounded border border-stone-200"
+            class="text-base text-stone-600 mt-1.5 p-2 bg-white rounded border border-stone-200"
           >
             <span class="font-medium">Ghi chú từ thành viên:</span> {{ task.submission_note }}
           </p>
@@ -86,10 +89,10 @@
       <SvgIcon name="check" class="w-4 h-4" />
       <div class="flex-1">
         <p class="text-sm font-semibold text-emerald-700">Đã được duyệt hoàn thành</p>
-        <p class="text-xs text-stone-500 mt-0.5">
+        <p class="text-base text-stone-500 mt-0.5">
           {{ task.reviewer?.name }} duyệt lúc {{ formatTime(task.reviewed_at) }}
         </p>
-        <p v-if="task.review_note" class="text-xs text-stone-600 mt-1.5 p-2 bg-white rounded">
+        <p v-if="task.review_note" class="text-base text-stone-600 mt-1.5 p-2 bg-white rounded">
           <span class="font-medium">Ghi chú:</span> {{ task.review_note }}
         </p>
       </div>
@@ -103,8 +106,10 @@
       <div class="flex items-start gap-2">
         <span class="text-lg">⚠️</span>
         <div class="flex-1">
-          <p class="text-xs font-semibold text-red-700">Nhóm trưởng đã từ chối yêu cầu trước đó</p>
-          <p class="text-xs text-red-600 mt-1">
+          <p class="text-base font-semibold text-red-700">
+            Nhóm trưởng đã từ chối yêu cầu trước đó
+          </p>
+          <p class="text-base text-red-600 mt-1">
             <span class="font-medium">Lý do:</span> {{ task.review_note }}
           </p>
           <p class="text-[10px] text-red-500 mt-1">
@@ -120,12 +125,12 @@
         <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="closeSubmitModal" />
         <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
           <h3 class="text-lg font-bold text-stone-800 mb-1">📤 Báo hoàn thành</h3>
-          <p class="text-xs text-stone-500 mb-4">
+          <p class="text-base text-stone-500 mb-4">
             Yêu cầu sẽ được gửi cho <strong>{{ leaderName }}</strong> duyệt
           </p>
 
           <label class="block text-sm font-medium text-stone-700 mb-1">
-            Ghi chú <span class="text-stone-400 text-xs">(tùy chọn)</span>
+            Ghi chú <span class="text-stone-400 text-base">(tùy chọn)</span>
           </label>
           <textarea
             v-model="submitNote"
@@ -134,7 +139,7 @@
             placeholder="Vd: Đã hoàn thành phần A, B. Phần C đã upload file đính kèm..."
             class="w-full px-3 py-2 border border-stone-200 rounded-xl text-sm resize-none focus:ring-2 focus:ring-indigo-500 outline-none"
           />
-          <p class="text-xs text-stone-400 mt-1 text-right">{{ submitNote.length }}/1000</p>
+          <p class="text-base text-stone-400 mt-1 text-right">{{ submitNote.length }}/1000</p>
 
           <div class="flex gap-3 mt-4">
             <button
@@ -167,12 +172,12 @@
         />
         <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
           <h3 class="text-lg font-bold text-stone-800 mb-1">Duyệt hoàn thành</h3>
-          <p class="text-xs text-stone-500 mb-4">
+          <p class="text-base text-stone-500 mb-4">
             Xác nhận <strong>{{ task.assignee?.name }}</strong> đã hoàn thành công việc?
           </p>
 
           <label class="block text-sm font-medium text-stone-700 mb-1">
-            Ghi chú <span class="text-stone-400 text-xs">(tùy chọn)</span>
+            Ghi chú <span class="text-stone-400 text-base">(tùy chọn)</span>
           </label>
           <textarea
             v-model="approveNote"
@@ -210,7 +215,7 @@
         />
         <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
           <h3 class="text-lg font-bold text-stone-800 mb-1">❌ Từ chối duyệt</h3>
-          <p class="text-xs text-stone-500 mb-4">Công việc sẽ quay lại trạng thái "Đang làm"</p>
+          <p class="text-base text-stone-500 mb-4">Công việc sẽ quay lại trạng thái "Đang làm"</p>
 
           <label class="block text-sm font-medium text-stone-700 mb-1">
             Lý do từ chối <span class="text-red-500">*</span>
@@ -223,8 +228,8 @@
             class="w-full px-3 py-2 border border-stone-200 rounded-xl text-sm resize-none focus:ring-2 focus:ring-red-500 outline-none"
           />
           <div class="flex justify-between mt-1">
-            <p class="text-xs text-stone-400">Tối thiểu 5 ký tự</p>
-            <p class="text-xs text-stone-400">{{ rejectReason.length }}/1000</p>
+            <p class="text-base text-stone-400">Tối thiểu 5 ký tự</p>
+            <p class="text-base text-stone-400">{{ rejectReason.length }}/1000</p>
           </div>
 
           <div class="flex gap-3 mt-4">

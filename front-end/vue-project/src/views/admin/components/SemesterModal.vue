@@ -96,7 +96,7 @@ const handleSubmit = () => {
                 class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                 required
               />
-              <p v-if="errors.name" class="text-red-500 text-xs mt-1">{{ errors.name[0] }}</p>
+              <p v-if="errors.name" class="text-red-500 text-base mt-1">{{ errors.name[0] }}</p>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Mã học kỳ</label>
@@ -107,7 +107,7 @@ const handleSubmit = () => {
                 class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 uppercase"
                 required
               />
-              <p v-if="errors.code" class="text-red-500 text-xs mt-1">{{ errors.code[0] }}</p>
+              <p v-if="errors.code" class="text-red-500 text-base mt-1">{{ errors.code[0] }}</p>
             </div>
           </div>
 
@@ -120,7 +120,7 @@ const handleSubmit = () => {
               class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
               required
             />
-            <p v-if="errors.year" class="text-red-500 text-xs mt-1">{{ errors.year[0] }}</p>
+            <p v-if="errors.year" class="text-red-500 text-base mt-1">{{ errors.year[0] }}</p>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
@@ -132,7 +132,7 @@ const handleSubmit = () => {
                 class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                 required
               />
-              <p v-if="errors.start_date" class="text-red-500 text-xs mt-1">
+              <p v-if="errors.start_date" class="text-red-500 text-base mt-1">
                 {{ errors.start_date[0] }}
               </p>
             </div>
@@ -144,7 +144,7 @@ const handleSubmit = () => {
                 class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                 required
               />
-              <p v-if="errors.end_date" class="text-red-500 text-xs mt-1">
+              <p v-if="errors.end_date" class="text-red-500 text-base mt-1">
                 {{ errors.end_date[0] }}
               </p>
             </div>

@@ -57,14 +57,14 @@
                   />
                 </svg>
                 <p class="text-sm font-medium text-stone-700">Click chọn file PDF</p>
-                <p class="text-xs text-stone-400 mt-1">Tối đa 20MB</p>
+                <p class="text-base text-stone-400 mt-1">Tối đa 20MB</p>
               </div>
 
               <div v-else class="flex items-center gap-3 text-left">
                 <span class="text-2xl">📄</span>
                 <div class="flex-1 min-w-0">
                   <p class="text-sm font-medium text-stone-800 truncate">{{ file.name }}</p>
-                  <p class="text-xs text-stone-400">{{ formatBytes(file.size) }}</p>
+                  <p class="text-base text-stone-400">{{ formatBytes(file.size) }}</p>
                 </div>
                 <button
                   type="button"
@@ -95,7 +95,7 @@
               placeholder="VD: A1B2C3D4E5F6..."
               class="w-full px-4 py-2.5 border border-stone-200 rounded-xl text-sm font-mono focus:ring-2 focus:ring-teal-500 outline-none"
             />
-            <p class="text-xs text-stone-400 mt-1">Lấy từ thông tin trên tài liệu đã ký</p>
+            <p class="text-base text-stone-400 mt-1">Lấy từ thông tin trên tài liệu đã ký</p>
           </div>
 
           <button
@@ -136,7 +136,7 @@
               </svg>
               <div>
                 <h3 class="text-lg font-bold text-emerald-800">Tài liệu hợp lệ</h3>
-                <p class="text-xs text-emerald-700">Chữ ký được xác thực, file chưa bị sửa đổi</p>
+                <p class="text-base text-emerald-700">Chữ ký được xác thực, file chưa bị sửa đổi</p>
               </div>
             </div>
 
@@ -165,7 +165,7 @@
               </div>
               <div class="flex justify-between">
                 <span class="text-stone-500">Thuật toán:</span>
-                <span class="font-mono text-xs text-stone-700">{{ result.data.algorithm }}</span>
+                <span class="font-mono text-base text-stone-700">{{ result.data.algorithm }}</span>
               </div>
               <div class="pt-2 border-t border-emerald-200">
                 <p class="text-stone-500 mb-1">File hash (SHA-256):</p>
@@ -188,13 +188,13 @@
               </svg>
               <div>
                 <h3 class="text-lg font-bold text-red-800">Tài liệu không hợp lệ</h3>
-                <p class="text-xs text-red-700">{{ result.message }}</p>
+                <p class="text-base text-red-700">{{ result.message }}</p>
               </div>
             </div>
 
             <div
               v-if="result.reason === 'HASH_MISMATCH'"
-              class="text-xs text-red-700 pt-3 border-t border-red-200"
+              class="text-base text-red-700 pt-3 border-t border-red-200"
             >
               <p class="font-semibold mb-1">File đã bị thay đổi sau khi ký.</p>
               <p class="font-mono text-[10px] mt-2">
@@ -210,7 +210,7 @@
 
       <!-- Footer info -->
       <div class="text-center mt-6">
-        <p class="text-xs text-stone-400">
+        <p class="text-base text-stone-400">
           Hệ thống dùng RSA-SHA256 + SHA-256 hash để xác thực · Không cần đăng nhập
         </p>
       </div>

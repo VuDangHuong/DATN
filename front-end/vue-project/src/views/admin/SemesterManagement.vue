@@ -174,27 +174,27 @@ onMounted(() => {
         <thead class="bg-gray-50">
           <tr>
             <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              class="px-6 py-3 text-left text-base font-medium text-gray-500 uppercase tracking-wider"
             >
               Mã / Tên
             </th>
             <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              class="px-6 py-3 text-left text-base font-medium text-gray-500 uppercase tracking-wider"
             >
               Năm học
             </th>
             <th
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              class="px-6 py-3 text-left text-base font-medium text-gray-500 uppercase tracking-wider"
             >
               Thời gian
             </th>
             <th
-              class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+              class="px-6 py-3 text-center text-base font-medium text-gray-500 uppercase tracking-wider"
             >
               Trạng thái
             </th>
             <th
-              class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+              class="px-6 py-3 text-right text-base font-medium text-gray-500 uppercase tracking-wider"
             >
               Hành động
             </th>
@@ -212,7 +212,7 @@ onMounted(() => {
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="text-sm font-medium text-gray-900">{{ item.name }}</div>
               <div
-                class="text-xs text-gray-500 font-mono bg-gray-100 inline-block px-2 py-0.5 rounded mt-1"
+                class="text-base text-gray-500 font-mono bg-gray-100 inline-block px-2 py-0.5 rounded mt-1"
               >
                 {{ item.code }}
               </div>
@@ -230,7 +230,7 @@ onMounted(() => {
               <button
                 @click="toggleStatus(item)"
                 :class="[
-                  'px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer select-none transition-colors',
+                  'px-3 py-1 inline-flex text-base leading-5 font-semibold rounded-full cursor-pointer select-none transition-colors',
                   item.is_active
                     ? 'bg-green-100 text-green-800 hover:bg-green-200'
                     : 'bg-gray-100 text-gray-800 hover:bg-gray-200',

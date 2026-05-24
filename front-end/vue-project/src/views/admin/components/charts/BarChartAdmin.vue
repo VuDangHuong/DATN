@@ -4,7 +4,7 @@
     <canvas ref="canvasRef" />
     <div
       v-if="isEmpty"
-      class="absolute inset-0 flex items-center justify-center text-stone-400 text-xs"
+      class="absolute inset-0 flex items-center justify-center text-stone-400 text-base"
     >
       Chưa có dữ liệu
     </div>

@@ -6,7 +6,7 @@
     <div v-if="!classId" class="bg-white rounded-2xl border p-12 text-center">
       <p class="text-5xl mb-3">📚</p>
       <p class="text-stone-500 font-medium mb-2">Vui lòng chọn lớp học</p>
-      <p class="text-xs text-stone-400 mb-4">
+      <p class="text-base text-stone-400 mb-4">
         Chọn lớp ở dropdown phía trên hoặc bên dưới để xem tài liệu
       </p>
 

@@ -25,23 +25,23 @@
             </h3>
             <span
               v-if="!a.is_active"
-              class="px-2 py-0.5 bg-slate-100 text-slate-500 text-xs font-bold rounded-full"
+              class="px-2 py-0.5 bg-slate-100 text-slate-500 text-base font-bold rounded-full"
               >Đã đóng</span
             >
             <span
               v-else-if="a.is_expired"
-              class="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-bold rounded-full"
+              class="px-2 py-0.5 bg-red-100 text-red-700 text-base font-bold rounded-full"
               >Hết hạn</span
             >
             <span
               v-else
-              class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full"
+              class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-base font-bold rounded-full"
               >Đang mở</span
             >
             <!-- Badge ký số -->
             <span
               v-if="a.document_category_label"
-              class="px-2 py-0.5 bg-violet-100 text-violet-700 text-xs font-bold rounded-full flex items-center gap-1"
+              class="px-2 py-0.5 bg-violet-100 text-violet-700 text-base font-bold rounded-full flex items-center gap-1"
             >
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -54,10 +54,10 @@
               {{ a.document_category_label }}
             </span>
           </div>
-          <p class="text-xs text-slate-500 mb-3">
+          <p class="text-base text-slate-500 mb-3">
             Hạn: {{ formatDate(a.deadline) }} · {{ submissionTypeLabel(a.submission_type) }}
           </p>
-          <div class="flex items-center gap-4 text-xs">
+          <div class="flex items-center gap-4 text-base">
             <div class="flex items-center gap-1.5">
               <div class="w-2 h-2 rounded-full bg-emerald-500" />
               <span class="text-slate-600"

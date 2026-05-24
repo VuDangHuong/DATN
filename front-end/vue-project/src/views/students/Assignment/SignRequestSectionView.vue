@@ -1,7 +1,7 @@
 <template>
   <div class="mt-3 border-t border-slate-100 pt-3">
     <!-- Loading -->
-    <div v-if="loading" class="flex items-center gap-2 text-xs text-slate-400 py-1">
+    <div v-if="loading" class="flex items-center gap-2 text-base text-slate-400 py-1">
       <div
         class="w-3.5 h-3.5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"
       />
@@ -13,18 +13,18 @@
       <div v-if="!signRequest">
         <div class="flex items-center gap-2 mb-2">
           <SvgIcon name="edit-pencil" class="w-4 h-4 text-indigo-600" />
-          <span class="text-xs font-semibold text-violet-700">Yêu cầu ký số tài liệu</span>
+          <span class="text-base font-semibold text-violet-700">Yêu cầu ký số tài liệu</span>
           <span class="px-1.5 py-0.5 bg-violet-100 text-violet-600 text-[10px] font-bold rounded">
             {{ assignment.document_category_label }}
           </span>
         </div>
-        <p class="text-xs text-slate-500 mb-2">
+        <p class="text-base text-slate-500 mb-2">
           Bài nộp đã được chấp nhận. Bạn có thể gửi yêu cầu ký số tài liệu cho giảng viên.
         </p>
         <button
           @click="handleCreate"
           :disabled="creating"
-          class="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 text-white rounded-lg text-xs font-medium hover:bg-violet-700 disabled:opacity-50 transition"
+          class="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 text-white rounded-lg text-base font-medium hover:bg-violet-700 disabled:opacity-50 transition"
         >
           <div
             v-if="creating"
@@ -52,7 +52,7 @@
                 d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
               />
             </svg>
-            <span class="text-xs font-semibold text-violet-700">Ký số tài liệu</span>
+            <span class="text-base font-semibold text-violet-700">Ký số tài liệu</span>
           </div>
           <div class="flex items-center gap-1.5">
             <div
@@ -61,7 +61,7 @@
               title="Đang tự động cập nhật..."
             />
             <span class="px-2 py-0.5 text-[10px] font-bold rounded-full" :class="statusClass">
-              {{ signRequest.status }}
+              {{ getStatusLabel(signRequest.status) }}
             </span>
           </div>
         </div>
@@ -106,8 +106,8 @@
 
         <!-- Thông báo từ chối -->
         <div v-if="isRejected" class="mt-2 p-2.5 bg-red-50 rounded-lg">
-          <p class="text-xs text-red-700 font-medium">Giảng viên đã từ chối yêu cầu</p>
-          <p v-if="signRequest.reject_reason" class="text-xs text-red-600 mt-0.5 italic">
+          <p class="text-base text-red-700 font-medium">Giảng viên đã từ chối yêu cầu</p>
+          <p v-if="signRequest.reject_reason" class="text-base text-red-600 mt-0.5 italic">
             "{{ signRequest.reject_reason }}"
           </p>
           <button
@@ -125,7 +125,7 @@
           <button
             @click="handleDownload"
             :disabled="downloading"
-            class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700 disabled:opacity-50"
+            class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-base font-medium hover:bg-emerald-700 disabled:opacity-50"
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -144,7 +144,9 @@
             class="p-2.5 bg-blue-50 border border-blue-200 rounded-lg"
           >
             <div class="flex items-center justify-between gap-2 mb-1">
-              <span class="text-[10px] font-bold text-blue-700 uppercase">🔍 Serial chứng thư</span>
+              <span class="flex items-center gap-1 text-sm font-bold text-blue-700 uppercase"
+                ><SvgIcon name="search" class="w-5 h-5 text-indigo-600" /> Serial chứng thư</span
+              >
               <button @click="copySerial" class="text-[10px] text-blue-600 hover:underline">
                 <SvgIcon name="copy" class="w-5 h-5 text-indigo-600" />
                 Copy
@@ -255,7 +257,15 @@ const steps = [
   { key: 'lecturer_reviewing', label: 'GV xem' },
   { key: 'signed', label: 'Đã ký' },
 ]
+function getStatusLabel(status) {
+  const map = {
+    lecturer_reviewing: 'Đang xem',
+    signed: 'Đã ký',
+    // rejected: 'Đã từ chối',
+  }
 
+  return map[status] || status
+}
 const stepOrder = ['pending', 'lecturer_reviewing', 'signed']
 
 const isRejected = computed(() => signRequest.value?.status === 'rejected')

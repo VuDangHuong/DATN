@@ -4,7 +4,7 @@
     <!-- Header -->
     <div class="mb-6">
       <!-- Breadcrumb -->
-      <div class="flex items-center gap-2 text-xs text-slate-500 mb-3">
+      <div class="flex items-center gap-2 text-base text-slate-500 mb-3">
         <router-link to="/student/materials" class="hover:text-indigo-600 transition">
           Tài liệu
         </router-link>
@@ -70,7 +70,7 @@
             : 'border-slate-200 hover:border-slate-300'
         "
       >
-        <p class="text-xs text-slate-500 truncate">
+        <p class="text-base text-slate-500 truncate">
           {{ label }}
         </p>
 
@@ -112,7 +112,7 @@
       <button
         v-if="materialStore.filters.category || materialStore.filters.search"
         @click="clearFilters"
-        class="px-3 py-2 text-xs text-slate-600 hover:bg-slate-100 rounded-xl transition"
+        class="px-3 py-2 text-base text-slate-600 hover:bg-slate-100 rounded-xl transition"
       >
         Xóa lọc
       </button>
@@ -170,7 +170,7 @@
                 </h3>
 
                 <span
-                  class="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full"
+                  class="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-base font-bold rounded-full"
                 >
                   {{ m.file_count }} file
                 </span>
@@ -180,7 +180,7 @@
                 {{ m.description }}
               </p>
 
-              <div class="flex items-center gap-4 text-xs text-slate-500 flex-wrap">
+              <div class="flex items-center gap-4 text-base text-slate-500 flex-wrap">
                 <span>{{ m.category_label }}</span>
 
                 <span>
@@ -242,7 +242,7 @@
                   {{ f.file_name }}
                 </p>
 
-                <p class="text-xs text-slate-400 mt-0.5">
+                <p class="text-base text-slate-400 mt-0.5">
                   {{ f.file_size_formatted }}
 
                   <span v-if="f.download_count > 0"> · {{ f.download_count }} lượt tải </span>
@@ -253,7 +253,7 @@
               <button
                 @click="handleDownload(f, m.id)"
                 :disabled="downloadingId === f.id"
-                class="px-3 py-2 bg-indigo-600 text-white rounded-xl text-xs font-semibold hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-1.5 flex-shrink-0 transition"
+                class="px-3 py-2 bg-indigo-600 text-white rounded-xl text-base font-semibold hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-1.5 flex-shrink-0 transition"
               >
                 <div
                   v-if="downloadingId === f.id"

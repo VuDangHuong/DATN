@@ -21,7 +21,7 @@
             v-model="search"
             type="text"
             placeholder="Tìm kiếm nhiệm vụ..."
-            class="w-full pl-9 pr-9 py-2 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            class="w-full pl-9 pr-9 py-2 border border-slate-200 rounded-xl text-base bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
           />
           <button
             v-if="search"
@@ -42,13 +42,13 @@
         <transition name="fade">
           <span
             v-if="(search || selectedAssigneeIds.length) && totalFiltered > 0"
-            class="px-3 py-1.5 bg-indigo-50 text-indigo-700 text-xs font-medium rounded-xl"
+            class="px-3 py-1.5 bg-indigo-50 text-indigo-700 text-base font-medium rounded-xl"
           >
             Tìm thấy {{ totalFiltered }} nhiệm vụ
           </span>
           <span
             v-else-if="(search || selectedAssigneeIds.length) && totalFiltered === 0"
-            class="px-3 py-1.5 bg-red-50 text-red-600 text-xs font-medium rounded-xl"
+            class="px-3 py-1.5 bg-red-50 text-red-600 text-base font-medium rounded-xl"
           >
             Không tìm thấy kết quả
           </span>
@@ -57,12 +57,14 @@
 
       <!-- Member filter -->
       <div v-if="members.length" class="flex items-center gap-2 flex-wrap">
-        <span class="text-xs font-medium text-slate-500 uppercase tracking-wide"> Lọc theo: </span>
+        <span class="text-base font-medium text-slate-500 uppercase tracking-wide">
+          Lọc theo:
+        </span>
 
         <!-- "Tất cả" -->
         <button
           @click="clearMemberFilter"
-          class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium transition border"
+          class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-base font-medium transition border"
           :class="
             selectedAssigneeIds.length === 0
               ? 'bg-indigo-600 text-white border-indigo-600'
@@ -78,7 +80,7 @@
           v-for="m in members"
           :key="m.id"
           @click="toggleMember(m.id)"
-          class="flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full text-xs font-medium transition border"
+          class="flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full text-base font-medium transition border"
           :class="
             selectedAssigneeIds.includes(m.id)
               ? 'bg-indigo-600 text-white border-indigo-600'
@@ -124,14 +126,14 @@
         <button
           v-if="unassignedCount > 0"
           @click="toggleMember(null)"
-          class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium transition border"
+          class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-base font-medium transition border"
           :class="
             selectedAssigneeIds.includes(null)
               ? 'bg-slate-600 text-white border-slate-600'
               : 'bg-white text-slate-500 border-slate-200 border-dashed hover:bg-slate-50'
           "
         >
-          <span class="text-sm">❓</span>
+          <span class="text-base">❓</span>
           Chưa giao
           <span
             class="text-[10px] font-bold px-1.5 rounded-full ml-0.5"
@@ -162,8 +164,22 @@
         :search="search"
         @click-task="emit('clickTask', $event)"
         @change-status="(taskId, status) => emit('changeStatus', taskId, status)"
-        @delete-task="emit('deleteTask', $event)"
+        @delete-task="handleDeleteTask"
         @task-moved="emit('taskMoved', $event)"
+      />
+
+      <ConfirmModal
+        v-model="confirmState.show"
+        :title="confirmState.title"
+        :message="confirmState.message"
+        :item-name="confirmState.itemName"
+        :warning-text="confirmState.warningText"
+        :confirm-text="confirmState.confirmText"
+        :cancel-text="confirmState.cancelText"
+        :variant="confirmState.variant"
+        :loading="confirmState.loading"
+        @confirm="_handleConfirm"
+        @cancel="_handleCancel"
       />
     </div>
   </div>
@@ -173,6 +189,9 @@
 import SvgIcon from '@/components/icons/SVG.vue'
 import KanbanColumn from '@/components/students/KanbanColumn.vue'
 import { ref, computed } from 'vue'
+import { useConfirm } from '@/composables/useConfirm'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
+
 const props = defineProps({
   title: String,
   icon: String,
@@ -181,7 +200,13 @@ const props = defineProps({
   isLeader: { type: Boolean, default: false },
   currentUserId: { type: Number },
 })
-
+const {
+  state: confirmState,
+  confirmDelete,
+  close: closeConfirm,
+  _handleConfirm,
+  _handleCancel,
+} = useConfirm()
 const emit = defineEmits(['clickTask', 'changeStatus', 'deleteTask', 'taskMoved'])
 
 const search = ref('')
@@ -241,7 +266,30 @@ const tasksByStatus = computed(() => {
 })
 
 const totalFiltered = computed(() => filteredTasks.value.length)
+async function handleDeleteTask(taskId) {
+  if (!taskId) return
 
+  // Tìm task từ props để hiển thị title
+  const task = props.tasks.find((t) => t.id === taskId)
+
+  if (!task) {
+    console.error('Task not found:', taskId)
+    return
+  }
+
+  const ok = await confirmDelete(task.title, {
+    title: 'Xóa nhiệm vụ',
+    message: 'Hành động này sẽ xóa task vĩnh viễn. Tất cả comment và lịch sử cũng sẽ bị xóa.',
+    warningText: task.assignee?.name ? `Được giao cho: ${task.assignee.name}` : 'Chưa giao cho ai',
+    confirmText: 'Xóa task',
+  })
+
+  if (!ok) return
+
+  // ✅ Chỉ emit lên grandparent khi đã confirm
+  emit('deleteTask', taskId)
+  closeConfirm()
+}
 // ─── Helpers ──────────────────────────────────
 function toggleMember(memberId) {
   const idx = selectedAssigneeIds.value.indexOf(memberId)

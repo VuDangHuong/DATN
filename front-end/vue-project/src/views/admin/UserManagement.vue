@@ -254,27 +254,27 @@ onMounted(userStore.fetchUsers)
           <thead class="bg-gray-50">
             <tr>
               <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-6 py-3 text-left text-base font-medium text-gray-500 uppercase tracking-wider"
               >
                 Thông tin
               </th>
               <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-6 py-3 text-left text-base font-medium text-gray-500 uppercase tracking-wider"
               >
                 Vai trò
               </th>
               <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-6 py-3 text-left text-base font-medium text-gray-500 uppercase tracking-wider"
               >
                 Liên hệ
               </th>
               <th
-                class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-6 py-3 text-center text-base font-medium text-gray-500 uppercase tracking-wider"
               >
                 Trạng thái
               </th>
               <th
-                class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                class="px-6 py-3 text-right text-base font-medium text-gray-500 uppercase tracking-wider"
               >
                 Hành động
               </th>
@@ -314,7 +314,7 @@ onMounted(userStore.fetchUsers)
               <td class="px-6 py-4 whitespace-nowrap">
                 <span
                   :class="[
-                    'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
+                    'px-2 inline-flex text-base leading-5 font-semibold rounded-full',
                     user.role === 'admin'
                       ? 'bg-red-100 text-red-800'
                       : user.role === 'lecturer'
@@ -391,11 +391,11 @@ onMounted(userStore.fetchUsers)
               />
               <div class="ml-3 flex-1">
                 <div class="text-sm font-bold text-gray-900">{{ user.name }}</div>
-                <div class="text-xs text-gray-500 font-mono">{{ user.code }}</div>
+                <div class="text-base text-gray-500 font-mono">{{ user.code }}</div>
               </div>
               <span
                 :class="[
-                  'px-2 py-1 text-xs font-semibold rounded-full',
+                  'px-2 py-1 text-base font-semibold rounded-full',
                   user.role === 'admin'
                     ? 'bg-red-100 text-red-800'
                     : user.role === 'lecturer'
@@ -424,7 +424,7 @@ onMounted(userStore.fetchUsers)
               class="bg-gray-50 px-4 py-3 flex items-center justify-between border-t border-gray-100"
             >
               <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-500">{{
+                <span class="text-base text-gray-500">{{
                   user.is_active ? 'Hoạt động' : 'Đang khóa'
                 }}</span>
                 <button

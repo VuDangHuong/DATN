@@ -5,7 +5,7 @@
     <div class="px-5 py-3 border-b border-slate-200 flex items-center justify-between">
       <div>
         <h3 class="text-sm font-bold text-slate-800">{{ groupName }}</h3>
-        <p class="text-xs text-slate-400">{{ members.length }} thành viên</p>
+        <p class="text-base text-slate-400">{{ members.length }} thành viên</p>
       </div>
     </div>
 

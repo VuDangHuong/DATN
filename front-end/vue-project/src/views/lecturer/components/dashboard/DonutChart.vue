@@ -42,8 +42,8 @@
     <div class="flex-1 space-y-2 min-w-0">
       <div v-for="seg in data" :key="seg.label" class="flex items-center gap-2">
         <span class="w-3 h-3 rounded-sm flex-shrink-0" :style="{ background: seg.color }" />
-        <span class="text-xs text-stone-600 flex-1 truncate">{{ seg.label }}</span>
-        <span class="text-xs font-semibold text-stone-700">{{ seg.value }}</span>
+        <span class="text-base text-stone-600 flex-1 truncate">{{ seg.label }}</span>
+        <span class="text-base font-semibold text-stone-700">{{ seg.value }}</span>
         <span class="text-[10px] text-stone-400 w-10 text-right">
           {{ total > 0 ? Math.round((seg.value / total) * 100) : 0 }}%
         </span>

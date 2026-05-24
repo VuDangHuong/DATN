@@ -5,7 +5,7 @@
     <div class="flex items-center gap-4 mb-3">
       <div v-for="ds in data.datasets" :key="ds.name" class="flex items-center gap-1.5">
         <span class="w-3 h-3 rounded-sm" :style="{ background: ds.color }" />
-        <span class="text-xs text-stone-600">{{ ds.name }}</span>
+        <span class="text-base text-stone-600">{{ ds.name }}</span>
       </div>
     </div>
 

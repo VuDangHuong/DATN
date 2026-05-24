@@ -102,7 +102,7 @@ const handleSubmit = async () => {
               <SvgIcon :name="showPassword ? 'eye' : 'eye-off'" className="h-5 w-5" />
             </button>
           </div>
-          <p v-if="errors.current_password" class="text-red-500 text-xs mt-1">
+          <p v-if="errors.current_password" class="text-red-500 text-base mt-1">
             {{ errors.current_password }}
           </p>
         </div>
@@ -120,7 +120,7 @@ const handleSubmit = async () => {
             placeholder="Nhập mật khẩu mới"
             required
           />
-          <p v-if="errors.new_password" class="text-red-500 text-xs mt-1">
+          <p v-if="errors.new_password" class="text-red-500 text-base mt-1">
             {{ errors.new_password }}
           </p>
         </div>
@@ -142,7 +142,7 @@ const handleSubmit = async () => {
             placeholder="Nhập lại mật khẩu mới"
             required
           />
-          <p v-if="errors.new_password_confirmation" class="text-red-500 text-xs mt-1">
+          <p v-if="errors.new_password_confirmation" class="text-red-500 text-base mt-1">
             {{ errors.new_password_confirmation }}
           </p>
         </div>

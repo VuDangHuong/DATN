@@ -151,7 +151,7 @@ const handleSubmit = () => {
                   </label>
                 </div>
               </div>
-              <div v-else class="text-xs text-orange-500 bg-orange-50 p-2 rounded">
+              <div v-else class="text-base text-orange-500 bg-orange-50 p-2 rounded">
                 ⚠️ Vui lòng chọn Ngành ở bộ lọc để tải môn học.
               </div>
             </div>
@@ -167,7 +167,7 @@ const handleSubmit = () => {
                   type="number"
                   class="w-20 border rounded p-1 text-center font-bold"
                 />
-                <span class="text-xs text-gray-400">(Nhập để tự điền cho tất cả)</span>
+                <span class="text-base text-gray-400">(Nhập để tự điền cho tất cả)</span>
               </div>
 
               <div
@@ -183,7 +183,7 @@ const handleSubmit = () => {
                     {{ item.code }} - {{ item.name }}
                   </span>
                   <div class="flex items-center gap-1 w-1/3 justify-end">
-                    <span class="text-xs text-gray-500">Max:</span>
+                    <span class="text-base text-gray-500">Max:</span>
                     <input
                       type="number"
                       :value="item.max_members"

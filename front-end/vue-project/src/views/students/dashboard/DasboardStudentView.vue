@@ -27,12 +27,12 @@
             <div>
               <div class="flex items-center gap-2 mb-1">
                 <span
-                  class="px-2.5 py-0.5 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-full"
+                  class="px-2.5 py-0.5 bg-indigo-50 text-indigo-700 text-base font-bold rounded-full"
                 >
                   {{ item.class.code }}
                 </span>
                 <span
-                  class="px-2 py-0.5 text-xs rounded-full font-medium"
+                  class="px-2 py-0.5 text-base rounded-full font-medium"
                   :class="
                     item.class.is_active
                       ? 'bg-emerald-50 text-emerald-700'
@@ -84,7 +84,7 @@
               <SvgIcon name="calendar" class="w-4 h-4 text-purple-500" />
             </div>
             <div>
-              <p class="text-xs text-slate-400">Kỳ học</p>
+              <p class="text-base text-slate-400">Kỳ học</p>
               <p class="text-sm font-medium text-slate-700">
                 {{ item.semester.name }} ({{ item.semester.year }})
               </p>
@@ -97,7 +97,7 @@
               <SvgIcon name="user-profile" class="w-4 h-4 text-blue-500" />
             </div>
             <div>
-              <p class="text-xs text-slate-400">Giảng viên</p>
+              <p class="text-base text-slate-400">Giảng viên</p>
               <p class="text-sm font-medium text-slate-700">{{ item.lecturer.name }}</p>
             </div>
           </div>
@@ -108,7 +108,7 @@
               <SvgIcon name="class-book" class="w-4 h-4 text-amber-500" />
             </div>
             <div>
-              <p class="text-xs text-slate-400">Môn học</p>
+              <p class="text-base text-slate-400">Môn học</p>
               <p v-for="s in item.subjects" :key="s.id" class="text-sm font-medium text-slate-700">
                 {{ s.name }} <span class="text-slate-400">({{ s.credits }} TC)</span>
               </p>
@@ -121,7 +121,7 @@
               <SvgIcon name="group-users" class="w-4 h-4 text-emerald-500" />
             </div>
             <div>
-              <p class="text-xs text-slate-400">Nhóm</p>
+              <p class="text-base text-slate-400">Nhóm</p>
               <p v-if="item.my_group" class="text-sm font-medium text-slate-700">
                 {{ item.my_group.name }}
                 <span class="text-slate-400">· {{ item.my_group.members?.length }} thành viên</span>
@@ -137,12 +137,12 @@
             <div
               v-for="m in item.my_group.members?.slice(0, 5)"
               :key="m.id"
-              class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600 border-2 border-white -ml-1 first:ml-0"
+              class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-base font-bold text-slate-600 border-2 border-white -ml-1 first:ml-0"
               :title="m.name"
             >
               {{ m.name?.charAt(0) }}
             </div>
-            <span v-if="item.my_group.members?.length > 5" class="text-xs text-slate-400 ml-1">
+            <span v-if="item.my_group.members?.length > 5" class="text-base text-slate-400 ml-1">
               +{{ item.my_group.members.length - 5 }}
             </span>
           </div>

@@ -9,7 +9,9 @@
     <!-- Loading -->
     <div v-if="loading" class="flex flex-col items-center justify-center py-20 gap-3">
       <SvgICon name="spinner" class="w-8 h-8 text-indigo-600" spin />
-      <p class="text-xs text-slate-400 font-medium animate-pulse">Đang tải danh sách lớp học...</p>
+      <p class="text-base text-slate-400 font-medium animate-pulse">
+        Đang tải danh sách lớp học...
+      </p>
     </div>
 
     <!-- Empty -->
@@ -44,13 +46,16 @@
 
           <span
             v-if="materialCounts[cls.id] > 0"
-            class="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full flex items-center gap-1"
+            class="px-2 py-1 bg-emerald-100 text-emerald-700 text-base font-bold rounded-full flex items-center gap-1"
           >
             <SvgICon name="clipboard" class="w-4 h-4" />
             {{ materialCounts[cls.id] }}
           </span>
 
-          <span v-else class="px-2 py-1 bg-slate-100 text-slate-500 text-xs font-bold rounded-full">
+          <span
+            v-else
+            class="px-2 py-1 bg-slate-100 text-slate-500 text-base font-bold rounded-full"
+          >
             Chưa có
           </span>
         </div>
@@ -62,12 +67,14 @@
           {{ cls.name }}
         </h3>
 
-        <p class="text-xs text-indigo-600 font-mono mt-1 bg-indigo-50/50 px-2 py-0.5 rounded w-fit">
+        <p
+          class="text-base text-indigo-600 font-mono mt-1 bg-indigo-50/50 px-2 py-0.5 rounded w-fit"
+        >
           {{ cls.code }}
         </p>
 
         <div
-          class="flex items-center gap-4 text-xs text-slate-500 flex-wrap mt-4 pt-4 border-t border-slate-100"
+          class="flex items-center gap-4 text-base text-slate-500 flex-wrap mt-4 pt-4 border-t border-slate-100"
         >
           <span v-if="cls.lecturer?.name" class="flex items-center gap-1.5">
             <SvgICon name="user-profile" class="w-4 h-4 text-slate-400 flex-shrink-0" />
@@ -84,7 +91,7 @@
 
         <!-- Footer -->
         <div
-          class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-indigo-600"
+          class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-base font-semibold text-indigo-600"
         >
           <span>Xem tài liệu</span>
 

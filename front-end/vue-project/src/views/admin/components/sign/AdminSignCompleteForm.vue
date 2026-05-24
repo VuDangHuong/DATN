@@ -2,7 +2,9 @@
 <template>
   <div class="border border-emerald-200 rounded-xl p-4 bg-emerald-50">
     <p class="text-sm font-semibold text-emerald-700 mb-1">Phát hành tài liệu đã ký</p>
-    <p class="text-xs text-emerald-600 mb-3">GV đã ký xong. Xác nhận để sinh viên có thể tải về.</p>
+    <p class="text-base text-emerald-600 mb-3">
+      GV đã ký xong. Xác nhận để sinh viên có thể tải về.
+    </p>
     <button
       @click="store.completeRequest()"
       :disabled="store.completing"

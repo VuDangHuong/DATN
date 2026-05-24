@@ -95,7 +95,7 @@ onMounted(async () => {
 
           <h2 class="text-xl font-bold text-gray-800">{{ authStore.user?.name }}</h2>
           <span
-            class="inline-block mt-1 px-3 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-full"
+            class="inline-block mt-1 px-3 py-1 bg-blue-50 text-blue-700 text-base font-semibold rounded-full"
           >
             {{ roleName }}
           </span>

@@ -3,7 +3,7 @@
   <div class="flex gap-3 group">
     <!-- Avatar -->
     <div
-      class="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden flex items-center justify-center text-xs font-bold text-white"
+      class="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden flex items-center justify-center text-base font-bold text-white"
       :class="
         comment.user?.avatar_url
           ? 'bg-slate-200'
@@ -25,7 +25,7 @@
     <div class="flex-1 min-w-0">
       <!-- Header -->
       <div class="flex items-center gap-2 mb-0.5">
-        <span class="text-xs font-semibold text-slate-700">{{ comment.user?.name }}</span>
+        <span class="text-base font-semibold text-slate-700">{{ comment.user?.name }}</span>
         <span class="text-[10px] text-slate-400">{{ formatTime(comment.created_at) }}</span>
         <div class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
           <button
@@ -67,7 +67,7 @@
           <label
             v-for="att in comment.attachments"
             :key="att.id"
-            class="flex items-center gap-2 p-1.5 bg-slate-50 rounded text-xs cursor-pointer"
+            class="flex items-center gap-2 p-1.5 bg-slate-50 rounded text-base cursor-pointer"
           >
             <input
               type="checkbox"
@@ -100,13 +100,13 @@
         <div class="flex gap-2">
           <button
             @click="$emit('save-edit')"
-            class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-semibold"
+            class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-base font-semibold"
           >
             Lưu
           </button>
           <button
             @click="$emit('cancel-edit')"
-            class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs text-slate-500"
+            class="px-3 py-1.5 border border-slate-200 rounded-lg text-base text-slate-500"
           >
             Hủy
           </button>

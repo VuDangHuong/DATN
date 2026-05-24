@@ -7,7 +7,7 @@
       class="bg-white rounded-xl border border-slate-200 p-4 text-center"
     >
       <p class="text-2xl font-bold" :class="item.color">{{ stats[key] || 0 }}</p>
-      <p class="text-xs text-slate-500 mt-1">{{ item.label }}</p>
+      <p class="text-base text-slate-500 mt-1">{{ item.label }}</p>
     </div>
   </div>
 </template>

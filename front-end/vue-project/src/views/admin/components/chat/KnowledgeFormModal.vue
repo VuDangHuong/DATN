@@ -105,7 +105,7 @@
         <div class="flex flex-col gap-1.5">
           <label class="text-[13px] font-semibold text-gray-700">
             Tags
-            <span class="font-normal text-slate-400 text-xs ml-1">(cách nhau bằng dấu phẩy)</span>
+            <span class="font-normal text-slate-400 text-base ml-1">(cách nhau bằng dấu phẩy)</span>
           </label>
           <input
             v-model="localForm.tags"

@@ -175,7 +175,7 @@
 
             <div class="flex-1 min-w-0">
               <p class="text-sm font-semibold text-stone-800 truncate">{{ lecturer.name }}</p>
-              <p class="text-xs text-stone-400 truncate">{{ lecturer.email }}</p>
+              <p class="text-base text-stone-400 truncate">{{ lecturer.email }}</p>
             </div>
 
             <svg

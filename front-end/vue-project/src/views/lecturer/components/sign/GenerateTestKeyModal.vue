@@ -29,14 +29,14 @@
         <!-- Form trước khi generate -->
         <div v-if="!generated">
           <div
-            class="p-3 bg-amber-50 border border-amber-200 rounded-xl mb-4 text-xs text-amber-800"
+            class="p-3 bg-amber-50 border border-amber-200 rounded-xl mb-4 text-base text-amber-800"
           >
             ⚠️ Chữ ký test self-signed chỉ dùng cho mục đích demo, không có giá trị pháp lý.
           </div>
 
           <div class="space-y-3 mb-4">
             <div>
-              <label class="block text-xs font-medium text-stone-600 mb-1">Họ tên (CN)</label>
+              <label class="block text-base font-medium text-stone-600 mb-1">Họ tên (CN)</label>
               <input
                 v-model="form.cn"
                 type="text"
@@ -44,7 +44,7 @@
               />
             </div>
             <div>
-              <label class="block text-xs font-medium text-stone-600 mb-1">Tổ chức (O)</label>
+              <label class="block text-base font-medium text-stone-600 mb-1">Tổ chức (O)</label>
               <input
                 v-model="form.o"
                 type="text"
@@ -52,7 +52,7 @@
               />
             </div>
             <div>
-              <label class="block text-xs font-medium text-stone-600 mb-1"
+              <label class="block text-base font-medium text-stone-600 mb-1"
                 >Có hiệu lực (ngày)</label
               >
               <input
@@ -97,7 +97,7 @@
               </div>
               <button
                 @click="downloadFile(generated.certificate, 'test_certificate.crt')"
-                class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700"
+                class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-base font-medium hover:bg-blue-700"
               >
                 Tải về
               </button>
@@ -112,14 +112,14 @@
               </div>
               <button
                 @click="downloadFile(generated.private_key, 'test_private.key')"
-                class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700"
+                class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-base font-medium hover:bg-blue-700"
               >
                 Tải về
               </button>
             </div>
           </div>
 
-          <div class="p-3 bg-stone-50 rounded-xl text-xs text-stone-600 mb-4">
+          <div class="p-3 bg-stone-50 rounded-xl text-base text-stone-600 mb-4">
             <p class="font-semibold mb-1">Thông tin chữ ký:</p>
             <p>
               Serial: <span class="font-mono">{{ generated.serial?.substring(0, 30) }}...</span>

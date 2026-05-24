@@ -13,12 +13,12 @@
         <div class="hidden md:flex items-center gap-4">
           <div class="text-center">
             <p class="text-2xl font-bold">{{ stats.new_users_today }}</p>
-            <p class="text-xs text-rose-100">User mới hôm nay</p>
+            <p class="text-base text-rose-100">User mới hôm nay</p>
           </div>
           <div class="w-px h-10 bg-white/30" />
           <div class="text-center">
             <p class="text-2xl font-bold">{{ stats.sign_requests_today }}</p>
-            <p class="text-xs text-rose-100">Yêu cầu ký hôm nay</p>
+            <p class="text-base text-rose-100">Yêu cầu ký hôm nay</p>
           </div>
         </div>
       </div>
@@ -33,7 +33,7 @@
       <!-- ─── Section: Users ─── -->
       <div>
         <h3
-          class="flex items-center gap-1.5 text-xs font-bold text-stone-500 uppercase tracking-wider mb-3"
+          class="flex items-center gap-1.5 text-base font-bold text-stone-500 uppercase tracking-wider mb-3"
         >
           <SvgICon name="users" class="w-4 h-4 text-gray-600" /> Người dùng
         </h3>
@@ -60,7 +60,7 @@
       <!-- ─── Section: Academic ─── -->
       <div>
         <h3
-          class="flex items-center gap-1.5 text-xs font-bold text-stone-500 uppercase tracking-wider mb-3"
+          class="flex items-center gap-1.5 text-base font-bold text-stone-500 uppercase tracking-wider mb-3"
         >
           <SvgICon name="graduation-cap" class="w-4 h-4 text-gray-600" /> Học vụ
         </h3>
@@ -99,7 +99,7 @@
       <!-- ─── Section: Activity ─── -->
       <div>
         <h3
-          class="flex items-center gap-1.5 text-xs font-bold text-stone-500 uppercase tracking-wider mb-3"
+          class="flex items-center gap-1.5 text-base font-bold text-stone-500 uppercase tracking-wider mb-3"
         >
           <SvgICon name="chart-bar" class="w-5 h-5 text-pink-600" />Hoạt động hệ thống
         </h3>
@@ -233,7 +233,7 @@
                 <p class="text-[10px] text-stone-400">5 người mới đăng ký</p>
               </div>
             </div>
-            <router-link to="/admin/users" class="text-xs text-rose-600 hover:underline">
+            <router-link to="/admin/users" class="text-base text-rose-600 hover:underline">
               Xem tất cả →
             </router-link>
           </div>
@@ -243,14 +243,14 @@
             </div>
             <div v-for="u in recentUsers" :key="u.id" class="px-5 py-3 flex items-center gap-3">
               <div
-                class="w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center text-xs font-bold text-stone-600 overflow-hidden flex-shrink-0"
+                class="w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center text-base font-bold text-stone-600 overflow-hidden flex-shrink-0"
               >
                 <img v-if="u.avatar_url" :src="u.avatar_url" class="w-full h-full object-cover" />
                 <span v-else>{{ u.name?.charAt(0) }}</span>
               </div>
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-semibold text-stone-800 truncate">{{ u.name }}</p>
-                <p class="text-xs text-stone-500 truncate">
+                <p class="text-base text-stone-500 truncate">
                   <span
                     class="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase mr-1"
                     :class="roleBadge(u.role)"
@@ -281,7 +281,7 @@
                 <p class="text-[10px] text-stone-400">5 lớp mới tạo</p>
               </div>
             </div>
-            <router-link to="/admin/classes" class="text-xs text-rose-600 hover:underline">
+            <router-link to="/admin/classes" class="text-base text-rose-600 hover:underline">
               Xem tất cả →
             </router-link>
           </div>
@@ -301,7 +301,7 @@
                   {{ c.is_active ? 'Active' : 'Inactive' }}
                 </span>
               </div>
-              <p class="text-xs text-stone-500 truncate mt-0.5">{{ c.name }}</p>
+              <p class="text-base text-stone-500 truncate mt-0.5">{{ c.name }}</p>
               <p class="text-[10px] text-stone-400 mt-1">
                 GV: {{ c.lecturer?.name || 'Chưa gán' }} · {{ formatRelative(c.created_at) }}
               </p>
@@ -348,7 +348,7 @@
                 {{ idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}` }}
               </span>
               <div
-                class="w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center text-xs font-bold text-stone-600 overflow-hidden flex-shrink-0"
+                class="w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center text-base font-bold text-stone-600 overflow-hidden flex-shrink-0"
               >
                 <img v-if="l.avatar_url" :src="l.avatar_url" class="w-full h-full object-cover" />
                 <span v-else>{{ l.name?.charAt(0) }}</span>
@@ -397,7 +397,7 @@
                 <p class="text-sm font-medium text-stone-700 group-hover:text-rose-600 transition">
                   {{ a.title }}
                 </p>
-                <p class="text-xs text-stone-500 truncate">{{ a.subtitle }}</p>
+                <p class="text-base text-stone-500 truncate">{{ a.subtitle }}</p>
               </div>
               <span class="text-[10px] text-stone-400 flex-shrink-0 whitespace-nowrap">
                 {{ formatRelative(a.time) }}

@@ -36,7 +36,7 @@
     >
       <span class="text-base flex-shrink-0">{{ fileIcon(att.mime_type) }}</span>
       <a :href="att.file_url" target="_blank" rel="noopener" class="flex-1 min-w-0">
-        <p class="text-xs font-medium text-indigo-700 truncate hover:underline">
+        <p class="text-base font-medium text-indigo-700 truncate hover:underline">
           {{ att.file_name }}
         </p>
         <p class="text-[10px] text-slate-400">{{ att.file_size_human }}</p>

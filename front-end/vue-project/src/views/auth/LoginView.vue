@@ -226,7 +226,7 @@ const handleLogin = async () => {
         </div>
       </form>
 
-      <div class="mt-6 text-center text-xs text-gray-400">
+      <div class="mt-6 text-center text-base text-gray-400">
         &copy; 2024 Trường Đại học Thủy Lợi. <br />Hệ thống quản lý đào tạo.
       </div>
     </div>

@@ -105,14 +105,14 @@
               Phân loại tài liệu
             </p>
             <div>
-              <label class="block text-xs font-medium text-slate-500 mb-1">
+              <label class="block text-base font-medium text-slate-500 mb-1">
                 Loại tài liệu
                 <span class="text-slate-400">(để trống nếu không cần ký số)</span>
               </label>
 
               <div
                 v-if="!store.documentCategories?.length"
-                class="flex items-center gap-2 text-xs text-slate-400 py-2"
+                class="flex items-center gap-2 text-base text-slate-400 py-2"
               >
                 <div
                   class="w-3.5 h-3.5 border-2 border-slate-300 border-t-slate-500 rounded-full animate-spin"
@@ -129,7 +129,7 @@
 
               <div
                 v-if="form.document_category"
-                class="mt-2 flex items-center gap-2 text-xs text-violet-600 bg-violet-50 px-3 py-2 rounded-lg"
+                class="mt-2 flex items-center gap-2 text-base text-violet-600 bg-violet-50 px-3 py-2 rounded-lg"
               >
                 <svg
                   class="w-3.5 h-3.5 flex-shrink-0"

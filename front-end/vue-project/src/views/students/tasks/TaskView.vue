@@ -112,6 +112,8 @@ import TaskFormModal from '../components/task/TaskFormModal.vue'
 import TaskDetailModal from '../components/task/TaskDetailModal.vue'
 import BulkCreateTaskModal from '../components/task/BulkCreateTaskModal.vue'
 import SvgIcon from '@/components/icons/SVG.vue'
+import { useToastStore } from '@/stores/toast'
+const toast = useToastStore()
 const route = useRoute()
 const dashboardStore = useDashboardStore()
 const taskStore = useTaskStore()
@@ -206,8 +208,18 @@ async function handleChangeStatus(taskId, status) {
 }
 
 async function handleDeleteTask(taskId) {
-  if (!confirm('Xóa công việc này?')) return
-  await taskStore.deleteTask(taskId, groupId.value)
+  if (!taskId) return
+
+  try {
+    const res = await taskStore.deleteTask(taskId, groupId.value)
+    if (res?.success === false) {
+      toast.error(res.message || 'Không thể xóa task')
+    } else {
+      toast.success('Đã xóa task')
+    }
+  } catch (e) {
+    toast.error(e.response?.data?.message || 'Lỗi khi xóa task')
+  }
 }
 
 async function handleTaskMoved({ taskId, newStatus }) {

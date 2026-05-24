@@ -10,7 +10,7 @@
       >
         <span class="text-lg">{{ isImage(file) ? '🖼️' : '📕' }}</span>
         <div class="flex-1 min-w-0">
-          <p class="text-xs font-medium text-slate-700 truncate">{{ file.name }}</p>
+          <p class="text-base font-medium text-slate-700 truncate">{{ file.name }}</p>
           <p class="text-[10px] text-slate-400">{{ formatBytes(file.size) }}</p>
         </div>
         <button @click="removeFile(idx)" class="text-slate-400 hover:text-red-500">
@@ -31,7 +31,7 @@
       <span
         v-for="m in selectedMentions"
         :key="m.id"
-        class="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-xs"
+        class="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-base"
       >
         @{{ m.name }}
         <button @click="removeMention(m.id)" class="hover:text-indigo-900">
@@ -51,7 +51,7 @@
       <div
         class="absolute bottom-full left-0 mb-1 w-72 max-h-60 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-lg z-10"
       >
-        <div v-if="!filteredMembers.length" class="p-3 text-center text-xs text-slate-400">
+        <div v-if="!filteredMembers.length" class="p-3 text-center text-base text-slate-400">
           Không tìm thấy thành viên
         </div>
         <button
@@ -62,7 +62,7 @@
           :class="idx === activeIndex ? 'bg-indigo-50' : ''"
         >
           <div
-            class="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-700 overflow-hidden flex-shrink-0"
+            class="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center text-base font-bold text-indigo-700 overflow-hidden flex-shrink-0"
           >
             <img
               v-if="member.avatar_url"

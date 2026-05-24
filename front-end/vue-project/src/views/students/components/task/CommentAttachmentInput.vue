@@ -29,7 +29,7 @@
         </svg>
       </div>
       <div class="flex-1 min-w-0">
-        <p class="text-xs font-medium text-slate-700 truncate">{{ file.name }}</p>
+        <p class="text-base font-medium text-slate-700 truncate">{{ file.name }}</p>
         <p class="text-[10px] text-slate-400">{{ formatBytes(file.size) }}</p>
       </div>
       <button
@@ -53,7 +53,7 @@
   <button
     type="button"
     @click="$refs.fileInput.click()"
-    class="flex items-center gap-1 px-2.5 py-1.5 text-xs text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
+    class="flex items-center gap-1 px-2.5 py-1.5 text-base text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
   >
     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path

@@ -27,7 +27,7 @@
           </div>
           <div>
             <h3 class="text-base font-bold text-slate-900">Nhập tài liệu</h3>
-            <p class="text-xs text-slate-400 mt-0.5">Hỗ trợ PDF, DOCX, TXT, CSV,XLSX, JSON</p>
+            <p class="text-base text-slate-400 mt-0.5">Hỗ trợ PDF, DOCX, TXT, CSV,XLSX, JSON</p>
           </div>
         </div>
         <button
@@ -152,7 +152,7 @@
               :style="{ width: progress + '%' }"
             ></div>
           </div>
-          <span class="block text-center text-xs text-slate-400 mt-1.5"
+          <span class="block text-center text-base text-slate-400 mt-1.5"
             >Đang xử lý... {{ progress }}%</span
           >
         </div>

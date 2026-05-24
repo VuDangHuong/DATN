@@ -73,7 +73,7 @@
               <p class="text-sm font-medium text-stone-800 truncate">
                 {{ form.certificate_file.name }}
               </p>
-              <p class="text-xs text-stone-400">{{ formatBytes(form.certificate_file.size) }}</p>
+              <p class="text-base text-stone-400">{{ formatBytes(form.certificate_file.size) }}</p>
             </div>
             <button
               type="button"
@@ -91,7 +91,7 @@
             </button>
           </div>
         </div>
-        <p v-if="errors.certificate_file" class="text-xs text-red-500 mt-1">
+        <p v-if="errors.certificate_file" class="text-base text-red-500 mt-1">
           {{ errors.certificate_file[0] }}
         </p>
       </div>
@@ -108,7 +108,7 @@
           </svg>
           <span class="text-sm font-semibold text-blue-800">Thông tin chứng thư</span>
         </div>
-        <div class="grid grid-cols-2 gap-2 text-xs">
+        <div class="grid grid-cols-2 gap-2 text-base">
           <div>
             <span class="text-stone-500">Chủ sở hữu:</span>
             <span class="font-medium text-stone-800">{{ certPreview.subject_cn }}</span>
@@ -141,7 +141,7 @@
             </span>
           </div>
         </div>
-        <div v-if="certPreview.is_expired" class="mt-2 text-xs text-red-700 font-medium">
+        <div v-if="certPreview.is_expired" class="mt-2 text-base text-red-700 font-medium">
           ⚠️ Chứng thư đã hết hạn — không thể đăng ký
         </div>
       </div>
@@ -204,7 +204,7 @@
               <p class="text-sm font-medium text-stone-800 truncate">
                 {{ form.private_key_file.name }}
               </p>
-              <p class="text-xs text-stone-400">
+              <p class="text-base text-stone-400">
                 {{ formatBytes(form.private_key_file.size) }} · 🔐 Sẽ được mã hóa
               </p>
             </div>
@@ -239,7 +239,7 @@
             clip-rule="evenodd"
           />
         </svg>
-        <p class="text-xs text-amber-800">
+        <p class="text-base text-amber-800">
           Private key được mã hóa bằng AES-256 với mật khẩu ký số của bạn và chỉ được giải mã
           runtime khi ký tài liệu.
         </p>
@@ -256,7 +256,7 @@
           placeholder="Tối thiểu 8 ký tự"
           class="w-full px-4 py-2.5 border border-stone-200 rounded-xl text-sm focus:ring-2 focus:ring-teal-500 outline-none"
         />
-        <p v-if="errors.signing_password" class="text-xs text-red-500 mt-1">
+        <p v-if="errors.signing_password" class="text-base text-red-500 mt-1">
           {{ errors.signing_password[0] }}
         </p>
 
@@ -269,7 +269,7 @@
           placeholder="Nhập lại mật khẩu ký số"
           class="w-full px-4 py-2.5 border border-stone-200 rounded-xl text-sm focus:ring-2 focus:ring-teal-500 outline-none"
         />
-        <p class="text-xs text-stone-400 mt-1">
+        <p class="text-base text-stone-400 mt-1">
           Mật khẩu này riêng với mật khẩu đăng nhập. Mỗi lần ký tài liệu bạn sẽ nhập mật khẩu này.
         </p>
       </div>
@@ -286,7 +286,7 @@
           class="w-full px-4 py-2.5 border border-stone-200 rounded-xl text-sm focus:ring-2 focus:ring-teal-500 outline-none"
           :class="errors.account_password ? 'border-red-300' : ''"
         />
-        <p v-if="errors.account_password" class="text-xs text-red-500 mt-1">
+        <p v-if="errors.account_password" class="text-base text-red-500 mt-1">
           {{ errors.account_password[0] }}
         </p>
       </div>

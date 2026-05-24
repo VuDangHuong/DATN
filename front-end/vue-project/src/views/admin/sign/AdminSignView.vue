@@ -12,19 +12,19 @@
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
       <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
         <p class="text-2xl font-bold text-gray-700">{{ store.stats.total ?? 0 }}</p>
-        <p class="text-xs text-gray-400 mt-1">Tổng yêu cầu</p>
+        <p class="text-base text-gray-400 mt-1">Tổng yêu cầu</p>
       </div>
       <div class="bg-white rounded-xl border border-amber-200 p-4 text-center">
         <p class="text-2xl font-bold text-amber-500">{{ store.stats.pending ?? 0 }}</p>
-        <p class="text-xs text-gray-400 mt-1">Chờ xử lý</p>
+        <p class="text-base text-gray-400 mt-1">Chờ xử lý</p>
       </div>
       <div class="bg-white rounded-xl border border-blue-200 p-4 text-center">
         <p class="text-2xl font-bold text-blue-500">{{ store.stats.forwarded ?? 0 }}</p>
-        <p class="text-xs text-gray-400 mt-1">Đã chuyển GV</p>
+        <p class="text-base text-gray-400 mt-1">Đã chuyển GV</p>
       </div>
       <div class="bg-white rounded-xl border border-emerald-200 p-4 text-center">
         <p class="text-2xl font-bold text-emerald-600">{{ store.stats.completed ?? 0 }}</p>
-        <p class="text-xs text-gray-400 mt-1">Hoàn thành</p>
+        <p class="text-base text-gray-400 mt-1">Hoàn thành</p>
       </div>
     </div>
 
@@ -37,7 +37,7 @@
           v-for="f in statusFilters"
           :key="f.value"
           @click="store.setStatusFilter(f.value)"
-          class="px-3 py-1.5 rounded-md text-xs font-medium transition"
+          class="px-3 py-1.5 rounded-md text-base font-medium transition"
           :class="
             store.filterStatus === f.value
               ? 'bg-white text-gray-800 shadow-sm'
@@ -51,7 +51,7 @@
       <select
         v-model="store.filterCategory"
         @change="store.loadRequests()"
-        class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs text-gray-600 focus:ring-2 focus:ring-blue-500 outline-none"
+        class="px-3 py-1.5 border border-gray-200 rounded-lg text-base text-gray-600 focus:ring-2 focus:ring-blue-500 outline-none"
       >
         <option value="">Tất cả loại tài liệu</option>
         <option v-for="cat in store.documentCategories" :key="cat.value" :value="cat.value">
@@ -97,7 +97,7 @@
         />
       </svg>
       <p class="text-gray-400 font-medium">Không có yêu cầu nào</p>
-      <p v-if="store.filterCategory || store.filterStatus" class="text-xs text-gray-400 mt-1">
+      <p v-if="store.filterCategory || store.filterStatus" class="text-base text-gray-400 mt-1">
         <button @click="store.resetFilter()" class="text-blue-500 hover:underline">
           Xóa bộ lọc
         </button>
@@ -124,31 +124,33 @@
             <td class="px-5 py-4">
               <div class="flex items-center gap-2">
                 <div
-                  class="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-700"
+                  class="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-base font-bold text-blue-700"
                 >
                   {{ req.requester?.name?.charAt(0) }}
                 </div>
                 <div>
                   <p class="font-medium text-gray-900 text-sm">{{ req.requester?.name }}</p>
-                  <p class="text-xs text-gray-400 font-mono">{{ req.requester?.code }}</p>
+                  <p class="text-base text-gray-400 font-mono">{{ req.requester?.code }}</p>
                 </div>
               </div>
             </td>
             <!-- Loại tài liệu -->
             <td class="px-5 py-4">
-              <span class="px-2 py-0.5 bg-violet-50 text-violet-700 text-xs font-medium rounded-lg">
+              <span
+                class="px-2 py-0.5 bg-violet-50 text-violet-700 text-base font-medium rounded-lg"
+              >
                 {{ req.document_category_label ?? req.document_category ?? '—' }}
               </span>
             </td>
             <!-- Lớp -->
             <td class="px-5 py-4">
               <p class="text-sm text-gray-700">{{ req.class_model?.name ?? '—' }}</p>
-              <p class="text-xs text-gray-400 font-mono">{{ req.class_model?.code }}</p>
+              <p class="text-base text-gray-400 font-mono">{{ req.class_model?.code }}</p>
             </td>
             <!-- Trạng thái -->
             <td class="px-5 py-4">
               <span
-                class="px-2 py-0.5 text-xs font-bold rounded-full"
+                class="px-2 py-0.5 text-base font-bold rounded-full"
                 :class="statusBadgeClass(req.status)"
               >
                 {{ req.status }}
@@ -166,7 +168,7 @@
             </td>
             <!-- Ngày gửi -->
             <td class="px-5 py-4">
-              <p class="text-xs text-gray-500">{{ formatDate(req.created_at) }}</p>
+              <p class="text-base text-gray-500">{{ formatDate(req.created_at) }}</p>
             </td>
             <!-- Actions -->
             <td class="px-5 py-4 text-right">
@@ -175,7 +177,7 @@
                   v-if="['pending', 'admin_reviewing'].includes(req.status)"
                   @click="store.quickForward(req)"
                   :disabled="store.forwardingId === req.id"
-                  class="px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1 disabled:opacity-50"
+                  class="px-3 py-1.5 rounded-lg text-base font-medium transition flex items-center gap-1 disabled:opacity-50"
                   :class="
                     req.lecturer?.id
                       ? 'bg-violet-600 text-white hover:bg-violet-700'
@@ -200,7 +202,7 @@
                 </button>
                 <button
                   @click="openDetail(req)"
-                  class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 transition"
+                  class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-base font-medium hover:bg-blue-700 transition"
                 >
                   Xem & Xử lý
                 </button>
@@ -215,7 +217,7 @@
         v-if="store.pagination.last_page > 1"
         class="px-5 py-3 border-t border-gray-100 flex items-center justify-between"
       >
-        <p class="text-xs text-gray-500">
+        <p class="text-base text-gray-500">
           Trang {{ store.pagination.current_page }} / {{ store.pagination.last_page }} ·
           {{ store.pagination.total }} yêu cầu
         </p>
@@ -223,14 +225,14 @@
           <button
             @click="store.changePage(store.pagination.current_page - 1, store.pagination.last_page)"
             :disabled="store.pagination.current_page === 1"
-            class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs disabled:opacity-40 hover:bg-gray-50"
+            class="px-3 py-1.5 border border-gray-200 rounded-lg text-base disabled:opacity-40 hover:bg-gray-50"
           >
             ← Trước
           </button>
           <button
             @click="store.changePage(store.pagination.current_page + 1, store.pagination.last_page)"
             :disabled="store.pagination.current_page === store.pagination.last_page"
-            class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs disabled:opacity-40 hover:bg-gray-50"
+            class="px-3 py-1.5 border border-gray-200 rounded-lg text-base disabled:opacity-40 hover:bg-gray-50"
           >
             Sau →
           </button>

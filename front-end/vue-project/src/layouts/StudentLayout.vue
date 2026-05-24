@@ -148,7 +148,7 @@
 
             <div class="flex-1 min-w-0">
               <p class="text-sm font-semibold text-slate-800 truncate">{{ student.name }}</p>
-              <p class="text-xs text-slate-400 truncate">{{ student.code }}</p>
+              <p class="text-base text-slate-400 truncate">{{ student.code }}</p>
             </div>
 
             <svg

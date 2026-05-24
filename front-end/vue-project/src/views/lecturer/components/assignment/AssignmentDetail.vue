@@ -24,15 +24,15 @@
         <div class="flex gap-4 text-center">
           <div>
             <p class="text-2xl font-bold text-emerald-600">{{ store.stats.submitted || 0 }}</p>
-            <p class="text-xs text-slate-400">Đã nộp</p>
+            <p class="text-base text-slate-400">Đã nộp</p>
           </div>
           <div>
             <p class="text-2xl font-bold text-red-500">{{ store.stats.missing || 0 }}</p>
-            <p class="text-xs text-slate-400">Chưa nộp</p>
+            <p class="text-base text-slate-400">Chưa nộp</p>
           </div>
           <div>
             <p class="text-2xl font-bold text-amber-500">{{ store.stats.late || 0 }}</p>
-            <p class="text-xs text-slate-400">Trễ hạn</p>
+            <p class="text-base text-slate-400">Trễ hạn</p>
           </div>
         </div>
       </div>
@@ -81,7 +81,7 @@
             <p class="text-sm font-medium text-slate-800">
               {{ sub.group?.name || sub.student?.name }}
             </p>
-            <span v-if="sub.student?.code" class="text-xs text-slate-400 font-mono">{{
+            <span v-if="sub.student?.code" class="text-base text-slate-400 font-mono">{{
               sub.student.code
             }}</span>
             <span
@@ -90,14 +90,14 @@
               >Trễ</span
             >
           </div>
-          <p class="text-xs text-slate-400 mt-0.5">
+          <p class="text-base text-slate-400 mt-0.5">
             {{ sub.file_name }} · {{ formatDate(sub.submitted_at) }}
           </p>
         </div>
         <a
           :href="downloadUrl(sub.id)"
           target="_blank"
-          class="flex items-center gap-1.5 px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-medium text-slate-600 hover:bg-slate-50 transition"
+          class="flex items-center gap-1.5 px-3 py-1.5 border border-slate-300 rounded-lg text-base font-medium text-slate-600 hover:bg-slate-50 transition"
         >
           <SvgIcon name="download" class="w-4 h-4" />
           Tải về
@@ -125,9 +125,9 @@
         </div>
         <div>
           <p class="text-sm font-medium text-slate-700">{{ m.name }}</p>
-          <p v-if="m.code" class="text-xs text-slate-400 font-mono">{{ m.code }}</p>
+          <p v-if="m.code" class="text-base text-slate-400 font-mono">{{ m.code }}</p>
         </div>
-        <span class="ml-auto px-2 py-0.5 bg-red-50 text-red-600 text-xs font-medium rounded-full"
+        <span class="ml-auto px-2 py-0.5 bg-red-50 text-red-600 text-base font-medium rounded-full"
           >Chưa nộp</span
         >
       </div>

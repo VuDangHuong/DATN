@@ -38,7 +38,7 @@
           <!-- Action buttons (leader) -->
           <div class="flex items-center gap-2">
             <span
-              class="px-2.5 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 w-fit"
+              class="px-2.5 py-1 rounded-full text-base font-semibold flex items-center gap-1.5 w-fit"
               :class="
                 currentGroup.is_locked
                   ? 'bg-red-50 text-red-700 border border-red-200'
@@ -159,7 +159,7 @@
           <SvgIcon name="crown" class="w-5 h-5 text-amber-500" />
         </div>
         <div>
-          <p class="text-xs text-slate-400">Nhóm trưởng</p>
+          <p class="text-base text-slate-400">Nhóm trưởng</p>
           <p class="text-sm font-semibold text-slate-700">
             {{ currentGroup.leader?.name }} ({{ currentGroup.leader?.code }})
           </p>
@@ -205,7 +205,7 @@
 
                   <span
                     v-if="member.role === 'leader'"
-                    class="inline-flex items-center gap-1 ml-1 text-amber-500 text-xs font-semibold"
+                    class="inline-flex items-center gap-1 ml-1 text-amber-500 text-base font-semibold"
                   >
                     <span class="w-3.5 h-3.5 flex items-center justify-center">
                       <SvgIcon name="crown" />
@@ -213,7 +213,7 @@
                     <span>Trưởng nhóm</span>
                   </span>
                 </p>
-                <p class="text-xs text-slate-400">{{ member.code }}</p>
+                <p class="text-base text-slate-400">{{ member.code }}</p>
               </div>
             </div>
 
@@ -319,7 +319,7 @@
             <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
               <div>
                 <p class="text-sm font-medium text-slate-700">Khóa nhóm</p>
-                <p class="text-xs text-slate-400">Khi khóa, không thể thêm/xóa thành viên</p>
+                <p class="text-base text-slate-400">Khi khóa, không thể thêm/xóa thành viên</p>
               </div>
               <button
                 @click="editForm.is_locked = !editForm.is_locked"
@@ -405,7 +405,7 @@
               </div>
               <div class="text-left">
                 <p class="text-sm font-medium text-slate-700">{{ member.name }}</p>
-                <p class="text-xs text-slate-400">{{ member.code }}</p>
+                <p class="text-base text-slate-400">{{ member.code }}</p>
               </div>
               <div v-if="selectedTransferId === member.id" class="ml-auto text-indigo-600">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -433,6 +433,20 @@
         </div>
       </div>
     </Teleport>
+
+    <ConfirmModal
+      v-model="confirmState.show"
+      :title="confirmState.title"
+      :message="confirmState.message"
+      :item-name="confirmState.itemName"
+      :warning-text="confirmState.warningText"
+      :confirm-text="confirmState.confirmText"
+      :cancel-text="confirmState.cancelText"
+      :variant="confirmState.variant"
+      :loading="confirmState.loading"
+      @confirm="_handleConfirm"
+      @cancel="_handleCancel"
+    />
   </div>
 </template>
 
@@ -444,7 +458,16 @@ import { useGroupStore } from '@/stores/students/groupStore'
 import { useAuthStore } from '@/stores/auth' // ✅ Import thêm authStore để lấy user chuẩn reactive
 import { storeToRefs } from 'pinia'
 import SvgIcon from '@/components/icons/SVG.vue'
-
+import { useConfirm } from '@/composables/useConfirm'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
+const {
+  state: confirmState,
+  confirmDelete,
+  setLoading: setConfirmLoading,
+  close: closeConfirm,
+  _handleConfirm,
+  _handleCancel,
+} = useConfirm()
 const route = useRoute()
 const router = useRouter()
 const dashboardStore = useDashboardStore()
@@ -506,7 +529,50 @@ function handleClickOutside(e) {
     showDropdown.value = false
   }
 }
+async function handleRemoveMember(member) {
+  if (!member || !member.id) {
+    toast.error('Thành viên không hợp lệ')
+    return
+  }
 
+  if (!currentGroup.value?.id) {
+    toast.error('Nhóm không tồn tại')
+    return
+  }
+
+  // ✅ Đổi variant theo role - leader thì warning (vàng), member thì danger (đỏ)
+  const isLeader = member.pivot?.role === 'leader' || member.role === 'leader'
+
+  const ok = await confirmDelete(member.name, {
+    title: 'Xóa thành viên khỏi nhóm',
+    message: 'Sinh viên này sẽ bị xóa khỏi nhóm và có thể tham gia nhóm khác trong cùng lớp.',
+    warningText: isLeader
+      ? '⚠️ Đây là TRƯỞNG NHÓM! Hãy chuyển quyền cho thành viên khác trước.'
+      : member.code
+        ? `Mã SV: ${member.code}`
+        : '',
+    confirmText: 'Xóa khỏi nhóm',
+    variant: isLeader ? 'warning' : 'danger',
+  })
+
+  if (!ok) return
+
+  setConfirmLoading(true)
+  try {
+    const res = await groupStore.removeMember(currentGroup.value.id, member.id)
+
+    // Nếu store trả về { success, message }
+    if (res?.success === false) {
+      toast.error(res.message || 'Không thể xóa thành viên')
+    } else {
+      toast.success(`Đã xóa ${member.name} khỏi nhóm`)
+    }
+  } catch (e) {
+    toast.error(e.response?.data?.message || 'Lỗi khi xóa thành viên')
+  } finally {
+    closeConfirm()
+  }
+}
 // ── Handlers ─────────────────────────────────
 async function handleCreateGroup() {
   if (!selectedClassId.value) return
@@ -575,11 +641,11 @@ async function handleAddMember() {
   }
 }
 
-async function handleRemoveMember(member) {
-  if (!confirm(`Xóa ${member.name} khỏi nhóm?`)) return
-  // ✅ SỬA LỖI: Thêm .value cho currentGroup
-  await groupStore.removeMember(currentGroup.value.id, member.id)
-}
+// async function handleRemoveMember(member) {
+//   if (!confirm(`Xóa ${member.name} khỏi nhóm?`)) return
+//   // ✅ SỬA LỖI: Thêm .value cho currentGroup
+//   await groupStore.removeMember(currentGroup.value.id, member.id)
+// }
 
 async function handleTransferLeader() {
   modalError.value = ''

@@ -82,7 +82,7 @@
         </div>
         <div class="flex-1">
           <div class="text-xl font-bold text-slate-900">{{ stat.value }}</div>
-          <div class="text-xs text-slate-500 mt-0.5">{{ stat.label }}</div>
+          <div class="text-base text-slate-500 mt-0.5">{{ stat.label }}</div>
         </div>
       </div>
     </div>
@@ -113,7 +113,7 @@
               :style="{ background: cat.color }"
             ></span>
             <span class="flex-1">{{ cat.name }}</span>
-            <span class="text-xs text-slate-400 font-medium">{{ cat.count }}</span>
+            <span class="text-base text-slate-400 font-medium">{{ cat.count }}</span>
           </li>
         </ul>
       </div>
@@ -290,11 +290,11 @@
                 </td>
                 <td class="px-4 py-3.5 align-middle">
                   <div class="text-[13.5px] font-semibold text-slate-800">{{ item.title }}</div>
-                  <div class="text-xs text-slate-400 mt-0.5">{{ item.description }}</div>
+                  <div class="text-base text-slate-400 mt-0.5">{{ item.description }}</div>
                 </td>
                 <td class="px-4 py-3.5 align-middle">
                   <span
-                    class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium"
+                    class="inline-block px-2.5 py-0.5 rounded-full text-base font-medium"
                     :style="{
                       background: getCategoryColor(item.category) + '22',
                       color: getCategoryColor(item.category),
@@ -359,17 +359,17 @@
           >
             <div class="px-4 pt-4 pb-3">
               <div class="text-[13.5px] font-semibold text-slate-800">{{ item.title }}</div>
-              <div class="text-xs text-slate-400 mt-0.5">{{ item.description }}</div>
+              <div class="text-base text-slate-400 mt-0.5">{{ item.description }}</div>
               <div class="flex items-center justify-between mt-2.5">
                 <span
-                  class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium"
+                  class="inline-block px-2.5 py-0.5 rounded-full text-base font-medium"
                   :style="{
                     background: getCategoryColor(item.category) + '22',
                     color: getCategoryColor(item.category),
                   }"
                   >{{ item.category }}</span
                 >
-                <span class="text-slate-400 text-xs">{{ item.updatedAt }}</span>
+                <span class="text-slate-400 text-base">{{ item.updatedAt }}</span>
               </div>
             </div>
             <div class="flex gap-1.5 px-4 py-2.5 border-t border-slate-100 bg-slate-50/60">
@@ -479,7 +479,7 @@
             <div>
               <h3 class="text-[17px] font-bold text-slate-900">{{ viewingItem.title }}</h3>
               <span
-                class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium mt-0.5"
+                class="inline-block px-2.5 py-0.5 rounded-full text-base font-medium mt-0.5"
                 :style="{
                   background: getCategoryColor(viewingItem.category) + '22',
                   color: getCategoryColor(viewingItem.category),
@@ -497,7 +497,7 @@
         </div>
         <div class="px-6 py-5 space-y-4">
           <div class="flex items-center gap-2">
-            <span class="text-xs text-slate-400">Cập nhật</span>
+            <span class="text-base text-slate-400">Cập nhật</span>
             <span class="text-[13px] text-slate-700">{{ viewingItem.updatedAt }}</span>
           </div>
           <div>
@@ -514,7 +514,7 @@
               <span
                 v-for="tag in viewingItem.tags.split(',')"
                 :key="tag"
-                class="bg-indigo-50 text-indigo-600 px-2.5 py-0.5 rounded-full text-xs font-medium"
+                class="bg-indigo-50 text-indigo-600 px-2.5 py-0.5 rounded-full text-base font-medium"
                 >{{ tag.trim() }}</span
               >
             </div>

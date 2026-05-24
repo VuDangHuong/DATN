@@ -19,8 +19,8 @@
       </div>
       <div class="flex-1 min-w-0">
         <h4 class="text-sm font-bold text-amber-900">Yêu cầu vô hiệu hóa đang chờ duyệt</h4>
-        <p class="text-xs text-amber-800 mt-1"><strong>Lý do:</strong> {{ request.reason }}</p>
-        <p class="text-xs text-amber-700 mt-2">
+        <p class="text-base text-amber-800 mt-1"><strong>Lý do:</strong> {{ request.reason }}</p>
+        <p class="text-base text-amber-700 mt-2">
           ⚠️ Bạn không thể ký tài liệu trong thời gian chờ duyệt. Gửi lúc
           {{ formatDate(request.created_at) }}.
         </p>

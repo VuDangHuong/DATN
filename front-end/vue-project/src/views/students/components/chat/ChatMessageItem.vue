@@ -3,7 +3,7 @@
   <div class="flex gap-3 group" :class="isMine ? 'flex-row-reverse' : ''">
     <!-- Avatar -->
     <div
-      class="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden flex items-center justify-center text-xs font-bold text-white"
+      class="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden flex items-center justify-center text-base font-bold text-white"
       :class="
         message.user?.avatar_url
           ? 'bg-slate-200'
@@ -26,7 +26,7 @@
     <div class="max-w-[75%] min-w-0" :class="isMine ? 'items-end' : 'items-start'">
       <!-- Name + time -->
       <div class="flex items-center gap-2 mb-0.5" :class="isMine ? 'flex-row-reverse' : ''">
-        <span class="text-xs font-semibold text-slate-700">{{ message.user?.name }}</span>
+        <span class="text-base font-semibold text-slate-700">{{ message.user?.name }}</span>
         <span class="text-[10px] text-slate-400">{{ formatTime(message.created_at) }}</span>
         <button
           v-if="canDelete"
@@ -111,7 +111,7 @@
             <span class="text-lg">📕</span>
             <div class="flex-1 min-w-0">
               <p
-                class="text-xs font-medium truncate"
+                class="text-base font-medium truncate"
                 :class="isMine ? 'text-white' : 'text-slate-700'"
               >
                 {{ att.file_name }}

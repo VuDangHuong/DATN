@@ -123,7 +123,7 @@ const handleDelete = async (subject) => {
   <div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-gray-50 p-4 rounded-lg">
       <div>
-        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Lọc Khoa</label>
+        <label class="block text-base font-bold text-gray-500 uppercase mb-1">Lọc Khoa</label>
         <select v-model="filterFaculty" class="w-full border rounded p-2 text-sm">
           <option value="">-- Chọn Khoa --</option>
           <option v-for="f in store.faculties" :key="f.id" :value="f.id">{{ f.name }}</option>
@@ -131,7 +131,7 @@ const handleDelete = async (subject) => {
       </div>
 
       <div>
-        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Lọc Ngành</label>
+        <label class="block text-base font-bold text-gray-500 uppercase mb-1">Lọc Ngành</label>
         <select
           v-model="filterMajor"
           class="w-full border rounded p-2 text-sm"
@@ -175,7 +175,7 @@ const handleDelete = async (subject) => {
             <td class="p-3 font-mono text-blue-600 font-bold">{{ s.code }}</td>
             <td class="p-3 font-medium">{{ s.name }}</td>
             <td class="p-3 text-center">
-              <span class="bg-gray-100 text-gray-800 text-xs font-bold px-2 py-1 rounded">{{
+              <span class="bg-gray-100 text-gray-800 text-base font-bold px-2 py-1 rounded">{{
                 s.credits
               }}</span>
             </td>

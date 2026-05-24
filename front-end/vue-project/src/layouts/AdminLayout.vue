@@ -106,7 +106,7 @@ onUnmounted(() => {
 
               <div class="text-left hidden md:block">
                 <p class="text-sm font-semibold text-gray-700 leading-none">Admin</p>
-                <p class="text-xs text-gray-500 mt-1">Quản trị viên</p>
+                <p class="text-base text-gray-500 mt-1">Quản trị viên</p>
               </div>
 
               <SvgIcon

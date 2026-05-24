@@ -13,7 +13,7 @@
               <div>
                 <span
                   :class="priorityClass(task.priority)"
-                  class="px-2 py-0.5 rounded-full text-xs font-bold uppercase"
+                  class="px-2 py-0.5 rounded-full text-base font-bold uppercase"
                   >{{ priorityText(task.priority) }}</span
                 >
                 <h3 class="text-lg font-bold text-slate-800 mt-2">{{ task.title }}</h3>
@@ -44,23 +44,23 @@
             <!-- Info grid -->
             <div class="grid grid-cols-2 gap-3 text-sm">
               <div class="p-3 bg-slate-50 rounded-xl">
-                <p class="text-slate-400 text-xs mb-1">Trạng thái</p>
+                <p class="text-slate-400 text-base mb-1">Trạng thái</p>
                 <span
                   :class="statusClass(task.status)"
-                  class="px-2 py-0.5 rounded-full text-xs font-bold"
+                  class="px-2 py-0.5 rounded-full text-base font-bold"
                   >{{ statusLabel(task.status) }}</span
                 >
               </div>
               <div class="p-3 bg-slate-50 rounded-xl">
-                <p class="text-slate-400 text-xs mb-1">Giao cho</p>
+                <p class="text-slate-400 text-base mb-1">Giao cho</p>
                 <p class="font-medium text-slate-700">{{ task.assignee?.name || 'Chưa giao' }}</p>
               </div>
               <div class="p-3 bg-slate-50 rounded-xl">
-                <p class="text-slate-400 text-xs mb-1">Người tạo</p>
+                <p class="text-slate-400 text-base mb-1">Người tạo</p>
                 <p class="font-medium text-slate-700">{{ task.creator?.name }}</p>
               </div>
               <div class="p-3 bg-slate-50 rounded-xl">
-                <p class="text-slate-400 text-xs mb-1">Deadline</p>
+                <p class="text-slate-400 text-base mb-1">Deadline</p>
                 <p class="font-medium" :class="task.is_overdue ? 'text-red-600' : 'text-slate-700'">
                   {{ formatDate(task.deadline) }}
                 </p>
@@ -189,7 +189,7 @@
                 <div
                   v-for="a in task.activities"
                   :key="a.id"
-                  class="flex items-start gap-2 text-xs"
+                  class="flex items-start gap-2 text-base"
                 >
                   <div class="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 flex-shrink-0" />
                   <div>

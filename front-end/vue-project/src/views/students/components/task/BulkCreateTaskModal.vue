@@ -13,7 +13,7 @@
         >
           <div>
             <h3 class="text-lg font-bold text-slate-800">Tạo nhiều công việc</h3>
-            <p class="text-xs text-slate-400 mt-0.5">
+            <p class="text-base text-slate-400 mt-0.5">
               Đã thêm {{ tasks.length }} công việc — Tối đa 20
             </p>
           </div>
@@ -38,21 +38,23 @@
         <div class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
           <!-- Mặc định chung -->
           <div class="p-3 bg-indigo-50 border border-indigo-200 rounded-xl">
-            <p class="text-xs font-semibold text-indigo-700 mb-2">Áp dụng cho tất cả (tùy chọn)</p>
+            <p class="text-base font-semibold text-indigo-700 mb-2">
+              Áp dụng cho tất cả (tùy chọn)
+            </p>
             <div class="grid grid-cols-3 gap-2">
               <div>
                 <label class="block text-[10px] text-indigo-600 mb-1">Deadline mặc định</label>
                 <input
                   v-model="defaults.deadline"
                   type="datetime-local"
-                  class="w-full px-2 py-1.5 border border-indigo-200 rounded-lg text-xs"
+                  class="w-full px-2 py-1.5 border border-indigo-200 rounded-lg text-base"
                 />
               </div>
               <div>
                 <label class="block text-[10px] text-indigo-600 mb-1">Ưu tiên mặc định</label>
                 <select
                   v-model="defaults.priority"
-                  class="w-full px-2 py-1.5 border border-indigo-200 rounded-lg text-xs"
+                  class="w-full px-2 py-1.5 border border-indigo-200 rounded-lg text-base"
                 >
                   <option value="low">Thấp</option>
                   <option value="medium">Trung bình</option>
@@ -63,7 +65,7 @@
               <div class="flex items-end">
                 <button
                   @click="applyDefaults"
-                  class="w-full py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700 transition"
+                  class="w-full py-1.5 bg-indigo-600 text-white rounded-lg text-base font-medium hover:bg-indigo-700 transition"
                 >
                   Áp dụng
                 </button>
@@ -82,7 +84,7 @@
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-2">
                 <div
-                  class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold"
+                  class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-base font-bold"
                 >
                   {{ index + 1 }}
                 </div>
@@ -135,14 +137,14 @@
                   <input
                     v-model="task.deadline"
                     type="datetime-local"
-                    class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs"
+                    class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-base"
                   />
                 </div>
                 <div>
                   <label class="block text-[10px] text-slate-500 mb-0.5">Ưu tiên</label>
                   <select
                     v-model="task.priority"
-                    class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs bg-white"
+                    class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-base bg-white"
                   >
                     <option value="low">Thấp</option>
                     <option value="medium">Trung bình</option>
@@ -157,14 +159,14 @@
                     type="number"
                     min="1"
                     max="10"
-                    class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs"
+                    class="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-base"
                   />
                 </div>
               </div>
             </div>
 
             <!-- Error message -->
-            <p v-if="errors[index]" class="text-xs text-red-600 mt-2">⚠️ {{ errors[index] }}</p>
+            <p v-if="errors[index]" class="text-base text-red-600 mt-2">⚠️ {{ errors[index] }}</p>
           </div>
 
           <!-- Nút thêm task -->

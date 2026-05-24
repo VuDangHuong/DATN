@@ -2,10 +2,10 @@
   <div class="bg-slate-50 rounded-2xl border border-slate-200 flex flex-col">
     <div class="p-4 flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <SvgIcon :name="icon" />
+        <SvgIcon :name="icon" class="w-5 h-5" :style="{ color: color }" />
         <h3 class="text-sm font-bold text-slate-700">{{ title }}</h3>
         <span
-          class="px-2 py-0.5 bg-white border border-slate-200 rounded-full text-xs font-bold text-slate-500"
+          class="px-2 py-0.5 bg-white border border-slate-200 rounded-full text-base font-bold text-slate-500"
         >
           {{ localTasks.length }}
         </span>
@@ -42,7 +42,7 @@
             class="text-sm font-semibold text-slate-700 mb-2 line-clamp-2 group-hover:text-indigo-700"
             v-html="highlightText(task.title)"
           />
-          <p v-if="task.description" class="text-xs text-slate-400 mb-3 line-clamp-2">
+          <p v-if="task.description" class="text-base text-slate-400 mb-3 line-clamp-2">
             {{ task.description }}
           </p>
           <div class="flex items-center justify-between">
@@ -52,11 +52,11 @@
               >
                 {{ task.assignee.name?.charAt(0) }}
               </div>
-              <span class="text-xs text-slate-500 truncate max-w-[80px]">{{
+              <span class="text-base text-slate-500 truncate max-w-[80px]">{{
                 task.assignee.name
               }}</span>
             </div>
-            <div v-else class="text-xs text-slate-400 italic">Chưa giao</div>
+            <div v-else class="text-base text-slate-400 italic">Chưa giao</div>
             <span
               class="text-[10px] text-slate-400"
               :class="{ 'text-red-500 font-semibold': task.is_overdue }"
@@ -105,7 +105,7 @@
       </div>
 
       <div v-if="localTasks.length === 0" class="py-8 text-center">
-        <p class="text-xs text-slate-400">Không có task</p>
+        <p class="text-base text-slate-400">Không có task</p>
       </div>
     </div>
   </div>
