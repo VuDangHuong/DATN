@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="mb-6">
       <h2 class="text-2xl font-bold text-slate-800">Nộp bài</h2>
-      <p class="text-sm text-slate-500 mt-1">Danh sách đợt nộp bài của lớp</p>
+      <p class="text-base text-slate-500 mt-1">Danh sách đợt nộp bài của lớp</p>
     </div>
 
     <!-- Loading -->
@@ -47,24 +47,24 @@
                 <!-- Status badges -->
                 <span
                   v-if="assignment.is_expired && !assignment.allow_late"
-                  class="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-bold rounded-full"
+                  class="px-2 py-0.5 bg-red-100 text-red-700 text-base font-bold rounded-full"
                   >Hết hạn</span
                 >
                 <span
                   v-else-if="assignment.is_expired && assignment.allow_late"
-                  class="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-bold rounded-full"
+                  class="px-2 py-0.5 bg-amber-100 text-amber-700 text-base font-bold rounded-full"
                   >Quá hạn — vẫn nhận</span
                 >
                 <span
                   v-else
-                  class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full"
+                  class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-base font-bold rounded-full"
                   >Đang mở</span
                 >
               </div>
-              <p v-if="assignment.description" class="text-sm text-slate-500 mb-2">
+              <p v-if="assignment.description" class="text-base text-slate-500 mb-2">
                 {{ assignment.description }}
               </p>
-              <div class="flex items-center gap-4 text-xs text-slate-500">
+              <div class="flex items-center gap-4 text-base text-slate-500">
                 <span class="flex items-center gap-1">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -89,7 +89,7 @@
         <div class="p-5 space-y-4">
           <!-- Nộp cá nhân -->
           <div v-if="['individual', 'both'].includes(assignment.submission_type)">
-            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+            <p class="text-base font-semibold text-slate-500 uppercase tracking-wider mb-3">
               Nộp cá nhân
             </p>
             <SubmissionCard
@@ -109,7 +109,7 @@
               assignment.is_leader !== undefined
             "
           >
-            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+            <p class="text-base font-semibold text-slate-500 uppercase tracking-wider mb-3">
               Nộp nhóm
             </p>
             <SubmissionCard
@@ -155,7 +155,7 @@
             </button>
           </div>
           <div class="flex-1 overflow-y-auto p-5">
-            <div v-if="!store.history.length" class="text-center py-8 text-slate-400 text-sm">
+            <div v-if="!store.history.length" class="text-center py-8 text-slate-400 text-base">
               Chưa có lịch sử nộp
             </div>
             <div v-else class="space-y-3">
@@ -165,13 +165,13 @@
                 class="flex items-start gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50"
               >
                 <div
-                  class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5"
+                  class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 text-base font-bold flex items-center justify-center flex-shrink-0 mt-0.5"
                 >
                   {{ store.history.length - idx }}
                 </div>
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2 mb-1">
-                    <span class="text-sm font-medium text-slate-700 truncate">{{
+                    <span class="text-base font-medium text-slate-700 truncate">{{
                       h.file_name
                     }}</span>
                     <span
@@ -180,10 +180,10 @@
                       >Trễ</span
                     >
                   </div>
-                  <p class="text-xs text-slate-400">
+                  <p class="text-base text-slate-400">
                     {{ h.submitted_by }} · {{ formatDate(h.submitted_at) }}
                   </p>
-                  <p v-if="h.note" class="text-xs text-slate-500 mt-1 italic">{{ h.note }}</p>
+                  <p v-if="h.note" class="text-base text-slate-500 mt-1 italic">{{ h.note }}</p>
                 </div>
               </div>
             </div>
@@ -196,7 +196,7 @@
     <transition name="toast">
       <div
         v-if="toast.show"
-        class="fixed bottom-6 right-6 z-50 px-5 py-3.5 rounded-2xl shadow-lg text-white text-sm font-medium flex items-center gap-2"
+        class="fixed bottom-6 right-6 z-50 px-5 py-3.5 rounded-2xl shadow-lg text-white text-base font-medium flex items-center gap-2"
         :class="toast.type === 'success' ? 'bg-gray-900' : 'bg-red-600'"
       >
         <svg
@@ -218,7 +218,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useDashboardStore } from '@/stores/students/dashboardStore'
 import SubmissionCard from '@/components/students/SubmissionCard.vue'
 import { useStudentAssignmentStore } from '@/stores/students/studentAssignmentStore'
@@ -229,12 +229,28 @@ const dashboardStore = useDashboardStore()
 const store = useStudentAssignmentStore()
 const toast = useToastStore()
 const showHistoryModal = ref(false)
-
-onMounted(async () => {
-  const classId = dashboardStore.selectedClass?.class?.id
-  if (classId) await store.fetchByClass(classId)
+const currentClassId = computed(() => {
+  // Verify structure: selectedClass có thể là { id, ... } hoặc { class: { id, ... } }
+  const sc = dashboardStore.selectedClass
+  if (!sc) return null
+  return sc.class?.id ?? sc.id ?? null
 })
+async function loadAssignments() {
+  const classId = currentClassId.value
+  if (!classId) {
+    console.warn('Không có classId, bỏ qua fetch')
+    store.assignments = [] // Clear data cũ
+    return
+  }
 
+  console.log('Loading assignments for class:', classId) //
+  await store.fetchByClass(classId)
+}
+onMounted(loadAssignments)
+watch(currentClassId, (newId, oldId) => {
+  console.log('Class changed:', oldId, '→', newId) //
+  loadAssignments()
+})
 async function handleSubmit(assignment, type, file, note, documentCategory) {
   const result =
     type === 'group'
