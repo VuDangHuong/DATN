@@ -19,13 +19,13 @@
                 {{ group?.is_locked ? 'Đã khóa' : 'Mở' }}
               </span>
             </div>
-            <div class="flex items-center gap-3 text-xs text-slate-400">
-              <span
+            <div class="flex items-center gap-3 text-base text-slate-400">
+              <!-- <span
                 >Mã mời:
                 <span class="font-mono font-semibold text-slate-600">{{
                   group?.invitation_code
                 }}</span></span
-              >
+              > -->
               <span>{{ localMembers.length }} thành viên</span>
             </div>
           </div>
@@ -52,7 +52,7 @@
             v-for="tab in tabs"
             :key="tab.key"
             @click="activeTab = tab.key"
-            class="px-4 py-1.5 rounded-lg text-xs font-medium transition"
+            class="px-4 py-1.5 rounded-lg text-base font-medium transition"
             :class="
               activeTab === tab.key
                 ? 'bg-teal-100 text-teal-700'
@@ -77,7 +77,7 @@
               :key="member.id"
               class="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition group"
             >
-              <span class="text-xs text-slate-400 w-5 text-center flex-shrink-0">{{
+              <span class="text-base text-slate-400 w-5 text-center flex-shrink-0">{{
                 idx + 1
               }}</span>
               <div
@@ -101,11 +101,11 @@
                     <span>Trưởng nhóm</span>
                   </span>
                 </div>
-                <p class="text-xs text-slate-400 font-mono mt-0.5">{{ member.code }}</p>
+                <p class="text-base text-slate-400 font-mono mt-0.5">{{ member.code }}</p>
               </div>
               <div class="text-right flex-shrink-0 mr-2">
                 <p class="text-[10px] text-slate-400">Tham gia</p>
-                <p class="text-xs text-slate-500">{{ formatDate(member.joined_at) }}</p>
+                <p class="text-base text-slate-500">{{ formatDate(member.joined_at) }}</p>
               </div>
               <!-- Xóa thành viên -->
               <button
@@ -149,7 +149,7 @@
                 v-for="m in addModes"
                 :key="m.key"
                 @click="addMode = m.key"
-                class="flex-1 py-1.5 rounded-lg text-xs font-medium transition"
+                class="flex-1 py-1.5 rounded-lg text-base font-medium transition"
                 :class="
                   addMode === m.key
                     ? 'bg-white text-slate-800 shadow-sm'
@@ -240,7 +240,7 @@
                   </div>
                   <div class="flex-1 min-w-0">
                     <p class="text-sm font-medium text-slate-800 truncate">{{ sv.name }}</p>
-                    <p class="text-xs text-slate-400 font-mono">{{ sv.code }}</p>
+                    <p class="text-base text-slate-400 font-mono">{{ sv.code }}</p>
                   </div>
                   <div
                     v-if="adding === sv.id"

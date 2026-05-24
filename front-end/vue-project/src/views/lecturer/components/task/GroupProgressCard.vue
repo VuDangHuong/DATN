@@ -31,7 +31,7 @@
             🔒 Khóa
           </span>
         </div>
-        <p v-if="group.invitation_code" class="text-xs text-stone-400 font-mono mt-0.5">
+        <p v-if="group.invitation_code" class="text-base text-stone-400 font-mono mt-0.5">
           {{ group.invitation_code }}
         </p>
       </div>
@@ -40,12 +40,12 @@
     <!-- Leader info -->
     <div v-if="group.leader" class="flex items-center gap-2 mb-3 p-2 bg-amber-50 rounded-lg">
       <div
-        class="w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+        class="w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-base font-bold text-white flex-shrink-0"
       >
         {{ group.leader.name?.charAt(0) }}
       </div>
       <div class="flex-1 min-w-0">
-        <p class="text-xs flex items-center gap-1 font-medium text-stone-700 truncate">
+        <p class="text-base flex items-center gap-1 font-medium text-stone-700 truncate">
           <SvgIcon name="crown" class="w-3.5 h-3.5 text-amber-500" /> {{ group.leader.name }}
         </p>
         <p class="text-[10px] text-stone-400">Trưởng nhóm</p>
@@ -55,7 +55,7 @@
     <!-- Progress bar -->
     <div class="mb-3">
       <div class="flex items-center justify-between mb-1.5">
-        <span class="text-xs text-stone-500">Tiến độ công việc</span>
+        <span class="text-base text-stone-500">Tiến độ công việc</span>
         <span class="text-sm font-bold" :class="progressColor">{{ percentage }}%</span>
       </div>
       <div class="h-2 bg-stone-100 rounded-full overflow-hidden">
@@ -91,7 +91,7 @@
 
     <!-- Member count + CTA -->
     <div class="mt-3 pt-3 border-t border-stone-100 flex items-center justify-between">
-      <div class="flex items-center gap-1.5 text-xs text-stone-500">
+      <div class="flex items-center gap-1.5 text-base text-stone-500">
         <SvgIcon name="group-users" class="w-3.5 h-3.5" />
         <span>{{ memberCount }} thành viên</span>
       </div>

@@ -5,12 +5,12 @@
     <div class="flex items-center justify-between mb-6">
       <div>
         <h2 class="text-2xl font-bold text-stone-800">Lịch sử ký số</h2>
-        <p class="text-sm text-stone-500 mt-1">Danh sách tài liệu đã ký và mã xác thực</p>
+        <p class="text-base text-stone-500 mt-1">Danh sách tài liệu đã ký và mã xác thực</p>
       </div>
       <!-- Export button -->
       <button
         @click="exportCsv"
-        class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+        class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-base font-semibold rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
       >
         <SvgICon name="download" class="w-4 h-4" />
         Xuất CSV
@@ -21,19 +21,19 @@
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
       <div class="bg-white rounded-xl border border-stone-200 p-4 text-center">
         <p class="text-2xl font-bold text-stone-700">{{ store.stats.total ?? 0 }}</p>
-        <p class="text-xs text-stone-400 mt-1">Tổng yêu cầu</p>
+        <p class="text-base text-stone-400 mt-1">Tổng yêu cầu</p>
       </div>
       <div class="bg-white rounded-xl border border-amber-200 p-4 text-center">
         <p class="text-2xl font-bold text-amber-500">{{ store.stats.pending ?? 0 }}</p>
-        <p class="text-xs text-stone-400 mt-1">Chờ ký</p>
+        <p class="text-base text-stone-400 mt-1">Chờ ký</p>
       </div>
       <div class="bg-white rounded-xl border border-blue-200 p-4 text-center">
         <p class="text-2xl font-bold text-blue-500">{{ store.stats.signed ?? 0 }}</p>
-        <p class="text-xs text-stone-400 mt-1">Đã ký</p>
+        <p class="text-base text-stone-400 mt-1">Đã ký</p>
       </div>
       <div class="bg-white rounded-xl border border-emerald-200 p-4 text-center">
         <p class="text-2xl font-bold text-emerald-600">{{ store.stats.rejected ?? 0 }}</p>
-        <p class="text-xs text-stone-400 mt-1">Hoàn thành</p>
+        <p class="text-base text-stone-400 mt-1">Hoàn thành</p>
       </div>
     </div>
 
@@ -47,7 +47,7 @@
           v-for="f in statusFilters"
           :key="f.value"
           @click="setFilter('status', f.value)"
-          class="px-3 py-1.5 rounded-md text-xs font-medium transition"
+          class="px-3 py-1.5 rounded-md text-base font-medium transition"
           :class="
             filterStatus === f.value
               ? 'bg-white text-stone-800 shadow-sm'
@@ -62,7 +62,7 @@
       <select
         v-model="filterCategory"
         @change="loadHistory()"
-        class="px-3 py-1.5 border border-stone-200 rounded-lg text-xs text-stone-600 outline-none focus:ring-2 focus:ring-teal-500"
+        class="px-3 py-1.5 border border-stone-200 rounded-lg text-base text-stone-600 outline-none focus:ring-2 focus:ring-teal-500"
       >
         <option value="">Tất cả loại tài liệu</option>
         <option value="bao_cao_thuc_tap">Báo cáo thực tập</option>
@@ -91,7 +91,7 @@
           v-model="searchQuery"
           @input="debouncedSearch"
           placeholder="Tìm theo tên SV hoặc mã hash..."
-          class="w-full pl-9 pr-3 py-1.5 border border-stone-200 rounded-lg text-xs text-stone-700 outline-none focus:ring-2 focus:ring-teal-500"
+          class="w-full pl-9 pr-3 py-1.5 border border-stone-200 rounded-lg text-base text-stone-700 outline-none focus:ring-2 focus:ring-teal-500"
         />
       </div>
     </div>
@@ -124,7 +124,7 @@
 
     <!-- Table -->
     <div v-else class="bg-white rounded-xl border border-stone-200 overflow-hidden">
-      <table class="w-full text-sm">
+      <table class="w-full text-base">
         <thead>
           <tr class="border-b border-stone-100 bg-stone-50">
             <th class="text-left px-5 py-3.5 font-medium text-stone-600">Sinh viên</th>
@@ -141,23 +141,25 @@
             <td class="px-5 py-4">
               <div class="flex items-center gap-2">
                 <div
-                  class="w-7 h-7 rounded-full bg-teal-100 flex items-center justify-center text-xs font-bold text-teal-700"
+                  class="w-7 h-7 rounded-full bg-teal-100 flex items-center justify-center text-base font-bold text-teal-700"
                 >
                   {{ rec.requester?.name?.charAt(0) }}
                 </div>
                 <div>
-                  <p class="font-medium text-stone-900 text-sm">{{ rec.requester?.name }}</p>
-                  <p class="text-xs text-stone-400 font-mono">{{ rec.requester?.code }}</p>
+                  <p class="font-medium text-stone-900 text-base">{{ rec.requester?.name }}</p>
+                  <p class="text-base text-stone-400 font-mono">{{ rec.requester?.code }}</p>
                 </div>
               </div>
             </td>
 
             <!-- Loại tài liệu -->
             <td class="px-5 py-4">
-              <span class="px-2 py-0.5 bg-violet-50 text-violet-700 text-xs font-medium rounded-lg">
+              <span
+                class="px-2 py-0.5 bg-violet-50 text-violet-700 text-base font-medium rounded-lg"
+              >
                 {{ rec.document_category_label ?? rec.document_category }}
               </span>
-              <p class="text-xs text-stone-400 mt-1">{{ rec.class_model?.name }}</p>
+              <p class="text-base text-stone-400 mt-1">{{ rec.class_model?.name }}</p>
             </td>
 
             <!-- Mã hash -->
@@ -188,22 +190,22 @@
                   </svg>
                 </button>
               </div>
-              <span v-else class="text-xs text-stone-400 italic">Chưa có hash</span>
+              <span v-else class="text-base text-stone-400 italic">Chưa có hash</span>
             </td>
 
             <!-- Thời gian ký -->
             <td class="px-5 py-4">
-              <p class="text-xs text-stone-600">{{ formatDate(rec.signed_at) }}</p>
+              <p class="text-base text-stone-600">{{ formatDate(rec.signed_at) }}</p>
               <p class="text-[12px] text-stone-400 mt-0.5">Tạo: {{ formatDate(rec.created_at) }}</p>
             </td>
 
             <!-- Trạng thái -->
             <td class="px-5 py-4">
               <span
-                class="px-2 py-0.5 text-xs font-bold rounded-full"
+                class="px-2 py-0.5 text-base font-bold rounded-full"
                 :class="statusBadgeClass(rec.status)"
               >
-                {{ rec.status }}
+                {{ getStatusLabel(rec.status) }}
               </span>
             </td>
 
@@ -211,7 +213,7 @@
             <td class="px-5 py-4 text-right">
               <button
                 @click="openDetail(rec)"
-                class="px-3 py-1.5 border border-stone-200 text-stone-600 rounded-lg text-xs font-medium hover:bg-stone-50 transition"
+                class="px-3 py-1.5 border border-stone-200 text-stone-600 rounded-lg text-base font-medium hover:bg-stone-50 transition"
               >
                 Chi tiết
               </button>
@@ -225,7 +227,7 @@
         v-if="pagination.last_page > 1"
         class="px-5 py-3 border-t border-stone-100 flex items-center justify-between"
       >
-        <p class="text-xs text-stone-500">
+        <p class="text-base text-stone-500">
           Trang {{ pagination.current_page }} / {{ pagination.last_page }} ·
           {{ pagination.total }} tài liệu
         </p>
@@ -233,14 +235,14 @@
           <button
             @click="changePage(pagination.current_page - 1)"
             :disabled="pagination.current_page === 1"
-            class="px-3 py-1.5 border border-stone-200 rounded-lg text-xs disabled:opacity-40 hover:bg-stone-50"
+            class="px-3 py-1.5 border border-stone-200 rounded-lg text-base disabled:opacity-40 hover:bg-stone-50"
           >
             ← Trước
           </button>
           <button
             @click="changePage(pagination.current_page + 1)"
             :disabled="pagination.current_page === pagination.last_page"
-            class="px-3 py-1.5 border border-stone-200 rounded-lg text-xs disabled:opacity-40 hover:bg-stone-50"
+            class="px-3 py-1.5 border border-stone-200 rounded-lg text-base disabled:opacity-40 hover:bg-stone-50"
           >
             Sau →
           </button>
@@ -257,7 +259,7 @@
           <div class="p-6 border-b border-stone-100 flex items-start justify-between">
             <div>
               <h3 class="text-lg font-bold text-stone-900">Chi tiết ký số</h3>
-              <p class="text-xs text-stone-400 mt-0.5">Yêu cầu #{{ selectedRecord.id }}</p>
+              <p class="text-base text-stone-400 mt-0.5">Yêu cầu #{{ selectedRecord.id }}</p>
             </div>
             <button @click="selectedRecord = null" class="p-1.5 hover:bg-stone-100 rounded-lg">
               <svg
@@ -280,46 +282,46 @@
           <div class="p-6 space-y-4">
             <!-- Thông tin SV -->
             <div class="bg-stone-50 rounded-xl p-4">
-              <p class="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">
+              <p class="text-base font-semibold text-stone-500 uppercase tracking-wider mb-2">
                 Sinh viên
               </p>
               <p class="font-semibold text-stone-900">{{ selectedRecord.requester?.name }}</p>
-              <p class="text-xs text-stone-400 font-mono mt-0.5">
+              <p class="text-base text-stone-400 font-mono mt-0.5">
                 {{ selectedRecord.requester?.code }}
               </p>
             </div>
 
             <!-- Thông tin tài liệu -->
             <div class="bg-stone-50 rounded-xl p-4">
-              <p class="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">
+              <p class="text-base font-semibold text-stone-500 uppercase tracking-wider mb-2">
                 Tài liệu
               </p>
-              <div class="grid grid-cols-2 gap-2 text-sm">
+              <div class="grid grid-cols-2 gap-2 text-base">
                 <div>
-                  <p class="text-xs text-stone-400">Loại</p>
+                  <p class="text-base text-stone-400">Loại</p>
                   <p class="font-medium text-violet-700 mt-0.5">
                     {{ selectedRecord.document_category_label }}
                   </p>
                 </div>
                 <div>
-                  <p class="text-xs text-stone-400">Lớp</p>
+                  <p class="text-base text-stone-400">Lớp</p>
                   <p class="font-medium text-stone-700 mt-0.5">
                     {{ selectedRecord.class_model?.name }}
                   </p>
                 </div>
                 <div>
-                  <p class="text-xs text-stone-400">Thời gian ký</p>
+                  <p class="text-base text-stone-400">Thời gian ký</p>
                   <p class="font-medium text-stone-700 mt-0.5">
                     {{ formatDate(selectedRecord.signed_at) }}
                   </p>
                 </div>
                 <div>
-                  <p class="text-xs text-stone-400">Trạng thái</p>
+                  <p class="text-base text-stone-400">Trạng thái</p>
                   <span
-                    class="inline-block mt-0.5 px-2 py-0.5 text-xs font-bold rounded-full"
+                    class="inline-block mt-0.5 px-2 py-0.5 text-base font-bold rounded-full"
                     :class="statusBadgeClass(selectedRecord.status)"
                   >
-                    {{ selectedRecord.status }}
+                    {{ getStatusLabel(selectedRecord.status) }}
                   </span>
                 </div>
               </div>
@@ -328,7 +330,7 @@
             <!-- Mã hash -->
             <div class="border border-stone-200 rounded-xl p-4">
               <div class="flex items-center justify-between mb-2">
-                <p class="text-xs font-semibold text-stone-500 uppercase tracking-wider">
+                <p class="text-base font-semibold text-stone-500 uppercase tracking-wider">
                   Mã xác thực SHA256
                 </p>
                 <button
@@ -340,7 +342,7 @@
                 </button>
               </div>
               <code
-                class="block text-xs font-mono text-stone-700 bg-stone-50 p-3 rounded-lg break-all leading-relaxed"
+                class="block text-base font-mono text-stone-700 bg-stone-50 p-3 rounded-lg break-all leading-relaxed"
               >
                 {{ selectedRecord.sign_hash ?? 'Chưa có mã hash' }}
               </code>
@@ -351,7 +353,7 @@
 
             <!-- Verify section -->
             <div class="border border-teal-200 rounded-xl p-4 bg-teal-50/50">
-              <p class="text-xs font-semibold text-teal-700 mb-2 flex items-center gap-1.5">
+              <p class="text-base font-semibold text-teal-700 mb-2 flex items-center gap-1.5">
                 <SvgICon name="shield-check" class="w-4 h-4 text-green-700" />
                 Xác minh tài liệu
               </p>
@@ -362,11 +364,11 @@
                 <input
                   v-model="verifyInput"
                   placeholder="Dán mã hash cần kiểm tra..."
-                  class="flex-1 px-3 py-2 border border-stone-200 rounded-lg text-xs font-mono outline-none focus:ring-2 focus:ring-teal-500"
+                  class="flex-1 px-3 py-2 border border-stone-200 rounded-lg text-base font-mono outline-none focus:ring-2 focus:ring-teal-500"
                 />
                 <button
                   @click="verifyHash"
-                  class="px-3 py-2 bg-teal-600 text-white rounded-lg text-xs font-medium hover:bg-teal-700 transition flex-shrink-0"
+                  class="px-3 py-2 bg-teal-600 text-white rounded-lg text-base font-medium hover:bg-teal-700 transition flex-shrink-0"
                 >
                   Kiểm tra
                 </button>
@@ -374,7 +376,7 @@
               <!-- Kết quả verify -->
               <div
                 v-if="verifyResult !== null"
-                class="mt-2 px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-1.5"
+                class="mt-2 px-3 py-2 rounded-lg text-base font-medium flex items-center gap-1.5"
                 :class="
                   verifyResult ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
                 "
@@ -445,9 +447,18 @@ const stats = computed(() => {
 const statusFilters = [
   { value: 'signed', label: 'Đã ký' },
   { value: 'completed', label: 'Đã phát hành' },
+  { value: 'rejected', label: 'Đã từ chối' },
   { value: '', label: 'Tất cả' },
 ]
+function getStatusLabel(status) {
+  const map = {
+    signed: 'Đã ký',
+    completed: 'Đã phát hành',
+    rejected: 'Đã từ chối',
+  }
 
+  return map[status] || status
+}
 onMounted(() => loadHistory())
 
 async function loadHistory(page = 1) {

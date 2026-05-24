@@ -4,7 +4,7 @@
     <div v-if="!props.assignmentId">
       <div class="mb-6">
         <h2 class="text-2xl font-bold text-slate-800">Duyệt bài nộp</h2>
-        <p class="text-sm text-slate-500 mt-1">Chọn đợt nộp bài để xem và duyệt</p>
+        <p class="text-base text-slate-500 mt-1">Chọn đợt nộp bài để xem và duyệt</p>
       </div>
 
       <div v-if="loadingList" class="flex justify-center py-20">
@@ -15,7 +15,7 @@
 
       <div v-else-if="!assignmentList.length" class="bg-white rounded-2xl border p-12 text-center">
         <p class="text-slate-400">Chưa có đợt nộp bài nào</p>
-        <p class="text-xs text-slate-400 mt-1">Vui lòng chọn lớp ở thanh trên để xem danh sách</p>
+        <p class="text-base text-slate-400 mt-1">Vui lòng chọn lớp ở thanh trên để xem danh sách</p>
       </div>
 
       <div v-else class="space-y-3">
@@ -33,16 +33,16 @@
                 </h3>
                 <span
                   v-if="a.is_expired"
-                  class="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-bold rounded-full"
+                  class="px-2 py-0.5 bg-red-100 text-red-700 text-base font-bold rounded-full"
                   >Hết hạn</span
                 >
                 <span
                   v-else
-                  class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full"
+                  class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-base font-bold rounded-full"
                   >Đang mở</span
                 >
               </div>
-              <p class="text-xs text-slate-400">Hạn: {{ formatDate(a.deadline) }}</p>
+              <p class="text-base text-slate-400">Hạn: {{ formatDate(a.deadline) }}</p>
             </div>
             <div class="flex items-center gap-3 text-center flex-shrink-0">
               <div>
@@ -79,11 +79,11 @@
       <div class="flex items-center justify-between mb-6">
         <div>
           <h2 class="text-2xl font-bold text-slate-800">Duyệt bài nộp</h2>
-          <p class="text-sm text-slate-500 mt-1">{{ assignment?.title }}</p>
+          <p class="text-base text-slate-500 mt-1">{{ assignment?.title }}</p>
         </div>
         <button
           @click="$router.back()"
-          class="inline-flex items-center gap-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+          class="inline-flex items-center gap-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-base font-semibold rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
         >
           <SvgIcon name="back-arrow" class="w-4 h-4" />
           Quay lại
@@ -94,23 +94,23 @@
       <div v-if="stats" class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
         <div class="bg-white rounded-xl border border-slate-200 p-4 text-center">
           <p class="text-2xl font-bold text-slate-700">{{ stats.total }}</p>
-          <p class="text-xs text-slate-400 mt-1">Tổng</p>
+          <p class="text-base text-slate-400 mt-1">Tổng</p>
         </div>
         <div class="bg-white rounded-xl border border-amber-200 p-4 text-center">
           <p class="text-2xl font-bold text-amber-500">{{ stats.pending }}</p>
-          <p class="text-xs text-slate-400 mt-1">Chờ duyệt</p>
+          <p class="text-base text-slate-400 mt-1">Chờ duyệt</p>
         </div>
         <div class="bg-white rounded-xl border border-emerald-200 p-4 text-center">
           <p class="text-2xl font-bold text-emerald-600">{{ stats.approved }}</p>
-          <p class="text-xs text-slate-400 mt-1">Đã chấp nhận</p>
+          <p class="text-base text-slate-400 mt-1">Đã chấp nhận</p>
         </div>
         <div class="bg-white rounded-xl border border-red-200 p-4 text-center">
           <p class="text-2xl font-bold text-red-500">{{ stats.rejected }}</p>
-          <p class="text-xs text-slate-400 mt-1">Đã từ chối</p>
+          <p class="text-base text-slate-400 mt-1">Đã từ chối</p>
         </div>
         <div class="bg-white rounded-xl border border-slate-200 p-4 text-center">
           <p class="text-2xl font-bold text-orange-500">{{ stats.late }}</p>
-          <p class="text-xs text-slate-400 mt-1">Trễ hạn</p>
+          <p class="text-base text-slate-400 mt-1">Trễ hạn</p>
         </div>
       </div>
 
@@ -121,7 +121,7 @@
             v-for="f in statusFilters"
             :key="f.value"
             @click="handleFilter('status', f.value)"
-            class="px-3 py-1.5 rounded-lg text-xs font-medium transition"
+            class="px-3 py-1.5 rounded-lg text-base font-medium transition"
             :class="
               filterStatus === f.value
                 ? 'bg-white text-slate-800 shadow-sm'
@@ -136,7 +136,7 @@
             v-for="f in typeFilters"
             :key="f.value"
             @click="handleFilter('type', f.value)"
-            class="px-3 py-1.5 rounded-lg text-xs font-medium transition"
+            class="px-3 py-1.5 rounded-lg text-base font-medium transition"
             :class="
               filterType === f.value
                 ? 'bg-white text-slate-800 shadow-sm'
@@ -150,7 +150,7 @@
         <button
           v-if="stats?.pending > 0"
           @click="openBulkReview('approved')"
-          class="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition flex items-center gap-2"
+          class="px-4 py-2 bg-emerald-600 text-white rounded-xl text-base font-medium hover:bg-emerald-700 transition flex items-center gap-2"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -165,7 +165,7 @@
         <button
           v-if="stats?.pending > 0"
           @click="openBulkReview('rejected')"
-          class="px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 transition flex items-center gap-2"
+          class="px-4 py-2 bg-red-600 text-white rounded-xl text-base font-medium hover:bg-red-700 transition flex items-center gap-2"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -190,7 +190,7 @@
       <div v-else class="space-y-3">
         <div
           v-if="!submissions.length"
-          class="bg-white rounded-2xl border p-12 text-center text-slate-400 text-sm"
+          class="bg-white rounded-2xl border p-12 text-center text-slate-400 text-base"
         >
           Không có bài nộp nào
         </div>
@@ -203,7 +203,7 @@
           <div class="p-5 flex items-start gap-4">
             <!-- Avatar -->
             <div
-              class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-sm font-bold text-indigo-700 flex-shrink-0"
+              class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-base font-bold text-indigo-700 flex-shrink-0"
             >
               {{ sub.submitter_name?.charAt(0) }}
             </div>
@@ -212,7 +212,7 @@
               <!-- Tên + badges -->
               <div class="flex items-center gap-2 flex-wrap mb-1">
                 <span class="font-semibold text-slate-800">{{ sub.submitter_name }}</span>
-                <span v-if="sub.student?.code" class="text-xs text-slate-400 font-mono">{{
+                <span v-if="sub.student?.code" class="text-base text-slate-400 font-mono">{{
                   sub.student.code
                 }}</span>
                 <!-- Badge nhóm -->
@@ -223,7 +223,7 @@
                   Nhóm
                 </span>
                 <span
-                  class="px-2 py-0.5 text-xs font-bold rounded-full"
+                  class="px-2 py-0.5 text-base font-bold rounded-full"
                   :class="{
                     'bg-amber-100 text-amber-700': sub.status === 'pending',
                     'bg-emerald-100 text-emerald-700': sub.status === 'approved',
@@ -234,13 +234,13 @@
                 </span>
                 <span
                   v-if="sub.is_late"
-                  class="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-bold rounded-full"
+                  class="px-2 py-0.5 bg-orange-100 text-orange-700 text-base font-bold rounded-full"
                   >Trễ</span
                 >
               </div>
 
               <!-- File info -->
-              <div class="flex items-center gap-3 text-xs text-slate-400">
+              <div class="flex items-center gap-3 text-base text-slate-400">
                 <span class="flex items-center gap-1"
                   ><SvgIcon name="document" class="w-4 h-4 text-blue-600" />
                   {{ sub.file_name }}</span
@@ -252,7 +252,7 @@
               <!-- Kết quả duyệt cá nhân -->
               <div
                 v-if="sub.status !== 'pending' && sub.submitter_type !== 'group'"
-                class="mt-3 p-3 rounded-xl text-sm"
+                class="mt-3 p-3 rounded-xl text-base"
                 :class="sub.status === 'approved' ? 'bg-emerald-50' : 'bg-red-50'"
               >
                 <div class="flex items-center gap-3 flex-wrap">
@@ -263,7 +263,7 @@
                   >
                     {{ sub.score }}/10
                   </span>
-                  <span class="text-xs text-slate-500"
+                  <span class="text-base text-slate-500"
                     >Duyệt bởi {{ sub.reviewer }} lúc {{ formatDate(sub.reviewed_at) }}</span
                   >
                 </div>
@@ -277,8 +277,8 @@
                 :class="sub.status === 'approved' ? 'bg-emerald-50' : 'bg-red-50'"
               >
                 <div class="flex items-center justify-between mb-2">
-                  <span class="text-xs font-semibold text-slate-600">Điểm từng thành viên</span>
-                  <span class="text-xs text-slate-400">Duyệt bởi {{ sub.reviewer }}</span>
+                  <span class="text-base font-semibold text-slate-600">Điểm từng thành viên</span>
+                  <span class="text-base text-slate-400">Duyệt bởi {{ sub.reviewer }}</span>
                 </div>
                 <div v-if="sub.member_grades?.length" class="space-y-1.5">
                   <div
@@ -287,7 +287,7 @@
                     class="flex items-center justify-between bg-white/70 rounded-lg px-3 py-1.5"
                   >
                     <div class="flex items-center gap-2">
-                      <span class="text-xs font-medium text-slate-700">{{ g.student_name }}</span>
+                      <span class="text-base font-medium text-slate-700">{{ g.student_name }}</span>
                       <span class="text-[10px] text-slate-400 font-mono">{{ g.student_code }}</span>
                       <span
                         v-if="g.role === 'leader'"
@@ -299,16 +299,16 @@
                     <div class="flex items-center gap-2">
                       <span
                         v-if="g.score !== null"
-                        class="text-sm font-bold"
+                        class="text-base font-bold"
                         :class="sub.status === 'approved' ? 'text-emerald-700' : 'text-red-700'"
                       >
                         {{ g.score }}/10
                       </span>
-                      <span v-else class="text-xs text-slate-400 italic">Chưa có điểm</span>
+                      <span v-else class="text-base text-slate-400 italic">Chưa có điểm</span>
                     </div>
                   </div>
                 </div>
-                <p v-if="sub.feedback" class="mt-2 text-xs text-slate-600 italic">
+                <p v-if="sub.feedback" class="mt-2 text-base text-slate-600 italic">
                   {{ sub.feedback }}
                 </p>
               </div>
@@ -331,21 +331,21 @@
               <button
                 v-if="sub.status === 'pending'"
                 @click="openReview(sub, 'approved')"
-                class="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700 transition"
+                class="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-base font-medium hover:bg-emerald-700 transition"
               >
                 Chấp nhận
               </button>
               <button
                 v-if="sub.status === 'pending'"
                 @click="openReview(sub, 'rejected')"
-                class="px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-medium hover:bg-red-700 transition"
+                class="px-3 py-1.5 bg-red-600 text-white rounded-lg text-base font-medium hover:bg-red-700 transition"
               >
                 Từ chối
               </button>
               <button
                 v-if="sub.status !== 'pending'"
                 @click="openReview(sub, sub.status)"
-                class="px-3 py-1.5 border border-slate-300 text-slate-600 rounded-lg text-xs font-medium hover:bg-slate-50 transition"
+                class="px-3 py-1.5 border border-slate-300 text-slate-600 rounded-lg text-base font-medium hover:bg-slate-50 transition"
               >
                 Sửa
               </button>
@@ -372,31 +372,31 @@
           <h3 class="text-lg font-bold text-slate-800 mb-1">
             {{ bulkForm.status === 'approved' ? '✅ Chấp nhận tất cả' : '❌ Từ chối tất cả' }}
           </h3>
-          <p class="text-sm text-slate-500 mb-5">
+          <p class="text-base text-slate-500 mb-5">
             Áp dụng cho {{ stats?.pending }} bài đang chờ duyệt
           </p>
           <div>
-            <label class="block text-sm font-medium text-slate-600 mb-1">
+            <label class="block text-base font-medium text-slate-600 mb-1">
               Nhận xét chung <span class="text-slate-400">(tuỳ chọn)</span>
             </label>
             <textarea
               v-model="bulkForm.feedback"
               rows="3"
               placeholder="Nhận xét áp dụng cho tất cả..."
-              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm resize-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-base resize-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>
           <div class="flex gap-3 mt-6">
             <button
               @click="showBulkModal = false"
-              class="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50"
+              class="flex-1 py-2.5 border border-slate-200 rounded-xl text-base font-medium text-slate-600 hover:bg-slate-50"
             >
               Hủy
             </button>
             <button
               @click="submitBulkReview"
               :disabled="reviewing"
-              class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 flex items-center justify-center gap-2"
+              class="flex-1 py-2.5 rounded-xl text-base font-semibold text-white disabled:opacity-50 flex items-center justify-center gap-2"
               :class="
                 bulkForm.status === 'approved'
                   ? 'bg-emerald-600 hover:bg-emerald-700'

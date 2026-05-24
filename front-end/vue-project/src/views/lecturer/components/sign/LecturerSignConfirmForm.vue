@@ -1,7 +1,9 @@
 <!-- src/components/lecturer/sign/LecturerSignConfirmForm.vue -->
 <template>
   <div class="p-6">
-    <h3 class="text-lg font-bold text-stone-800 mb-1">🔏 Xác nhận ký số tài liệu</h3>
+    <h3 class="flex items-center gap-1.5 text-lg font-bold text-stone-800 mb-1">
+      <SvgIcon name="lock" class="w-5 h-5 text-yellow-500" /> Xác nhận ký số tài liệu
+    </h3>
     <p class="text-sm text-stone-500 mb-5">
       {{ request?.requester?.name }} - {{ request?.document_category_label }}
     </p>
@@ -63,7 +65,7 @@
             to="/lecturer/sign-profile"
             class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 text-white rounded-lg text-xs font-medium hover:bg-amber-700"
           >
-            Đăng ký ngay →
+            Đăng ký ngay
           </router-link>
         </div>
       </div>
@@ -193,6 +195,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axiosClient from '@/api/axiosClient'
 import { useToastStore } from '@/stores/toast'
+import SvgIcon from '@/components/icons/SVG.vue'
 
 const props = defineProps({
   request: { type: Object, required: true },

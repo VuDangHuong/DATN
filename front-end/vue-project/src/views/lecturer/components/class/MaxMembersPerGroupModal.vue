@@ -10,7 +10,7 @@
           </div>
           <div>
             <h3 class="text-lg font-bold text-stone-800">Định mức thành viên mỗi nhóm</h3>
-            <p class="text-xs text-stone-500 mt-1">Áp dụng cho tất cả nhóm trong lớp này</p>
+            <p class="text-base text-stone-500 mt-1">Áp dụng cho tất cả nhóm trong lớp này</p>
           </div>
         </div>
 
@@ -36,12 +36,12 @@
               placeholder="5"
               class="w-full px-3 py-2 border border-stone-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
             />
-            <p class="text-xs text-stone-400 mt-1">1-100 thành viên/nhóm</p>
+            <p class="text-base text-stone-400 mt-1">1-100 thành viên/nhóm</p>
           </div>
         </div>
 
         <div v-if="warning" class="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl">
-          <p class="text-xs text-amber-800">⚠️ {{ warning }}</p>
+          <p class="text-base text-amber-800">⚠️ {{ warning }}</p>
         </div>
 
         <div class="flex gap-3">

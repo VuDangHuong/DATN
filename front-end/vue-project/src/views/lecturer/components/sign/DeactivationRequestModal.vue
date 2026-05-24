@@ -19,13 +19,13 @@
           </div>
           <div>
             <h3 class="text-lg font-bold text-stone-800">Yêu cầu vô hiệu hóa chữ ký số</h3>
-            <p class="text-xs text-stone-500 mt-1">Yêu cầu sẽ được gửi cho Admin duyệt</p>
+            <p class="text-base text-stone-500 mt-1">Yêu cầu sẽ được gửi cho Admin duyệt</p>
           </div>
         </div>
 
         <!-- Warning -->
         <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl mb-4">
-          <p class="text-xs text-amber-800">
+          <p class="text-base text-amber-800">
             ⚠️ <strong>Lưu ý:</strong> Trong thời gian chờ duyệt, bạn sẽ
             <strong>không thể ký tài liệu</strong>. Nếu Admin từ chối, chữ ký sẽ tiếp tục hoạt động
             bình thường.
@@ -46,9 +46,9 @@
               :class="error ? 'border-red-300' : ''"
             />
             <div class="flex justify-between mt-1">
-              <p v-if="error" class="text-xs text-red-500">{{ error }}</p>
-              <p v-else class="text-xs text-stone-400">Tối thiểu 10 ký tự</p>
-              <p class="text-xs text-stone-400">{{ reason.length }}/1000</p>
+              <p v-if="error" class="text-base text-red-500">{{ error }}</p>
+              <p v-else class="text-base text-stone-400">Tối thiểu 10 ký tự</p>
+              <p class="text-base text-stone-400">{{ reason.length }}/1000</p>
             </div>
           </div>
 

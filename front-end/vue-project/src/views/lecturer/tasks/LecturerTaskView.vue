@@ -7,7 +7,7 @@
         <!-- Breadcrumb -->
         <div
           v-if="mode !== 'groups'"
-          class="flex items-center gap-2 text-xs text-stone-500 mb-1.5 flex-wrap"
+          class="flex items-center gap-2 text-base text-stone-500 mb-1.5 flex-wrap"
         >
           <button @click="backToGroups" class="hover:text-teal-600 transition">
             Công việc nhóm
@@ -45,13 +45,13 @@
         <h2 class="text-2xl font-bold text-stone-800">
           {{ pageTitle }}
         </h2>
-        <p class="text-sm text-stone-500 mt-1">{{ pageSubtitle }}</p>
+        <p class="text-base text-stone-500 mt-1">{{ pageSubtitle }}</p>
       </div>
 
       <button
         v-if="mode !== 'groups'"
         @click="handleBack"
-        class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+        class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-base font-semibold rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
       >
         <SvgIcon name="back-arrow" class="w-4 h-4" />
         Quay lại
@@ -64,7 +64,7 @@
     >
       <!-- ✅ Chọn lớp - dùng SearchableSelect -->
       <div class="flex items-center gap-2 flex-1 min-w-[200px] max-w-md">
-        <label class="text-xs font-medium text-stone-500 whitespace-nowrap">Lớp học:</label>
+        <label class="text-base font-medium text-stone-500 whitespace-nowrap">Lớp học:</label>
         <SearchableSelect
           v-model="selectedClassId"
           :options="classOptions"
@@ -101,7 +101,7 @@
             v-model="groupSearch"
             type="text"
             placeholder="Tìm nhóm theo tên..."
-            class="w-full pl-8 pr-2 py-1.5 border border-stone-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-teal-500"
+            class="w-full pl-8 pr-2 py-1.5 border border-stone-200 rounded-lg text-base outline-none focus:ring-2 focus:ring-teal-500"
           />
         </div>
       </div>
@@ -141,25 +141,25 @@
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         <div class="bg-white rounded-xl border border-stone-200 p-4 text-center">
           <p class="text-2xl font-bold text-stone-700">{{ groups.length }}</p>
-          <p class="text-xs text-stone-400 mt-1">Tổng nhóm</p>
+          <p class="text-base text-stone-400 mt-1">Tổng nhóm</p>
         </div>
         <div class="bg-white rounded-xl border border-stone-200 p-4 text-center">
           <p class="text-2xl font-bold text-stone-700">{{ classOverallStats.total }}</p>
-          <p class="text-xs text-stone-400 mt-1">Tổng công việc</p>
+          <p class="text-base text-stone-400 mt-1">Tổng công việc</p>
         </div>
         <div class="bg-white rounded-xl border border-stone-200 p-4 text-center">
           <p class="text-2xl font-bold text-emerald-600">{{ classOverallStats.done }}</p>
-          <p class="text-xs text-stone-400 mt-1">Đã hoàn thành</p>
+          <p class="text-base text-stone-400 mt-1">Đã hoàn thành</p>
         </div>
         <div class="bg-white rounded-xl border border-stone-200 p-4 text-center">
           <p class="text-2xl font-bold text-red-600">{{ classOverallStats.late }}</p>
-          <p class="text-xs text-stone-400 mt-1">Trễ hạn</p>
+          <p class="text-base text-stone-400 mt-1">Trễ hạn</p>
         </div>
       </div>
 
       <div class="flex items-center justify-between mb-4">
         <h3
-          class="text-sm flex items-center gap-1.5 font-bold text-stone-700 uppercase tracking-wide"
+          class="text-base flex items-center gap-1.5 font-bold text-stone-700 uppercase tracking-wide"
         >
           <SvgIcon name="group-users" class="w-5 h-5" /> Danh sách nhóm ({{
             filteredGroups.length
@@ -197,35 +197,35 @@
       <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
         <div class="bg-white rounded-xl border border-stone-200 p-4 text-center">
           <p class="text-2xl font-bold text-stone-700">{{ overallStats.total }}</p>
-          <p class="text-xs text-stone-400 mt-1">Tổng nhiệm vụ</p>
+          <p class="text-base text-stone-400 mt-1">Tổng nhiệm vụ</p>
         </div>
         <div class="bg-white rounded-xl border border-stone-200 p-4 text-center">
           <p class="text-2xl font-bold text-stone-500">{{ overallStats.todo }}</p>
-          <p class="text-xs text-stone-400 mt-1">Cần làm</p>
+          <p class="text-base text-stone-400 mt-1">Cần làm</p>
         </div>
         <div class="bg-white rounded-xl border border-stone-200 p-4 text-center">
           <p class="text-2xl font-bold text-blue-600">{{ overallStats.doing }}</p>
-          <p class="text-xs text-stone-400 mt-1">Đang làm</p>
+          <p class="text-base text-stone-400 mt-1">Đang làm</p>
         </div>
         <div class="bg-white rounded-xl border border-stone-200 p-4 text-center">
           <p class="text-2xl font-bold text-emerald-600">{{ overallStats.done }}</p>
-          <p class="text-xs text-stone-400 mt-1">Hoàn thành</p>
+          <p class="text-base text-stone-400 mt-1">Hoàn thành</p>
         </div>
         <div class="bg-white rounded-xl border border-stone-200 p-4 text-center">
           <p class="text-2xl font-bold text-red-600">{{ overallStats.late }}</p>
-          <p class="text-xs text-stone-400 mt-1">Trễ hạn</p>
+          <p class="text-base text-stone-400 mt-1">Trễ hạn</p>
         </div>
       </div>
 
       <div class="flex items-center justify-between mb-4">
         <h3
-          class="flex items-center gap-1.5 text-sm font-bold text-stone-700 uppercase tracking-wide"
+          class="flex items-center gap-1.5 text-base font-bold text-stone-700 uppercase tracking-wide"
         >
           <SvgIcon name="group-users" class="w-3.5 h-3.5" /> Thành viên nhóm ({{
             sortedMembers.length
           }})
         </h3>
-        <p class="text-xs text-stone-400">
+        <p class="text-base text-stone-400">
           Tổng tiến độ nhóm: <strong :class="groupProgressColor">{{ groupProgress }}%</strong>
         </p>
       </div>
@@ -292,7 +292,7 @@
               Trưởng nhóm
             </span>
           </div>
-          <p class="text-xs text-stone-400 font-mono mt-1">{{ selectedMember.code }}</p>
+          <p class="text-base text-stone-400 font-mono mt-1">{{ selectedMember.code }}</p>
 
           <div class="mt-3 flex items-center gap-3">
             <div class="flex-1 h-2 bg-stone-100 rounded-full overflow-hidden max-w-xs">
@@ -302,7 +302,7 @@
                 :style="{ width: `${memberPercentage}%` }"
               />
             </div>
-            <span class="text-sm font-bold" :class="memberProgressColor"
+            <span class="text-base font-bold" :class="memberProgressColor"
               >{{ memberPercentage }}%</span
             >
           </div>
@@ -336,7 +336,7 @@
             v-for="f in statusFilters"
             :key="f.value"
             @click="filterStatus = f.value"
-            class="px-3 py-1.5 rounded-md text-xs font-medium transition"
+            class="px-3 py-1.5 rounded-md text-base font-medium transition"
             :class="
               filterStatus === f.value
                 ? 'bg-white text-stone-800 shadow-sm'
@@ -371,8 +371,8 @@
         >
           <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-2">
-              <span class="text-sm font-semibold text-stone-700">{{ col.label }}</span>
-              <span class="px-2 py-0.5 text-xs font-bold rounded-full" :class="col.badgeClass">
+              <span class="text-base font-semibold text-stone-700">{{ col.label }}</span>
+              <span class="px-2 py-0.5 text-base font-bold rounded-full" :class="col.badgeClass">
                 {{ getColumnTasks(col.status).length }}
               </span>
             </div>
@@ -382,7 +382,7 @@
           <div class="space-y-3">
             <div
               v-if="!getColumnTasks(col.status).length"
-              class="text-center py-6 text-xs text-stone-400 border-2 border-dashed border-stone-200 rounded-xl"
+              class="text-center py-6 text-base text-stone-400 border-2 border-dashed border-stone-200 rounded-xl"
             >
               Không có công việc
             </div>
@@ -407,9 +407,13 @@
                   Trễ hạn
                 </span>
               </div>
-              <p class="text-sm font-semibold text-stone-800 mb-2 leading-snug">{{ task.title }}</p>
+              <p class="text-base font-semibold text-stone-800 mb-2 leading-snug">
+                {{ task.title }}
+              </p>
               <div class="flex items-center justify-between mt-3">
-                <span class="text-xs text-stone-500">{{ task.assignee?.name ?? 'Chưa giao' }}</span>
+                <span class="text-base text-stone-500">{{
+                  task.assignee?.name ?? 'Chưa giao'
+                }}</span>
                 <span v-if="task.deadline" class="text-[10px] text-stone-400">
                   {{ formatDate(task.deadline) }}
                 </span>
@@ -423,8 +427,8 @@
       <div v-if="getColumnTasks('late').length" class="mt-4">
         <div class="bg-red-50 rounded-xl border border-red-200 p-4">
           <div class="flex items-center gap-2 mb-3">
-            <span class="text-sm font-semibold text-red-700">⚠️ Trễ hạn</span>
-            <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-red-100 text-red-700">
+            <span class="text-base font-semibold text-red-700">⚠️ Trễ hạn</span>
+            <span class="px-2 py-0.5 text-base font-bold rounded-full bg-red-100 text-red-700">
               {{ getColumnTasks('late').length }}
             </span>
           </div>
@@ -435,9 +439,11 @@
               class="bg-white rounded-xl border border-red-200 p-3 cursor-pointer hover:shadow-sm transition"
               @click="openTaskDetail(task)"
             >
-              <p class="text-sm font-semibold text-stone-800 mb-1">{{ task.title }}</p>
+              <p class="text-base font-semibold text-stone-800 mb-1">{{ task.title }}</p>
               <div class="flex items-center justify-between">
-                <span class="text-xs text-stone-500">{{ task.assignee?.name ?? 'Chưa giao' }}</span>
+                <span class="text-base text-stone-500">{{
+                  task.assignee?.name ?? 'Chưa giao'
+                }}</span>
                 <span class="text-[10px] text-red-600 font-medium">{{
                   formatDate(task.deadline)
                 }}</span>
@@ -499,30 +505,30 @@
           <div class="flex-1 overflow-y-auto p-6 space-y-5">
             <p
               v-if="currentTask.description"
-              class="text-sm text-stone-600 leading-relaxed bg-stone-50 rounded-xl p-4"
+              class="text-base text-stone-600 leading-relaxed bg-stone-50 rounded-xl p-4"
             >
               {{ currentTask.description }}
             </p>
 
-            <div class="grid grid-cols-2 gap-3 text-sm">
+            <div class="grid grid-cols-2 gap-3 text-base">
               <div class="p-3 bg-stone-50 rounded-xl">
-                <p class="text-stone-400 text-xs mb-1">Giao cho</p>
+                <p class="text-stone-400 text-base mb-1">Giao cho</p>
                 <p class="font-medium text-stone-700">
                   {{ currentTask.assignee?.name || 'Chưa giao' }}
                 </p>
               </div>
               <div class="p-3 bg-stone-50 rounded-xl">
-                <p class="text-stone-400 text-xs mb-1">Người tạo</p>
+                <p class="text-stone-400 text-base mb-1">Người tạo</p>
                 <p class="font-medium text-stone-700">{{ currentTask.creator?.name }}</p>
               </div>
               <div class="p-3 bg-stone-50 rounded-xl">
-                <p class="text-stone-400 text-xs mb-1">Bắt đầu</p>
+                <p class="text-stone-400 text-base mb-1">Bắt đầu</p>
                 <p class="font-medium text-stone-700">
                   {{ formatDate(currentTask.start_date) || '—' }}
                 </p>
               </div>
               <div class="p-3 bg-stone-50 rounded-xl">
-                <p class="text-stone-400 text-xs mb-1">Deadline</p>
+                <p class="text-stone-400 text-base mb-1">Deadline</p>
                 <p
                   class="font-medium"
                   :class="currentTask.is_overdue ? 'text-red-600' : 'text-stone-700'"

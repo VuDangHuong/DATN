@@ -79,7 +79,7 @@
             <SvgIcon name="edit" class="w-4 h-4" />
           </button>
           <button
-            @click.stop="$emit('delete', a.id)"
+            @click.stop="$emit('delete', a)"
             class="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition"
           >
             <SvgIcon name="trash" class="w-4 h-4" />

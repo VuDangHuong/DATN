@@ -4,7 +4,7 @@
     <div class="flex items-center justify-between mb-6">
       <div>
         <h2 class="text-2xl font-bold text-slate-800">Lớp học của tôi</h2>
-        <p class="text-sm text-slate-500 mt-1">
+        <p class="text-base text-slate-500 mt-1">
           {{ filteredClasses.length }} lớp
           <span v-if="lecturerStore.selectedClassId"> · đang lọc theo lớp đã chọn</span>
         </p>
@@ -62,7 +62,9 @@
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
                 <h3 class="font-semibold text-slate-800">{{ cls.name }}</h3>
-                <span class="px-2 py-0.5 bg-slate-100 text-slate-500 text-xs font-mono rounded-lg">
+                <span
+                  class="px-2 py-0.5 bg-slate-100 text-slate-500 text-base font-mono rounded-lg"
+                >
                   {{ cls.code }}
                 </span>
                 <span
@@ -80,7 +82,7 @@
                   {{ cls.max_members_per_group ?? 5 }}/nhóm
                 </span>
               </div>
-              <div class="flex items-center gap-4 mt-1 text-xs text-slate-400">
+              <div class="flex items-center gap-4 mt-1 text-base text-slate-400">
                 <span>{{ cls.semester?.name }}</span>
                 <span v-if="cls.subjects?.length">
                   {{ cls.subjects.map((s) => s.code).join(', ') }}
@@ -131,7 +133,7 @@
               <div class="flex items-center gap-3">
                 <h4 class="text-sm font-semibold text-slate-600">
                   Danh sách nhóm
-                  <span class="ml-1.5 px-2 py-0.5 bg-teal-100 text-teal-700 text-xs rounded-full">
+                  <span class="ml-1.5 px-2 py-0.5 bg-teal-100 text-teal-700 text-base rounded-full">
                     {{ groups.length }}
                   </span>
                 </h4>
@@ -139,7 +141,7 @@
                 <!-- ✅ Nút cài đặt định mức -->
                 <button
                   @click.stop="openMaxMembersModal(cls)"
-                  class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-medium transition border border-indigo-200"
+                  class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-base font-medium transition border border-indigo-200"
                   title="Cài đặt định mức thành viên mỗi nhóm"
                 >
                   <SvgIcon name="settings" class="w-4 h-4 text-blue-600" />
@@ -151,7 +153,7 @@
                 v-model="groupSearch"
                 type="text"
                 placeholder="Tìm nhóm..."
-                class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none w-40"
+                class="px-3 py-1.5 border border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none w-40"
               />
             </div>
 
@@ -169,7 +171,7 @@
                     >
                       {{ group.name }}
                     </p>
-                    <p class="text-xs text-slate-400 font-mono mt-0.5">
+                    <p class="text-base text-slate-400 font-mono mt-0.5">
                       {{ group.invitation_code }}
                     </p>
                   </div>
@@ -192,7 +194,7 @@
                     {{ group.leader?.name?.charAt(0) }}
                   </div>
                   <div class="min-w-0">
-                    <p class="text-xs font-medium text-slate-700 truncate">
+                    <p class="text-base font-medium text-slate-700 truncate">
                       {{ group.leader?.name }}
                     </p>
                     <p class="text-[12px] text-slate-400">Trưởng nhóm</p>
@@ -218,7 +220,7 @@
                   </div>
                   <!-- ✅ Hiện cả max của lớp -->
                   <span
-                    class="text-xs"
+                    class="text-base"
                     :class="
                       isGroupOverLimit(group, cls)
                         ? 'text-amber-600 font-semibold'

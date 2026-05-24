@@ -5,7 +5,7 @@
     <div class="flex items-center justify-between mb-6">
       <div>
         <h2 class="text-2xl font-bold text-stone-800">Yêu cầu ký số</h2>
-        <p class="text-sm text-stone-500 mt-1">Danh sách tài liệu cần ký số từ sinh viên</p>
+        <p class="text-base text-stone-500 mt-1">Danh sách tài liệu cần ký số từ sinh viên</p>
       </div>
     </div>
 
@@ -13,19 +13,19 @@
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
       <div class="bg-white rounded-xl border border-stone-200 p-4 text-center">
         <p class="text-2xl font-bold text-stone-700">{{ store.stats.total ?? 0 }}</p>
-        <p class="text-xs text-stone-400 mt-1">Tổng yêu cầu</p>
+        <p class="text-base text-stone-400 mt-1">Tổng yêu cầu</p>
       </div>
       <div class="bg-white rounded-xl border border-amber-200 p-4 text-center">
         <p class="text-2xl font-bold text-amber-500">{{ store.stats.pending ?? 0 }}</p>
-        <p class="text-xs text-stone-400 mt-1">Chờ ký</p>
+        <p class="text-base text-stone-400 mt-1">Chờ ký</p>
       </div>
       <div class="bg-white rounded-xl border border-blue-200 p-4 text-center">
         <p class="text-2xl font-bold text-blue-500">{{ store.stats.signed ?? 0 }}</p>
-        <p class="text-xs text-stone-400 mt-1">Đã ký</p>
+        <p class="text-base text-stone-400 mt-1">Đã ký</p>
       </div>
       <div class="bg-white rounded-xl border border-emerald-200 p-4 text-center">
         <p class="text-2xl font-bold text-emerald-600">{{ store.stats.rejected ?? 0 }}</p>
-        <p class="text-xs text-stone-400 mt-1">Hoàn thành</p>
+        <p class="text-base text-stone-400 mt-1">Hoàn thành</p>
       </div>
     </div>
 
@@ -38,7 +38,7 @@
           v-for="f in statusFilters"
           :key="f.value"
           @click="store.setFilter(f.value)"
-          class="px-3 py-1.5 rounded-md text-xs font-medium transition"
+          class="px-3 py-1.5 rounded-md text-base font-medium transition"
           :class="
             store.filterStatus === f.value
               ? 'bg-white text-stone-800 shadow-sm'
@@ -88,14 +88,14 @@
           <div class="flex items-start gap-3 flex-1 min-w-0">
             <!-- Avatar SV -->
             <div
-              class="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-sm font-bold text-teal-700 flex-shrink-0"
+              class="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-base font-bold text-teal-700 flex-shrink-0"
             >
               {{ req.requester?.name?.charAt(0) }}
             </div>
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 flex-wrap mb-1">
                 <p class="font-semibold text-stone-800">{{ req.requester?.name }}</p>
-                <p class="text-xs text-stone-400 font-mono">{{ req.requester?.code }}</p>
+                <p class="text-base text-stone-400 font-mono">{{ req.requester?.code }}</p>
                 <span
                   class="px-2 py-0.5 bg-violet-50 text-violet-700 text-[10px] font-bold rounded-lg"
                 >
@@ -105,10 +105,10 @@
                   class="px-2 py-0.5 text-[10px] font-bold rounded-full"
                   :class="statusBadgeClass(req.status)"
                 >
-                  {{ req.status }}
+                  {{ getStatusLabel(req.status) }}
                 </span>
               </div>
-              <div class="flex items-center gap-3 text-xs text-stone-400 flex-wrap">
+              <div class="flex items-center gap-3 text-base text-stone-400 flex-wrap">
                 <span>{{ req.class_model?.name }}</span>
                 <span>·</span>
                 <span class="uppercase font-mono">{{ req.document_type }}</span>
@@ -125,7 +125,7 @@
             <button
               v-if="['pending', 'lecturer_reviewing'].includes(req.status)"
               @click="store.loadDetail(req)"
-              class="px-4 py-2 bg-teal-600 text-white rounded-lg text-xs font-semibold hover:bg-teal-700 transition flex items-center gap-1.5"
+              class="px-4 py-2 bg-teal-600 text-white rounded-lg text-base font-semibold hover:bg-teal-700 transition flex items-center gap-1.5"
             >
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -141,7 +141,7 @@
             <!-- ✅ signed → đã ký thành công (terminal) -->
             <span
               v-else-if="req.status === 'signed'"
-              class="px-3 py-1.5 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-lg flex items-center gap-1.5"
+              class="px-3 py-1.5 bg-emerald-50 text-emerald-700 text-base font-medium rounded-lg flex items-center gap-1.5"
             >
               <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                 <path
@@ -156,7 +156,7 @@
             <!-- rejected -->
             <span
               v-else-if="req.status === 'rejected'"
-              class="px-3 py-1.5 bg-red-50 text-red-700 text-xs font-medium rounded-lg flex items-center gap-1.5"
+              class="px-3 py-1.5 bg-red-50 text-red-700 text-base font-medium rounded-lg flex items-center gap-1.5"
             >
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -175,7 +175,7 @@
 
     <!-- Pagination -->
     <div v-if="store.pagination.last_page > 1" class="mt-4 flex items-center justify-between">
-      <p class="text-xs text-stone-500">
+      <p class="text-base text-stone-500">
         Trang {{ store.pagination.current_page }} / {{ store.pagination.last_page }} ·
         {{ store.pagination.total }} yêu cầu
       </p>
@@ -183,14 +183,14 @@
         <button
           @click="store.changePage(store.pagination.current_page - 1)"
           :disabled="store.pagination.current_page === 1"
-          class="px-3 py-1.5 border border-stone-200 rounded-lg text-xs disabled:opacity-40 hover:bg-stone-50"
+          class="px-3 py-1.5 border border-stone-200 rounded-lg text-base disabled:opacity-40 hover:bg-stone-50"
         >
           ← Trước
         </button>
         <button
           @click="store.changePage(store.pagination.current_page + 1)"
           :disabled="store.pagination.current_page === store.pagination.last_page"
-          class="px-3 py-1.5 border border-stone-200 rounded-lg text-xs disabled:opacity-40 hover:bg-stone-50"
+          class="px-3 py-1.5 border border-stone-200 rounded-lg text-base disabled:opacity-40 hover:bg-stone-50"
         >
           Sau →
         </button>
@@ -216,7 +216,16 @@ const statusFilters = [
   { value: 'signed', label: 'Đã ký' },
   { value: 'rejected', label: 'Đã từ chối' },
 ]
+function getStatusLabel(status) {
+  const map = {
+    pending: 'Chờ ký',
+    lecturer_reviewing: 'Đang xem',
+    signed: 'Đã ký',
+    rejected: 'Đã từ chối',
+  }
 
+  return map[status] || status
+}
 onMounted(() => store.loadRequests())
 
 function statusBadgeClass(status) {

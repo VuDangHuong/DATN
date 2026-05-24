@@ -14,12 +14,12 @@
           <div>
             <div class="flex items-center gap-2 mb-1">
               <h3 class="text-lg font-bold text-stone-900">Chi tiết yêu cầu ký số</h3>
-              <span
+              <!-- <span
                 class="px-2 py-0.5 text-[10px] font-bold rounded-full"
                 :class="statusBadgeClass(store.selectedRequest.status)"
               >
                 {{ store.selectedRequest.status }}
-              </span>
+              </span> -->
             </div>
             <p class="text-xs text-stone-400">
               Yêu cầu #{{ store.selectedRequest.id }} ·
@@ -95,12 +95,12 @@
                   {{ store.selectedRequest.class_model?.name }}
                 </p>
               </div>
-              <div>
+              <!-- <div>
                 <p class="text-xs text-stone-400">Thời gian chuyển</p>
                 <p class="font-medium text-stone-700 mt-0.5">
                   {{ formatDate(store.selectedRequest.forwarded_at) }}
                 </p>
-              </div>
+              </div> -->
             </div>
             <!-- Tải file gốc -->
             <button

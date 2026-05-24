@@ -10,7 +10,7 @@
         </div>
         <div class="hidden md:block text-right">
           <p class="text-3xl font-bold">{{ stats.sign_requests_signed_today }}</p>
-          <p class="text-xs text-teal-100">tài liệu đã ký hôm nay</p>
+          <p class="text-base text-teal-100">tài liệu đã ký hôm nay</p>
         </div>
       </div>
     </div>
@@ -119,7 +119,7 @@
             </div>
             <span
               v-if="stats.submissions_pending > 0"
-              class="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-bold rounded-full"
+              class="px-2 py-0.5 bg-amber-100 text-amber-700 text-base font-bold rounded-full"
             >
               {{ stats.submissions_pending }}
             </span>
@@ -151,7 +151,7 @@
                     <p class="text-sm font-semibold text-stone-800 truncate">
                       {{ s.submitter_name }}
                     </p>
-                    <p class="text-xs text-stone-500 truncate">
+                    <p class="text-base text-stone-500 truncate">
                       {{ s.class_name }} · {{ s.assignment_title }}
                     </p>
                   </div>
@@ -180,7 +180,7 @@
             </div>
             <span
               v-if="stats.sign_requests_pending > 0"
-              class="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full"
+              class="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-base font-bold rounded-full"
             >
               {{ stats.sign_requests_pending }}
             </span>
@@ -199,7 +199,7 @@
               <div class="flex items-center justify-between gap-3">
                 <div class="flex items-center gap-3 min-w-0">
                   <div
-                    class="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center text-xs font-bold text-stone-600 overflow-hidden flex-shrink-0"
+                    class="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center text-base font-bold text-stone-600 overflow-hidden flex-shrink-0"
                   >
                     <img
                       v-if="r.requester?.avatar_url"
@@ -212,7 +212,7 @@
                     <p class="text-sm font-semibold text-stone-800 truncate">
                       {{ r.requester?.name }}
                     </p>
-                    <p class="text-xs text-stone-500 truncate">
+                    <p class="text-base text-stone-500 truncate">
                       <span
                         class="inline-block w-1.5 h-1.5 rounded-full mr-1"
                         :class="r.status === 'lecturer_reviewing' ? 'bg-blue-500' : 'bg-amber-500'"
@@ -267,7 +267,7 @@
                 <p class="text-sm font-medium text-stone-700 group-hover:text-teal-600 transition">
                   {{ a.title }}
                 </p>
-                <p class="text-xs text-stone-500 truncate">{{ a.subtitle }}</p>
+                <p class="text-base text-stone-500 truncate">{{ a.subtitle }}</p>
               </div>
               <span class="text-[10px] text-stone-400 flex-shrink-0 whitespace-nowrap">
                 {{ formatRelative(a.time) }}

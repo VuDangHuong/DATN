@@ -12,7 +12,7 @@
           </div>
           <div>
             <h3 class="text-lg font-bold text-stone-800">Sao chép tài liệu sang lớp khác</h3>
-            <p class="text-xs text-stone-500 mt-1">
+            <p class="text-base text-stone-500 mt-1">
               Chọn lớp đích để sao chép {{ materialIds.length }} tài liệu
             </p>
           </div>
@@ -20,9 +20,9 @@
 
         <!-- Source info -->
         <div v-if="source" class="mb-4 p-3 bg-stone-50 rounded-xl flex-shrink-0">
-          <p class="text-xs text-stone-500 mb-1">Từ lớp gốc:</p>
+          <p class="text-base text-stone-500 mb-1">Từ lớp gốc:</p>
           <p class="text-sm font-semibold text-stone-800">{{ source.name }}</p>
-          <p class="text-xs text-stone-500 mt-1">
+          <p class="text-base text-stone-500 mt-1">
             Môn: {{ source.subjects?.map((s) => s.code).join(', ') ?? '—' }}
           </p>
         </div>
@@ -43,7 +43,7 @@
         <div v-else class="flex-1 overflow-y-auto -mx-2 px-2 space-y-2 mb-4">
           <!-- Cùng môn -->
           <template v-if="sameSubjectClasses.length">
-            <p class="text-xs font-bold text-emerald-700 uppercase tracking-wide mb-2">
+            <p class="text-base font-bold text-emerald-700 uppercase tracking-wide mb-2">
               ✨ Lớp cùng môn ({{ sameSubjectClasses.length }})
             </p>
             <label
@@ -64,7 +64,7 @@
               />
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium text-stone-800 truncate">{{ c.name }}</p>
-                <p class="text-xs text-stone-500 mt-0.5">
+                <p class="text-base text-stone-500 mt-0.5">
                   {{ c.code }} · {{ c.semester_name }}
                   <span v-if="c.subjects?.length" class="ml-1">
                     · {{ c.subjects.map((s) => s.code).join(', ') }}
@@ -81,7 +81,7 @@
 
           <!-- Lớp khác -->
           <template v-if="otherClasses.length">
-            <p class="text-xs font-bold text-stone-500 uppercase tracking-wide mt-3 mb-2">
+            <p class="text-base font-bold text-stone-500 uppercase tracking-wide mt-3 mb-2">
               Lớp khác ({{ otherClasses.length }})
             </p>
             <label
@@ -102,7 +102,7 @@
               />
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium text-stone-800 truncate">{{ c.name }}</p>
-                <p class="text-xs text-stone-500 mt-0.5">
+                <p class="text-base text-stone-500 mt-0.5">
                   {{ c.code }} · {{ c.semester_name }}
                   <span v-if="c.subjects?.length" class="ml-1">
                     · {{ c.subjects.map((s) => s.code).join(', ') }}
@@ -131,8 +131,8 @@
             <span v-if="result.skippedCount > 0">· Bỏ qua {{ result.skippedCount }}</span>
           </p>
           <details v-if="result.skippedReasons?.length" class="mt-2">
-            <summary class="text-xs cursor-pointer text-stone-600">Xem chi tiết</summary>
-            <ul class="text-xs text-stone-600 mt-1 space-y-0.5 ml-4 list-disc">
+            <summary class="text-base cursor-pointer text-stone-600">Xem chi tiết</summary>
+            <ul class="text-base text-stone-600 mt-1 space-y-0.5 ml-4 list-disc">
               <li v-for="(r, i) in result.skippedReasons" :key="i">{{ r }}</li>
             </ul>
           </details>

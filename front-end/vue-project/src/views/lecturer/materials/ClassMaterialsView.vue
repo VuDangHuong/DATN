@@ -5,7 +5,7 @@
     <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
       <div>
         <h2 class="text-2xl font-bold text-stone-800">Tài liệu lớp học</h2>
-        <p class="text-sm text-stone-500 mt-1">
+        <p class="text-base text-stone-500 mt-1">
           {{ materialStore.totalMaterials }} tài liệu · {{ materialStore.totalFiles }} file
         </p>
       </div>
@@ -17,6 +17,14 @@
         >
           <SvgICon name="copy" class="w-4 h-4" />
           Sao chép ({{ selectedIds.length }})
+        </button>
+        <button
+          v-if="selectedIds.length"
+          @click="handleDeleteMultiple"
+          class="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-semibold flex items-center gap-2"
+        >
+          <SvgICon name="trash" class="w-4 h-4" />
+          Xóa ({{ selectedIds.length }})
         </button>
         <button
           @click="openCreateModal"
@@ -41,7 +49,7 @@
             : 'border-stone-200 hover:border-stone-300'
         "
       >
-        <p class="text-xs text-stone-500 truncate">{{ label }}</p>
+        <p class="text-base text-stone-500 truncate">{{ label }}</p>
         <p
           class="text-2xl font-bold mt-1"
           :class="materialStore.filters.category === key ? 'text-emerald-600' : 'text-stone-800'"
@@ -78,7 +86,7 @@
       <button
         v-if="materialStore.filters.category || materialStore.filters.search"
         @click="clearFilters"
-        class="px-3 py-2 text-xs text-stone-600 hover:bg-stone-100 rounded-xl"
+        class="px-3 py-2 text-base text-stone-600 hover:bg-stone-100 rounded-xl"
       >
         Xóa lọc
       </button>
@@ -107,7 +115,34 @@
         Upload tài liệu đầu tiên
       </button>
     </div>
+    <!-- <div
+      v-if="!materialStore.loading && materialStore.materials.length"
+      class="flex items-center justify-between gap-3 mb-3 px-2"
+    >
+      <label class="flex items-center gap-2 cursor-pointer text-sm text-stone-700">
+        <input
+          type="checkbox"
+          :checked="isAllSelected"
+          @change="toggleSelectAll"
+          class="rounded text-emerald-600 focus:ring-emerald-500"
+        />
+        <span class="font-medium">
+          {{
+            selectedIds.length
+              ? `Đã chọn ${selectedIds.length}/${materialStore.materials.length}`
+              : 'Chọn tất cả'
+          }}
+        </span>
+      </label>
 
+      <button
+        v-if="selectedIds.length"
+        @click="selectedIds = []"
+        class="text-base text-stone-500 hover:text-stone-700 underline"
+      >
+        Bỏ chọn
+      </button>
+    </div> -->
     <!-- ✅ Material list (accordion) -->
     <div v-else class="space-y-3">
       <div
@@ -145,11 +180,11 @@
               </span>
             </div>
 
-            <p v-if="m.description" class="text-xs text-stone-600 mt-0.5 line-clamp-1">
+            <p v-if="m.description" class="text-base text-stone-600 mt-0.5 line-clamp-1">
               {{ m.description }}
             </p>
 
-            <div class="flex items-center gap-2 mt-1 text-xs text-stone-400 flex-wrap">
+            <div class="flex items-center gap-2 mt-1 text-base text-stone-400 flex-wrap">
               <span>{{ m.category_label }}</span>
               <span>· {{ formatSize(m.total_size) }}</span>
               <span>· {{ formatDate(m.created_at) }}</span>
@@ -191,7 +226,7 @@
 
         <!-- ✅ Files list (expanded) -->
         <div v-if="expandedIds.includes(m.id)" class="border-t border-stone-100">
-          <div v-if="!m.files?.length" class="p-4 text-center text-stone-400 text-xs">
+          <div v-if="!m.files?.length" class="p-4 text-center text-stone-400 text-base">
             Chưa có file. Bấm + để thêm.
           </div>
 
@@ -249,17 +284,41 @@
       @close="showCopyModal = false"
       @success="onCopySuccess"
     />
+
+    <ConfirmModal
+      v-model="confirmState.show"
+      :title="confirmState.title"
+      :message="confirmState.message"
+      :item-name="confirmState.itemName"
+      :warning-text="confirmState.warningText"
+      :confirm-text="confirmState.confirmText"
+      :cancel-text="confirmState.cancelText"
+      :variant="confirmState.variant"
+      :loading="confirmState.loading"
+      :require-type-confirm="confirmState.requireTypeConfirm"
+      @confirm="_handleConfirm"
+      @cancel="_handleCancel"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useMaterialStore } from '@/stores/lecturer/materialStore'
 import { useToastStore } from '@/stores/toast'
 import UploadMaterialModal from '../components/materials/UploadMaterialModal.vue'
 import CopyMaterialModal from '../components/materials/CopyMaterialModal.vue'
 import SvgICon from '@/components/icons/SVG.vue'
-
+import { useConfirm } from '@/composables/useConfirm'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
+const {
+  state: confirmState,
+  confirmDelete,
+  setLoading: setConfirmLoading,
+  close: closeConfirm,
+  _handleConfirm,
+  _handleCancel,
+} = useConfirm()
 const props = defineProps({
   classId: { type: Number, required: true },
 })
@@ -288,7 +347,20 @@ const categories = {
 onMounted(loadMaterials)
 
 watch(() => props.classId, loadMaterials)
+// ✅ THÊM computed
+const isAllSelected = computed(() => {
+  if (!materialStore.materials.length) return false
+  return selectedIds.value.length === materialStore.materials.length
+})
 
+// ✅ THÊM function
+function toggleSelectAll() {
+  if (isAllSelected.value) {
+    selectedIds.value = []
+  } else {
+    selectedIds.value = materialStore.materials.map((m) => m.id)
+  }
+}
 async function loadMaterials() {
   if (!props.classId) return
   selectedIds.value = []
@@ -365,23 +437,91 @@ async function handleDownload(file, materialId) {
   const res = await materialStore.downloadFile(file.id, materialId)
   if (!res.success) toast.error(res.message)
 }
-
 async function handleDeleteFile(file, materialId) {
-  if (!confirm(`Xóa file "${file.file_name}"?`)) return
-  const res = await materialStore.deleteFile(file.id, materialId)
-  if (res.success) toast.success(res.message)
-  else toast.error(res.message)
+  if (!file || !file.id) {
+    toast.error('File không hợp lệ')
+    return
+  }
+
+  const ok = await confirmDelete(file.file_name, {
+    title: 'Xóa file',
+    message:
+      'File sẽ bị xóa vĩnh viễn khỏi tài liệu này. Sinh viên đã tải xuống vẫn giữ được file đã tải.',
+    warningText: file.file_size_formatted ? `Kích thước: ${file.file_size_formatted}` : '',
+    confirmText: 'Xóa file',
+  })
+
+  if (!ok) return
+
+  setConfirmLoading(true)
+  try {
+    const res = await materialStore.deleteFile(file.id, materialId)
+    if (res.success) {
+      toast.success(res.message || 'Đã xóa file')
+    } else {
+      toast.error(res.message || 'Không thể xóa file')
+    }
+  } catch (e) {
+    toast.error(e.response?.data?.message || 'Lỗi khi xóa file')
+  } finally {
+    closeConfirm()
+  }
+}
+async function handleDeleteMultiple() {
+  if (!selectedIds.value.length) return
+
+  const ok = await confirmDelete(`${selectedIds.value.length} tài liệu`, {
+    title: 'Xóa nhiều tài liệu',
+    message: 'Tất cả tài liệu đã chọn cùng các file bên trong sẽ bị xóa vĩnh viễn.',
+    warningText: `${selectedIds.value.length} tài liệu sẽ bị xóa`,
+    confirmText: 'Xóa tất cả',
+    requireTypeConfirm: 'XOA', // ← Yêu cầu gõ "XOA" cho an toàn
+  })
+  if (!ok) return
+
+  setConfirmLoading(true)
+  try {
+    // Xóa song song
+    await Promise.all(selectedIds.value.map((id) => materialStore.deleteMaterial(id)))
+    toast.success(`Đã xóa ${selectedIds.value.length} tài liệu`)
+    selectedIds.value = []
+  } finally {
+    closeConfirm()
+  }
 }
 
 async function handleDeleteMaterial(m) {
-  if (!confirm(`Xóa "${m.title}" và toàn bộ ${m.file_count} file bên trong?`)) return
-  const res = await materialStore.deleteMaterial(m.id)
-  if (res.success) {
-    toast.success(res.message)
-    selectedIds.value = selectedIds.value.filter((id) => id !== m.id)
-    expandedIds.value = expandedIds.value.filter((id) => id !== m.id)
-  } else {
-    toast.error(res.message)
+  if (!m || !m.id) {
+    toast.error('Tài liệu không hợp lệ')
+    return
+  }
+
+  const ok = await confirmDelete(m.title, {
+    title: 'Xóa tài liệu',
+    message:
+      m.file_count > 0
+        ? `Tất cả ${m.file_count} file bên trong sẽ bị xóa vĩnh viễn cùng tài liệu này. Sinh viên sẽ không thể tải về nữa.`
+        : 'Hành động này sẽ xóa vĩnh viễn tài liệu. Không thể hoàn tác.',
+    warningText: m.file_count > 0 ? `${m.file_count} file sẽ bị xóa` : '',
+    confirmText: 'Xóa tài liệu',
+  })
+
+  if (!ok) return
+
+  setConfirmLoading(true)
+  try {
+    const res = await materialStore.deleteMaterial(m.id)
+    if (res.success) {
+      toast.success(res.message)
+      selectedIds.value = selectedIds.value.filter((id) => id !== m.id)
+      expandedIds.value = expandedIds.value.filter((id) => id !== m.id)
+    } else {
+      toast.error(res.message)
+    }
+  } catch (e) {
+    toast.error(e.response?.data?.message || 'Lỗi khi xóa tài liệu')
+  } finally {
+    closeConfirm()
   }
 }
 

@@ -15,7 +15,7 @@
             <h3 class="text-lg font-bold text-stone-800">
               {{ mode === 'add' ? 'Thêm file vào tài liệu' : 'Upload tài liệu mới' }}
             </h3>
-            <p class="text-xs text-stone-500 mt-1">
+            <p class="text-base text-stone-500 mt-1">
               <template v-if="mode === 'add'">
                 Vào: <strong>{{ existingTitle }}</strong> · Tối đa 20 file × 50MB
               </template>
@@ -28,7 +28,7 @@
           <!-- Title (chỉ hiện khi tạo mới) -->
           <template v-if="mode === 'create'">
             <div>
-              <label class="block text-sm font-medium text-stone-700 mb-1">
+              <label class="block text-base font-medium text-stone-700 mb-1">
                 Tên tài liệu (Title) <span class="text-red-500">*</span>
               </label>
               <input
@@ -36,21 +36,21 @@
                 type="text"
                 placeholder="Vd: Chương 1 - Giới thiệu môn học"
                 maxlength="255"
-                class="w-full px-3 py-2 border border-stone-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                class="w-full px-3 py-2 border border-stone-200 rounded-xl text-base focus:ring-2 focus:ring-emerald-500 outline-none"
               />
-              <p class="text-xs text-stone-400 mt-1">Title sẽ chứa tất cả file bên dưới</p>
+              <p class="text-base text-stone-400 mt-1">Title sẽ chứa tất cả file bên dưới</p>
             </div>
 
             <!-- Category -->
             <div>
-              <label class="block text-sm font-medium text-stone-700 mb-1">Loại</label>
+              <label class="block text-base font-medium text-stone-700 mb-1">Loại</label>
               <div class="grid grid-cols-3 gap-2">
                 <button
                   v-for="(label, value) in categories"
                   :key="value"
                   type="button"
                   @click="form.category = value"
-                  class="px-2 py-2 border rounded-xl text-xs font-medium transition"
+                  class="px-2 py-2 border rounded-xl text-base font-medium transition"
                   :class="
                     form.category === value
                       ? 'bg-emerald-600 text-white border-emerald-600'
@@ -64,23 +64,23 @@
 
             <!-- Description -->
             <div>
-              <label class="block text-sm font-medium text-stone-700 mb-1">
-                Mô tả <span class="text-stone-400 text-xs">(tùy chọn)</span>
+              <label class="block text-base font-medium text-stone-700 mb-1">
+                Mô tả <span class="text-stone-400 text-base">(tùy chọn)</span>
               </label>
               <textarea
                 v-model="form.description"
                 rows="2"
                 maxlength="1000"
-                class="w-full px-3 py-2 border border-stone-200 rounded-xl text-sm resize-none focus:ring-2 focus:ring-emerald-500 outline-none"
+                class="w-full px-3 py-2 border border-stone-200 rounded-xl text-base resize-none focus:ring-2 focus:ring-emerald-500 outline-none"
               />
             </div>
           </template>
 
           <!-- File drop zone -->
           <div>
-            <label class="block text-sm font-medium text-stone-700 mb-1">
+            <label class="block text-base font-medium text-stone-700 mb-1">
               Files <span class="text-red-500">*</span>
-              <span class="text-xs text-stone-400 ml-2">{{ selectedFiles.length }}/20</span>
+              <span class="text-base text-stone-400 ml-2">{{ selectedFiles.length }}/20</span>
             </label>
             <label
               @dragover.prevent
@@ -107,8 +107,8 @@
                   d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                 />
               </svg>
-              <p class="text-sm text-stone-600 font-medium">Click hoặc kéo nhiều file vào đây</p>
-              <p class="text-xs text-stone-400 mt-1">
+              <p class="text-base text-stone-600 font-medium">Click hoặc kéo nhiều file vào đây</p>
+              <p class="text-base text-stone-400 mt-1">
                 PDF, Word, Excel, PPT, ZIP, ảnh, video... (mỗi file max 50MB)
               </p>
             </label>
@@ -116,17 +116,17 @@
 
           <!-- File list -->
           <div v-if="selectedFiles.length" class="space-y-1.5">
-            <p class="text-xs font-medium text-stone-500">
+            <p class="text-base font-medium text-stone-500">
               📎 Đã chọn {{ selectedFiles.length }} file:
             </p>
             <div
               v-for="(file, idx) in selectedFiles"
               :key="idx"
-              class="flex items-center gap-2 p-2 bg-stone-50 rounded-lg text-sm"
+              class="flex items-center gap-2 p-2 bg-stone-50 rounded-lg text-base"
             >
               <span class="text-lg flex-shrink-0">{{ getFileIcon(file.name) }}</span>
               <div class="flex-1 min-w-0">
-                <p class="font-medium text-stone-700 truncate text-xs">{{ file.name }}</p>
+                <p class="font-medium text-stone-700 truncate text-base">{{ file.name }}</p>
                 <p class="text-[10px] text-stone-400">{{ formatSize(file.size) }}</p>
               </div>
               <button
@@ -146,7 +146,7 @@
               </button>
             </div>
 
-            <p class="text-xs text-stone-500 pt-1 border-t border-stone-100">
+            <p class="text-base text-stone-500 pt-1 border-t border-stone-100">
               Tổng: {{ formatSize(totalSize) }}
             </p>
           </div>
@@ -157,14 +157,14 @@
           <button
             type="button"
             @click="$emit('close')"
-            class="flex-1 py-2.5 border border-stone-200 rounded-xl text-sm font-medium text-stone-600 hover:bg-stone-50"
+            class="flex-1 py-2.5 border border-stone-200 rounded-xl text-base font-medium text-stone-600 hover:bg-stone-50"
           >
             Hủy
           </button>
           <button
             @click="handleSubmit"
             :disabled="!canSubmit || uploading"
-            class="flex-1 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 disabled:opacity-50 flex items-center justify-center gap-2"
+            class="flex-1 py-2.5 bg-emerald-600 text-white rounded-xl text-base font-semibold hover:bg-emerald-700 disabled:opacity-50 flex items-center justify-center gap-2"
           >
             <div
               v-if="uploading"
@@ -214,11 +214,11 @@ const form = ref({
 })
 
 const categories = {
-  lecture: '📚 Slide',
-  exercise: '✍️ Bài tập',
-  reference: '📖 Tham khảo',
-  exam: '📝 Đề thi',
-  other: '📎 Khác',
+  lecture: 'Slide',
+  exercise: 'Bài tập',
+  reference: 'Tham khảo',
+  exam: 'Đề thi',
+  other: 'Khác',
 }
 
 const MAX_FILES = 20

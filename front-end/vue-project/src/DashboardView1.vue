@@ -97,7 +97,7 @@ src/views/dashboard/DashboardView.vue
             </div>
             <div>
               <p class="text-xs text-slate-400">Kỳ học</p>
-              <p class="text-sm font-medium text-slate-700">
+              <p class="text-base font-medium text-slate-700">
                 {{ item.semester.name }} ({{ item.semester.year }})
               </p>
             </div>
@@ -122,7 +122,7 @@ src/views/dashboard/DashboardView.vue
             </div>
             <div>
               <p class="text-xs text-slate-400">Giảng viên</p>
-              <p class="text-sm font-medium text-slate-700">{{ item.lecturer.name }}</p>
+              <p class="text-base font-medium text-slate-700">{{ item.lecturer.name }}</p>
             </div>
           </div>
 
@@ -145,7 +145,11 @@ src/views/dashboard/DashboardView.vue
             </div>
             <div>
               <p class="text-xs text-slate-400">Môn học</p>
-              <p v-for="s in item.subjects" :key="s.id" class="text-sm font-medium text-slate-700">
+              <p
+                v-for="s in item.subjects"
+                :key="s.id"
+                class="text-base font-medium text-slate-700"
+              >
                 {{ s.name }} <span class="text-slate-400">({{ s.credits }} TC)</span>
               </p>
             </div>
@@ -170,11 +174,11 @@ src/views/dashboard/DashboardView.vue
             </div>
             <div>
               <p class="text-xs text-slate-400">Nhóm</p>
-              <p v-if="item.my_group" class="text-sm font-medium text-slate-700">
+              <p v-if="item.my_group" class="text-base font-medium text-slate-700">
                 {{ item.my_group.name }}
                 <span class="text-slate-400">· {{ item.my_group.members?.length }} thành viên</span>
               </p>
-              <p v-else class="text-sm text-amber-600 font-medium">Chưa có nhóm</p>
+              <p v-else class="text-base text-amber-600 font-medium">Chưa có nhóm</p>
             </div>
           </div>
         </div>
@@ -201,14 +205,14 @@ src/views/dashboard/DashboardView.vue
           <router-link
             v-if="item.my_group"
             :to="`/student/groups/${item.my_group.id}`"
-            class="flex-1 py-2 px-4 bg-indigo-600 text-white text-sm font-medium rounded-xl text-center hover:bg-indigo-700 transition-colors"
+            class="flex-1 py-2 px-4 bg-indigo-600 text-white text-base font-medium rounded-xl text-center hover:bg-indigo-700 transition-colors"
           >
             Vào nhóm
           </router-link>
           <router-link
             v-else
             :to="`/student/groups?class_id=${item.class.id}`"
-            class="flex-1 py-2 px-4 bg-amber-500 text-white text-sm font-medium rounded-xl text-center hover:bg-amber-600 transition-colors"
+            class="flex-1 py-2 px-4 bg-amber-500 text-white text-base font-medium rounded-xl text-center hover:bg-amber-600 transition-colors"
           >
             Tạo / Tham gia nhóm
           </router-link>
@@ -229,7 +233,9 @@ src/views/dashboard/DashboardView.vue
         </svg>
       </div>
       <p class="text-slate-500">Bạn chưa được thêm vào lớp nào</p>
-      <p class="text-sm text-slate-400 mt-1">Liên hệ giảng viên hoặc admin để được thêm vào lớp</p>
+      <p class="text-base text-slate-400 mt-1">
+        Liên hệ giảng viên hoặc admin để được thêm vào lớp
+      </p>
     </div>
   </div>
 </template>
