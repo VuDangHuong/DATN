@@ -5,6 +5,8 @@ use App\Http\Controllers\Admin\AdminSignProfileController;
 use App\Http\Controllers\Lecturers\AssignmentController;
 use App\Http\Controllers\Lecturers\ClassController;
 use App\Http\Controllers\Lecturers\ClassMaterialController;
+use App\Http\Controllers\Lecturers\LecturerClassController;
+use App\Http\Controllers\Lecturers\LecturerClassStudentController;
 use App\Http\Controllers\Lecturers\LecturerDashboardController;
 use App\Http\Controllers\Lecturers\LecturerGroupController;
 use App\Http\Controllers\Public\PublicVerificationController;
@@ -98,9 +100,17 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         // 2. Quản lý Cấu trúc Đào tạo (CRUD đầy đủ)
         // Đường dẫn sẽ là: /api/admin/faculties, /api/admin/majors...
+        Route::post('/faculties/import', [FacultyController::class, 'import']);
+        Route::get('/faculties/template', [FacultyController::class, 'downloadTemplate']);
         Route::apiResource('faculties', FacultyController::class);
+        Route::post('/majors/import', [MajorController::class, 'import']);
+        Route::get('/majors/template', [MajorController::class, 'downloadTemplate']);
         Route::apiResource('majors', MajorController::class);
+        Route::post('/subjects/import', [SubjectController::class, 'import']);
+        Route::get('/subjects/template', [SubjectController::class, 'downloadTemplate']);
         Route::apiResource('subjects', SubjectController::class);
+        Route::post('/classes/import', [ModuleClassController::class, 'import']);
+        Route::get('/classes/template', [ModuleClassController::class, 'downloadTemplate']);
         Route::apiResource('classes', ModuleClassController::class);
         
         //sdasdas
@@ -197,13 +207,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/classes', [ClassController::class, 'index']);
         Route::get('assignments/pending-count', [AssignmentController::class, 'pendingCount']);
         // Sinh viên trong lớp
-        Route::prefix('classes/{classId}/students')->group(function () {
-            Route::get('/',              [ClassStudentController::class, 'index']);
-            Route::post('/',             [ClassStudentController::class, 'store']);
-            Route::post('/import',       [ClassStudentController::class, 'import']);
-            Route::patch('/{studentId}', [ClassStudentController::class, 'update']);
-            Route::delete('/{studentId}',[ClassStudentController::class, 'destroy']);
-        }); // ← đóng students ở đây
+        Route::get('/my-classes', [LecturerClassController::class, 'index']);
+ 
+        // ✅ THÊM MỚI: CRUD SV trong lớp - dùng prefix /my-classes (TÁCH BIỆT với /classes cũ)
+        Route::prefix('my-classes/{classId}/students')->group(function () {
+            Route::get('/',                [LecturerClassStudentController::class, 'index']);
+            Route::post('/',               [LecturerClassStudentController::class, 'store']);
+            Route::post('/import',         [LecturerClassStudentController::class, 'import']);
+            // Route::patch('/{studentId}',   [LecturerClassStudentController::class, 'update']);
+            Route::delete('/{studentId}',  [LecturerClassStudentController::class, 'destroy']);
+        });
 
         // Assignments nằm NGANG cấp với students, không lồng bên trong
         Route::prefix('classes/{classId}/assignments')->group(function () {
