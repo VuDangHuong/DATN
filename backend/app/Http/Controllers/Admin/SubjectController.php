@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Academic\Subject; // Đảm bảo đúng namespace model của bạn
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\SubjectsImport;
 class SubjectController extends Controller
 {
     public function index(Request $request)
@@ -119,5 +121,70 @@ class SubjectController extends Controller
         $subject->delete();
 
         return response()->json(['message' => 'Đã xóa môn học thành công']);
+    }
+    /**
+     * Import danh sách Môn học từ file Excel/CSV
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:5120',
+        ]);
+
+        try {
+            $import = new SubjectsImport();
+            Excel::import($import, $request->file('file'));
+
+            return response()->json([
+                'message' => 'Import thành công',
+                'data' => [
+                    'success_count' => $import->getSuccessCount(),
+                    'fail_count'    => $import->getFailCount(),
+                    'errors'        => $import->getErrors(),
+                ],
+            ]);
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            $errors = [];
+            foreach ($failures as $failure) {
+                $errors[] = [
+                    'row'       => $failure->row(),
+                    'attribute' => $failure->attribute(),
+                    'errors'    => $failure->errors(),
+                    'values'    => $failure->values(),
+                ];
+            }
+            return response()->json([
+                'message' => 'File có dữ liệu không hợp lệ',
+                'errors'  => $errors,
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Có lỗi xảy ra khi import: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Tải file mẫu CSV để Import
+     */
+    public function downloadTemplate()
+    {
+        $headers = [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="mau_import_mon_hoc.csv"',
+        ];
+
+        $callback = function () {
+            $file = fopen('php://output', 'w');
+            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF)); // BOM UTF-8
+            fputcsv($file, ['major_code', 'code', 'name', 'credits']);
+            fputcsv($file, ['7480201', 'CSE101', 'Nhập môn lập trình', 3]);
+            fputcsv($file, ['7480201', 'CSE201', 'Cấu trúc dữ liệu và Giải thuật', 4]);
+            fputcsv($file, ['7340101', 'BUS101', 'Nguyên lý kế toán', 3]);
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

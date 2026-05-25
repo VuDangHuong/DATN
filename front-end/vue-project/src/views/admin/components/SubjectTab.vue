@@ -6,6 +6,7 @@ import { useToastStore } from '@/stores/toast'
 import SvgIcon from '@/components/icons/SVG.vue'
 import { useConfirm } from '@/composables/useConfirm'
 import ConfirmModal from '@/components/common/ConfirmModal.vue'
+
 const {
   state: confirmState,
   confirmDelete,
@@ -21,17 +22,24 @@ const toast = useToastStore()
 const subjects = ref([])
 const filterFaculty = ref('')
 const filterMajor = ref('')
-const availableMajors = ref([]) // Dropdown ngành
+const availableMajors = ref([])
 
-// Modal State
+// Modal CRUD
 const showModal = ref(false)
 const isEditing = ref(false)
 const form = reactive({ id: null, major_id: '', code: '', name: '', credits: 3 })
 
-// 1. Logic Lọc: Chọn Khoa
+// ===== IMPORT STATE =====
+const showImportModal = ref(false)
+const importFile = ref(null)
+const importing = ref(false)
+const importResult = ref(null)
+const fileInputRef = ref(null)
+
+// Logic lọc
 watch(filterFaculty, async (newVal) => {
   filterMajor.value = ''
-  subjects.value = [] // Reset list
+  subjects.value = []
   if (newVal) {
     availableMajors.value = await store.fetchMajors(newVal)
   } else {
@@ -39,7 +47,6 @@ watch(filterFaculty, async (newVal) => {
   }
 })
 
-// 2. Logic Lọc: Chọn Ngành -> Load Môn
 watch(filterMajor, loadSubjects)
 
 async function loadSubjects() {
@@ -55,14 +62,12 @@ async function loadSubjects() {
   }
 }
 
-// 3. Actions CRUD
+// CRUD
 const openModal = (item = null) => {
   if (item) {
-    // Edit
     isEditing.value = true
     Object.assign(form, item)
   } else {
-    // Create
     if (!filterMajor.value) {
       toast.error('Vui lòng chọn Ngành trước khi thêm môn.')
       return
@@ -117,11 +122,103 @@ const handleDelete = async (subject) => {
     closeConfirm()
   }
 }
+
+// ===== IMPORT HANDLERS =====
+const openImportModal = () => {
+  importFile.value = null
+  importResult.value = null
+  showImportModal.value = true
+}
+
+const closeImportModal = () => {
+  showImportModal.value = false
+  importFile.value = null
+  importResult.value = null
+  if (fileInputRef.value) fileInputRef.value.value = ''
+}
+
+const handleFileChange = (e) => {
+  const file = e.target.files[0]
+  if (!file) return
+
+  const ext = file.name.split('.').pop().toLowerCase()
+  if (!['xlsx', 'xls', 'csv'].includes(ext)) {
+    toast.error('Chỉ chấp nhận file .xlsx, .xls hoặc .csv')
+    e.target.value = ''
+    return
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    toast.error('File không được lớn hơn 5MB')
+    e.target.value = ''
+    return
+  }
+
+  importFile.value = file
+  importResult.value = null
+}
+
+const handleImport = async () => {
+  if (!importFile.value) {
+    toast.error('Vui lòng chọn file để import')
+    return
+  }
+
+  importing.value = true
+  importResult.value = null
+
+  try {
+    const formData = new FormData()
+    formData.append('file', importFile.value)
+
+    const res = await categoryApi.importSubjects(formData)
+    importResult.value = res.data.data
+
+    if (importResult.value.fail_count > 0) {
+      toast.warning(
+        `Import xong: ${importResult.value.success_count} thành công, ${importResult.value.fail_count} lỗi`,
+      )
+    } else {
+      toast.success(`Import thành công ${importResult.value.success_count} môn học`)
+    }
+
+    // Refresh nếu đang xem ngành nào đó
+    if (filterMajor.value) loadSubjects()
+  } catch (e) {
+    if (e.response?.status === 422 && e.response.data?.errors) {
+      importResult.value = {
+        success_count: 0,
+        fail_count: e.response.data.errors.length,
+        errors: e.response.data.errors,
+      }
+      toast.error('File có dữ liệu không hợp lệ')
+    } else {
+      toast.error(e.response?.data?.message || 'Import thất bại')
+    }
+  } finally {
+    importing.value = false
+  }
+}
+
+const downloadTemplate = async () => {
+  try {
+    const res = await categoryApi.downloadSubjectTemplate()
+    const url = window.URL.createObjectURL(new Blob([res.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', 'mau_import_mon_hoc.csv')
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.URL.revokeObjectURL(url)
+  } catch {
+    toast.error('Không thể tải file mẫu')
+  }
+}
 </script>
 
 <template>
   <div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-gray-50 p-4 rounded-lg">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 bg-gray-50 p-4 rounded-lg">
       <div>
         <label class="block text-base font-bold text-gray-500 uppercase mb-1">Lọc Khoa</label>
         <select v-model="filterFaculty" class="w-full border rounded p-2 text-sm">
@@ -140,6 +237,15 @@ const handleDelete = async (subject) => {
           <option value="">-- Chọn Ngành --</option>
           <option v-for="m in availableMajors" :key="m.id" :value="m.id">{{ m.name }}</option>
         </select>
+      </div>
+
+      <div class="flex items-end">
+        <button
+          @click="openImportModal"
+          class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 w-full flex justify-center items-center"
+        >
+          <SvgIcon name="upload" class="w-4 h-4 mr-2" /> Import Excel
+        </button>
       </div>
 
       <div class="flex items-end">
@@ -194,6 +300,7 @@ const handleDelete = async (subject) => {
       </table>
     </div>
 
+    <!-- Modal Thêm / Sửa -->
     <Teleport to="body">
       <div
         v-if="showModal"
@@ -276,6 +383,143 @@ const handleDelete = async (subject) => {
         </div>
       </div>
     </Teleport>
+
+    <!-- Modal Import -->
+    <Teleport to="body">
+      <div
+        v-if="showImportModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      >
+        <div class="bg-white rounded-lg w-[600px] max-h-[90vh] flex flex-col shadow-xl">
+          <div class="p-6 border-b">
+            <div class="flex justify-between items-center">
+              <h3 class="text-lg font-bold">Import danh sách Môn học</h3>
+              <button @click="closeImportModal" class="text-gray-400 hover:text-gray-600">
+                <SvgIcon name="x" class="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          <div class="p-6 overflow-y-auto flex-1">
+            <div class="bg-blue-50 border border-blue-200 rounded p-4 mb-4">
+              <p class="text-sm text-blue-800 font-medium mb-2">📌 Hướng dẫn:</p>
+              <ul class="text-sm text-blue-700 list-disc list-inside space-y-1">
+                <li>
+                  File phải có 4 cột: <strong>major_code</strong>, <strong>code</strong>,
+                  <strong>name</strong>, <strong>credits</strong>
+                </li>
+                <li><strong>major_code</strong> là mã ngành đã có sẵn (VD: 7480201, 7340101...)</li>
+                <li><strong>credits</strong> là số tín chỉ (1 - 10)</li>
+                <li>Định dạng cho phép: .xlsx, .xls, .csv (tối đa 5MB)</li>
+                <li>Nếu mã môn đã tồn tại trong cùng ngành, hệ thống sẽ cập nhật</li>
+              </ul>
+              <button
+                @click="downloadTemplate"
+                class="mt-3 text-sm text-blue-600 hover:underline font-medium flex items-center"
+              >
+                <SvgIcon name="download" class="w-4 h-4 mr-1" />
+                Tải file mẫu
+              </button>
+            </div>
+
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Chọn file Excel/CSV</label
+              >
+              <input
+                ref="fileInputRef"
+                type="file"
+                accept=".xlsx,.xls,.csv"
+                @change="handleFileChange"
+                class="w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-gray-300 rounded p-2"
+              />
+              <p v-if="importFile" class="mt-2 text-sm text-green-600">
+                ✓ Đã chọn: <strong>{{ importFile.name }}</strong> ({{
+                  (importFile.size / 1024).toFixed(2)
+                }}
+                KB)
+              </p>
+            </div>
+
+            <div v-if="importResult" class="mt-4">
+              <div class="grid grid-cols-2 gap-3 mb-3">
+                <div class="bg-green-50 border border-green-200 rounded p-3">
+                  <p class="text-sm text-green-700">Thành công</p>
+                  <p class="text-2xl font-bold text-green-600">{{ importResult.success_count }}</p>
+                </div>
+                <div class="bg-red-50 border border-red-200 rounded p-3">
+                  <p class="text-sm text-red-700">Lỗi</p>
+                  <p class="text-2xl font-bold text-red-600">{{ importResult.fail_count }}</p>
+                </div>
+              </div>
+
+              <div
+                v-if="importResult.errors && importResult.errors.length"
+                class="border border-red-200 rounded overflow-hidden"
+              >
+                <div class="bg-red-50 px-3 py-2 text-sm font-medium text-red-800">
+                  Chi tiết lỗi ({{ importResult.errors.length }} dòng):
+                </div>
+                <div class="max-h-60 overflow-y-auto">
+                  <table class="w-full text-sm">
+                    <thead class="bg-gray-50 sticky top-0">
+                      <tr>
+                        <th class="p-2 text-left">Dòng</th>
+                        <th class="p-2 text-left">Dữ liệu</th>
+                        <th class="p-2 text-left">Lỗi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(err, idx) in importResult.errors" :key="idx" class="border-t">
+                        <td class="p-2 font-mono">{{ err.row }}</td>
+                        <td class="p-2 text-xs text-gray-600">
+                          {{ err.values?.major_code }} | {{ err.values?.code }} -
+                          {{ err.values?.name }} ({{ err.values?.credits }}tc)
+                        </td>
+                        <td class="p-2 text-xs text-red-600">
+                          <div v-for="(e, i) in (err.errors || []).flat()" :key="i">{{ e }}</div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-6 border-t flex justify-end gap-2">
+            <button
+              @click="closeImportModal"
+              :disabled="importing"
+              class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-50"
+            >
+              Đóng
+            </button>
+            <button
+              @click="handleImport"
+              :disabled="!importFile || importing"
+              class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 flex items-center"
+            >
+              <span v-if="importing" class="mr-2">
+                <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                    opacity="0.25"
+                  />
+                  <path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="4" />
+                </svg>
+              </span>
+              {{ importing ? 'Đang import...' : 'Bắt đầu Import' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
     <ConfirmModal
       v-model="confirmState.show"
       :title="confirmState.title"
