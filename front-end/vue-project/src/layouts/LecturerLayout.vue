@@ -72,7 +72,10 @@
           <SvgIcon name="tasks" class="w-4 h-4" />
           <span>Công việc nhóm</span>
         </router-link>
-
+        <router-link to="/lecturer/my-classes" class="nav-link" active-class="nav-active">
+          <SvgIcon name="users" class="w-4 h-4" />
+          <span>Sinh viên lớp học</span>
+        </router-link>
         <p class="px-3 pt-4 pb-2 text-[10px] font-bold text-stone-400 uppercase tracking-widest">
           Bài tập
         </p>
@@ -312,6 +315,7 @@ const pageMap = {
   '/lecturer/dashboard': 'Dashboard',
   '/lecturer/classes': 'Quản lý lớp',
   '/lecturer/tasks': 'Công việc nhóm',
+  '/lecturer/my-classes': 'Sinh viên lớp học',
   '/lecturer/materials': 'Tài liệu lớp học',
   '/lecturer/assignments': 'Đợt nộp bài',
   '/lecturer/reviews': 'Duyệt bài nộp',

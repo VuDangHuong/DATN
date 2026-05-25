@@ -44,6 +44,8 @@ import MaterialsListPage from '@/views/students/materials/MaterialsListPage.vue'
 import StudentMaterialsView from '@/views/students/materials/StudentMaterialsView.vue'
 import MaterialsPage from '@/views/lecturer/materials/MaterialsPage.vue'
 import ClassMaterialsView from '@/views/lecturer/materials/ClassMaterialsView.vue'
+import LecturerMyClassesView from '@/views/lecturer/my-classes/LecturerMyClassesView.vue'
+import LecturerClassStudentsView from '@/views/lecturer/my-classes/LecturerClassStudentsView.vue'
 
 const routes = [
   {
@@ -204,6 +206,23 @@ const routes = [
         name: 'lecturer-class-materials',
         component: ClassMaterialsView,
         props: (route) => ({ classId: Number(route.params.classId) }),
+      },
+      // ✅ Danh sách lớp của giảng viên
+      {
+        path: 'my-classes',
+        name: 'lecturer-my-classes',
+        component: LecturerMyClassesView,
+        meta: { title: 'Sinh viên lớp học' },
+      },
+
+      {
+        path: 'my-classes/:classId/students',
+        name: 'lecturer-class-students',
+        component: LecturerClassStudentsView,
+        props: (route) => ({
+          classId: Number(route.params.classId),
+        }),
+        meta: { title: 'Sinh viên lớp học' },
       },
     ],
   },
