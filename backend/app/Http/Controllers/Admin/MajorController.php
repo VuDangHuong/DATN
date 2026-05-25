@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Academic\Major;
 use Illuminate\Http\Request;
-
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\MajorsImport;
 class MajorController extends Controller
 {
     // 1. Lấy danh sách Ngành (Hỗ trợ lọc theo Khoa)
@@ -59,5 +60,70 @@ class MajorController extends Controller
 
         $major->delete();
         return response()->json(['message' => 'Đã xóa ngành']);
+    }
+    /**
+     * Import danh sách Ngành từ file Excel/CSV
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:5120',
+        ]);
+
+        try {
+            $import = new MajorsImport();
+            Excel::import($import, $request->file('file'));
+
+            return response()->json([
+                'message' => 'Import thành công',
+                'data' => [
+                    'success_count' => $import->getSuccessCount(),
+                    'fail_count'    => $import->getFailCount(),
+                    'errors'        => $import->getErrors(),
+                ],
+            ]);
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            $errors = [];
+            foreach ($failures as $failure) {
+                $errors[] = [
+                    'row'       => $failure->row(),
+                    'attribute' => $failure->attribute(),
+                    'errors'    => $failure->errors(),
+                    'values'    => $failure->values(),
+                ];
+            }
+            return response()->json([
+                'message' => 'File có dữ liệu không hợp lệ',
+                'errors'  => $errors,
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Có lỗi xảy ra khi import: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Tải file mẫu CSV để Import
+     */
+    public function downloadTemplate()
+    {
+        $headers = [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="mau_import_nganh.csv"',
+        ];
+
+        $callback = function () {
+            $file = fopen('php://output', 'w');
+            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF)); // BOM UTF-8
+            fputcsv($file, ['faculty_code', 'code', 'name']);
+            fputcsv($file, ['CNTT', '7480201', 'Công nghệ thông tin']);
+            fputcsv($file, ['CNTT', '7480103', 'Kỹ thuật phần mềm']);
+            fputcsv($file, ['KT',   '7340101', 'Quản trị kinh doanh']);
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }
