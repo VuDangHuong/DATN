@@ -1,22 +1,31 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import logoTlu from '@/assets/images/logo-dai-hoc-thuy-loi.jpg'
 import ForgotPasswordModal from './ForgotPasswordModal.vue'
 const router = useRouter()
 const authStore = useAuthStore()
-
+const rememberMe = ref(false)
 const email = ref('')
 const password = ref('')
 const isLoading = ref(false)
 const errorMessage = ref('')
 
 const showForgotModal = ref(false)
+const REMEMBER_KEY = 'remembered_email'
 
+//kiểm tra có email đã lưu không -> tự điền
+onMounted(() => {
+  const savedEmail = localStorage.getItem(REMEMBER_KEY)
+  if (savedEmail) {
+    email.value = savedEmail
+    rememberMe.value = true
+  }
+})
 const handleLogin = async () => {
   errorMessage.value = ''
-  // 2. Validate form
+
   if (!email.value || !password.value) {
     errorMessage.value = 'Vui lòng nhập đầy đủ Email và Mật khẩu.'
     return
@@ -30,6 +39,14 @@ const handleLogin = async () => {
       password: password.value,
     })
     localStorage.setItem('user', JSON.stringify(userData))
+
+    // Xử lý ghi nhớ đăng nhập
+    if (rememberMe.value) {
+      localStorage.setItem(REMEMBER_KEY, email.value)
+    } else {
+      localStorage.removeItem(REMEMBER_KEY)
+    }
+
     if (userData.role === 'admin') {
       router.push('/admin/dashboard')
     } else if (userData.role === 'lecturer') {
@@ -42,14 +59,13 @@ const handleLogin = async () => {
       const status = error.response.status
 
       switch (status) {
-        case 401: // Unauthorized (Sai mật khẩu hoặc email)
+        case 401:
           errorMessage.value = 'Email hoặc mật khẩu không chính xác.'
           break
-        case 403: // Forbidden (Tài khoản bị khóa - is_active = false)
+        case 403:
           errorMessage.value = 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Admin.'
           break
-        case 422: // Unprocessable Entity (Lỗi validate dữ liệu)
-          // Lấy thông báo lỗi đầu tiên từ mảng errors của Laravel
+        case 422:
           const errors = error.response.data.errors
           errorMessage.value = errors ? Object.values(errors)[0][0] : 'Dữ liệu nhập không hợp lệ.'
           break
@@ -57,16 +73,13 @@ const handleLogin = async () => {
           errorMessage.value = `Lỗi hệ thống (${status}). Vui lòng thử lại sau.`
       }
     } else if (error.request) {
-      // Lỗi không nhận được phản hồi (mất mạng, server down)
       errorMessage.value = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra đường truyền.'
     } else {
-      // Lỗi khác trong quá trình setup request
       errorMessage.value = 'Đã có lỗi không xác định xảy ra.'
     }
 
     console.error('Chi tiết lỗi:', error)
   } finally {
-    // 6. Kết thúc loading
     isLoading.value = false
   }
 }
@@ -174,6 +187,7 @@ const handleLogin = async () => {
           <div class="flex items-center">
             <input
               id="remember-me"
+              v-model="rememberMe"
               type="checkbox"
               class="h-4 w-4 text-blue-800 focus:ring-blue-500 border-gray-300 rounded"
             />
