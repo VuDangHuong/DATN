@@ -2,27 +2,6 @@
 <template>
   <div class="space-y-6">
     <!-- ─── Welcome banner ─── -->
-    <div class="bg-gradient-to-r from-rose-500 to-pink-600 rounded-2xl p-6 text-white shadow-sm">
-      <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-2xl font-bold mb-1">Trang Quản Trị</h2>
-          <p class="text-rose-50 text-sm">
-            {{ formatToday() }} · Xin chào, {{ user?.name || 'Admin' }}
-          </p>
-        </div>
-        <div class="hidden md:flex items-center gap-4">
-          <div class="text-center">
-            <p class="text-2xl font-bold">{{ stats.new_users_today }}</p>
-            <p class="text-base text-rose-100">User mới hôm nay</p>
-          </div>
-          <div class="w-px h-10 bg-white/30" />
-          <div class="text-center">
-            <p class="text-2xl font-bold">{{ stats.sign_requests_today }}</p>
-            <p class="text-base text-rose-100">Yêu cầu ký hôm nay</p>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- Loading -->
     <div v-if="store.loading" class="flex justify-center py-16">
