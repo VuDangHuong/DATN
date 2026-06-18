@@ -143,128 +143,22 @@
         Bỏ chọn
       </button>
     </div> -->
-    <!-- ✅ Material list (accordion) -->
+
     <div v-else class="space-y-3">
-      <div
+      <MaterialAccordionItem
         v-for="m in materialStore.materials"
         :key="m.id"
-        class="bg-white rounded-2xl border transition"
-        :class="selectedIds.includes(m.id) ? 'border-emerald-300' : 'border-stone-200'"
-      >
-        <!-- Title header -->
-        <div class="p-4 flex items-center gap-3">
-          <input
-            type="checkbox"
-            :checked="selectedIds.includes(m.id)"
-            @change="toggleSelect(m.id)"
-            class="rounded text-emerald-600 focus:ring-emerald-500 flex-shrink-0"
-            @click.stop
-          />
-
-          <div class="flex-1 min-w-0 cursor-pointer" @click="toggleExpand(m.id)">
-            <div class="flex items-center gap-2 flex-wrap">
-              <p class="text-sm font-bold text-stone-800">{{ m.title }}</p>
-
-              <span
-                class="px-2 py-0.5 bg-stone-100 text-stone-600 text-[10px] font-bold rounded-full"
-              >
-                {{ m.file_count }} file
-              </span>
-
-              <span
-                v-if="m.is_copied"
-                class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded-full"
-              >
-                <SvgICon name="copy" class="w-3 h-3" />
-                <span>Copy</span>
-              </span>
-            </div>
-
-            <p v-if="m.description" class="text-base text-stone-600 mt-0.5 line-clamp-1">
-              {{ m.description }}
-            </p>
-
-            <div class="flex items-center gap-2 mt-1 text-base text-stone-400 flex-wrap">
-              <span>{{ m.category_label }}</span>
-              <span>· {{ formatSize(m.total_size) }}</span>
-              <span>· {{ formatDate(m.created_at) }}</span>
-            </div>
-          </div>
-
-          <!-- Actions -->
-          <div class="flex items-center gap-1 flex-shrink-0">
-            <button
-              @click.stop="openAddFilesModal(m)"
-              class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
-              title="Thêm file"
-            >
-              <SvgICon name="plus" class="w-4 h-4" />
-            </button>
-            <button
-              @click.stop="openCopyModal([m.id])"
-              class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition"
-              title="Sao chép"
-            >
-              <SvgICon name="copy" class="w-4 h-4" />
-            </button>
-            <button
-              @click.stop="handleDeleteMaterial(m)"
-              class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition"
-              title="Xóa tài liệu"
-            >
-              <SvgICon name="trash" class="w-4 h-4" />
-            </button>
-
-            <SvgICon
-              name="chevron-down"
-              class="w-4 h-4 transition-transform duration-200 cursor-pointer"
-              :class="{ 'rotate-180': expandedIds.includes(m.id) }"
-              @click="toggleExpand(m.id)"
-            />
-          </div>
-        </div>
-
-        <!-- ✅ Files list (expanded) -->
-        <div v-if="expandedIds.includes(m.id)" class="border-t border-stone-100">
-          <div v-if="!m.files?.length" class="p-4 text-center text-stone-400 text-base">
-            Chưa có file. Bấm + để thêm.
-          </div>
-
-          <div v-else class="divide-y divide-stone-100">
-            <div
-              v-for="f in m.files"
-              :key="f.id"
-              class="px-4 py-2.5 flex items-center gap-3 hover:bg-stone-50 transition"
-            >
-              <SvgICon name="document" class="w-5 h-5 text-blue-600" />
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-stone-700 truncate">{{ f.file_name }}</p>
-                <p class="text-[11px] text-stone-400">
-                  {{ f.file_size_formatted }}
-                  <span v-if="f.download_count > 0" class="ml-1">· 📥 {{ f.download_count }}</span>
-                </p>
-              </div>
-
-              <div class="flex items-center gap-1 flex-shrink-0">
-                <button
-                  @click="handleDownload(f, m.id)"
-                  class="p-1.5 hover:bg-emerald-50 rounded-lg transition"
-                  title="Tải xuống"
-                >
-                  <SvgICon name="download" class="w-5 h-5 text-emerald-600" />
-                </button>
-                <button
-                  @click="handleDeleteFile(f, m.id)"
-                  class="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition"
-                  title="Xóa file"
-                >
-                  <SvgICon name="x-circle" class="w-5 h-5 text-red-600" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+        :material="m"
+        :selected="selectedIds.includes(m.id)"
+        :expanded="expandedIds.includes(m.id)"
+        @toggle-select="toggleSelect"
+        @toggle-expand="toggleExpand"
+        @add-files="openAddFilesModal"
+        @copy="openCopyModal"
+        @delete="handleDeleteMaterial"
+        @download="handleDownload"
+        @delete-file="handleDeleteFile"
+      />
     </div>
 
     <!-- Modals -->
@@ -311,6 +205,8 @@ import CopyMaterialModal from '../components/materials/CopyMaterialModal.vue'
 import SvgICon from '@/components/icons/SVG.vue'
 import { useConfirm } from '@/composables/useConfirm'
 import ConfirmModal from '@/components/common/ConfirmModal.vue'
+import MaterialAccordionItem from '../components/materials/MaterialAccordionItem.vue'
+
 const {
   state: confirmState,
   confirmDelete,
