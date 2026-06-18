@@ -66,7 +66,7 @@
             />
           </svg>
           <p class="text-sm text-gray-600 font-medium">Kéo thả file hoặc click để chọn</p>
-          <p class="text-xs text-gray-400 mt-1">Hỗ trợ .xlsx, .xls, .csv</p>
+          <p class="text-base text-gray-400 mt-1">Hỗ trợ .xlsx, .xls, .csv</p>
         </template>
 
         <template v-else>
@@ -84,11 +84,13 @@
             />
           </svg>
           <p class="text-sm font-medium text-green-700">{{ selectedFile.name }}</p>
-          <p class="text-xs text-green-600 mt-1">{{ (selectedFile.size / 1024).toFixed(1) }} KB</p>
+          <p class="text-base text-green-600 mt-1">
+            {{ (selectedFile.size / 1024).toFixed(1) }} KB
+          </p>
           <button
             type="button"
             @click.stop="selectedFile = null"
-            class="mt-2 text-xs text-gray-400 hover:text-red-500 transition"
+            class="mt-2 text-base text-gray-400 hover:text-red-500 transition"
           >
             Chọn file khác
           </button>
@@ -99,22 +101,22 @@
       <div v-if="result" class="mb-4 rounded-xl border overflow-hidden">
         <div class="bg-gray-50 px-4 py-2.5 border-b flex items-center justify-between">
           <span class="text-sm font-medium text-gray-700">Kết quả import</span>
-          <span class="text-xs text-gray-500">Sĩ số hiện tại: {{ result.current_count }}</span>
+          <span class="text-base text-gray-500">Sĩ số hiện tại: {{ result.current_count }}</span>
         </div>
         <div class="grid grid-cols-2 gap-px bg-gray-200">
           <div class="bg-white px-4 py-3 text-center">
             <p class="text-2xl font-bold text-green-600">{{ result.added }}</p>
-            <p class="text-xs text-gray-500 mt-0.5">Thêm thành công</p>
+            <p class="text-base text-gray-500 mt-0.5">Thêm thành công</p>
           </div>
           <div class="bg-white px-4 py-3 text-center">
             <p class="text-2xl font-bold text-amber-500">{{ result.skipped }}</p>
-            <p class="text-xs text-gray-500 mt-0.5">Bỏ qua</p>
+            <p class="text-base text-gray-500 mt-0.5">Bỏ qua</p>
           </div>
         </div>
         <!-- Chi tiết lỗi -->
         <div v-if="result.details?.not_found_codes?.length" class="px-4 py-2.5 border-t bg-red-50">
-          <p class="text-xs font-medium text-red-700 mb-1">Mã không tồn tại:</p>
-          <p class="text-xs text-red-600 font-mono">
+          <p class="text-base font-medium text-red-700 mb-1">Mã không tồn tại:</p>
+          <p class="text-base text-red-600 font-mono">
             {{ result.details.not_found_codes.join(', ') }}
           </p>
         </div>
@@ -122,8 +124,8 @@
           v-if="result.details?.duplicate_codes?.length"
           class="px-4 py-2.5 border-t bg-amber-50"
         >
-          <p class="text-xs font-medium text-amber-700 mb-1">Đã có trong lớp:</p>
-          <p class="text-xs text-amber-600 font-mono">
+          <p class="text-base font-medium text-amber-700 mb-1">Đã có trong lớp:</p>
+          <p class="text-base text-amber-600 font-mono">
             {{ result.details.duplicate_codes.join(', ') }}
           </p>
         </div>

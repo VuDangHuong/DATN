@@ -40,7 +40,7 @@
             :class="{ 'border-red-400 bg-red-50': errorMsg }"
             autofocus
           />
-          <p v-if="errorMsg" class="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+          <p v-if="errorMsg" class="mt-1.5 text-base text-red-500 flex items-center gap-1">
             <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fill-rule="evenodd"
@@ -53,7 +53,7 @@
         </div>
 
         <!-- Info box -->
-        <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-5 text-xs text-blue-700">
+        <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-5 text-base text-blue-700">
           Sinh viên phải có tài khoản trong hệ thống với vai trò <strong>Student</strong>.
         </div>
 
