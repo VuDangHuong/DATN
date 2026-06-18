@@ -6,7 +6,12 @@ export const useSemesterStore = defineStore('semester', () => {
   const semesters = ref([])
   const loading = ref(false)
   const error = ref(null)
-
+  const pagination = ref({
+    current_page: 1,
+    last_page: 1,
+    per_page: 5,
+    total: 0,
+  })
   // --- ACTIONS ---
 
   // 1. Lấy danh sách học kỳ
@@ -14,7 +19,14 @@ export const useSemesterStore = defineStore('semester', () => {
     loading.value = true
     try {
       const response = await semesterApi.getAll(params)
-      semesters.value = response.data
+      const data = response.data
+      semesters.value = data.data ?? []
+      pagination.value = {
+        current_page: data.current_page ?? 1,
+        last_page: data.last_page ?? 1,
+        per_page: data.per_page ?? 5,
+        total: data.total ?? 0,
+      }
     } catch (err) {
       error.value = err
       console.error('Lỗi tải danh sách học kỳ:', err)
@@ -84,5 +96,6 @@ export const useSemesterStore = defineStore('semester', () => {
     createSemester,
     updateSemester,
     deleteSemester,
+    pagination,
   }
 })

@@ -7,6 +7,7 @@ import SvgIcon from '@/components/icons/SVG.vue'
 import SemesterModal from './components/SemesterModal.vue'
 import { useConfirm } from '@/composables/useConfirm'
 import ConfirmModal from '@/components/common/ConfirmModal.vue'
+import { computed } from 'vue'
 const {
   state: confirmState,
   confirmAction,
@@ -17,8 +18,8 @@ const {
 } = useConfirm()
 const semesterStore = useSemesterStore()
 const toast = useToastStore()
-const { semesters, loading } = storeToRefs(semesterStore)
-
+const { semesters, loading, pagination } = storeToRefs(semesterStore)
+const currentPage = ref(1)
 const showModal = ref(false)
 const editingItem = ref(null)
 const formErrors = ref({})
@@ -31,11 +32,34 @@ const debounce = (fn, delay = 300) => {
     timeout = setTimeout(() => fn(...args), delay)
   }
 }
-
+const loadData = () => {
+  semesterStore.fetchSemesters({
+    search: searchQuery.value,
+    page: currentPage.value,
+  })
+}
 const handleSearch = debounce(() => {
-  semesterStore.fetchSemesters({ search: searchQuery.value })
+  currentPage.value = 1
+  loadData()
 }, 500)
+const goToPage = (page) => {
+  if (page < 1 || page > pagination.value.last_page || page === currentPage.value) return
+  currentPage.value = page
+  loadData()
+}
+const pageNumbers = computed(() => {
+  const last = pagination.value.last_page
+  const cur = currentPage.value
+  const pages = []
+  const start = Math.max(1, cur - 2)
+  const end = Math.min(last, cur + 2)
+  for (let i = start; i <= end; i++) pages.push(i)
+  return pages
+})
 
+onMounted(() => {
+  loadData()
+})
 const formatDate = (dateString) => {
   if (!dateString) return '---'
   const date = new Date(dateString)
@@ -129,10 +153,6 @@ const toggleStatus = async (item) => {
     toast.error('Lỗi cập nhật trạng thái')
   }
 }
-
-onMounted(() => {
-  semesterStore.fetchSemesters()
-})
 </script>
 
 <template>
@@ -256,6 +276,54 @@ onMounted(() => {
           </tr>
         </tbody>
       </table>
+      <div
+        v-if="!loading && pagination.total > 0"
+        class="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-3 border-t border-gray-200 bg-gray-50"
+      >
+        <p class="text-sm text-gray-600">
+          Hiển thị
+          <span class="font-medium">{{
+            (pagination.current_page - 1) * pagination.per_page + 1
+          }}</span>
+          –
+          <span class="font-medium">
+            {{ Math.min(pagination.current_page * pagination.per_page, pagination.total) }}
+          </span>
+          trên tổng <span class="font-medium">{{ pagination.total }}</span> học kỳ
+        </p>
+
+        <div class="flex items-center gap-1">
+          <button
+            @click="goToPage(currentPage - 1)"
+            :disabled="currentPage <= 1"
+            class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Trước
+          </button>
+
+          <button
+            v-for="p in pageNumbers"
+            :key="p"
+            @click="goToPage(p)"
+            :class="[
+              'px-3 py-1.5 rounded-lg border text-sm transition',
+              p === currentPage
+                ? 'bg-blue-600 border-blue-600 text-white'
+                : 'border-gray-300 text-gray-600 hover:bg-gray-100',
+            ]"
+          >
+            {{ p }}
+          </button>
+
+          <button
+            @click="goToPage(currentPage + 1)"
+            :disabled="currentPage >= pagination.last_page"
+            class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Sau
+          </button>
+        </div>
+      </div>
     </div>
 
     <SemesterModal
