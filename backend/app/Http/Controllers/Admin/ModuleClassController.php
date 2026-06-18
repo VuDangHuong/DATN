@@ -20,7 +20,13 @@ class ModuleClassController extends Controller
                 $q->where('is_active', true);
             });
         }
-
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                    ->orWhere('code', 'LIKE', "%{$search}%");
+            });
+        }
         if ($request->has('semester_id')) {
             $query->where('semester_id', $request->semester_id);
         }
@@ -35,8 +41,10 @@ class ModuleClassController extends Controller
         if ($request->has('lecturer_id')) {
             $query->where('lecturer_id', $request->lecturer_id);
         }
+        $perPage = (int) $request->input('per_page', 5);
+        $perPage = max(1, min($perPage, 100));
 
-        return response()->json($query->get());
+        return response()->json($query->paginate($perPage));
     }
 
     public function store(Request $request)
@@ -47,6 +55,28 @@ class ModuleClassController extends Controller
             'subject_details.*.max_members'=> 'required|integer|min:1',
             'semester_id'                  => 'required|exists:semesters,id',
             'code'                         => 'required|unique:classes,code',
+        ], [
+        // subject_details
+            'subject_details.required' => 'Vui lòng chọn ít nhất một môn học.',
+            'subject_details.array'    => 'Danh sách môn học không hợp lệ.',
+            'subject_details.min'      => 'Phải có ít nhất một môn học.',
+
+            // subject_id
+            'subject_details.*.subject_id.required' => 'Môn học không được để trống.',
+            'subject_details.*.subject_id.exists'   => 'Môn học được chọn không tồn tại.',
+
+            // max_members
+            'subject_details.*.max_members.required' => 'Số lượng sinh viên tối đa không được để trống.',
+            'subject_details.*.max_members.integer'  => 'Số lượng sinh viên tối đa phải là số nguyên.',
+            'subject_details.*.max_members.min'      => 'Số lượng sinh viên tối đa phải lớn hơn 0.',
+
+            // semester_id
+            'semester_id.required' => 'Vui lòng chọn học kỳ.',
+            'semester_id.exists'   => 'Học kỳ không tồn tại.',
+
+            // code
+            'code.required' => 'Mã lớp không được để trống.',
+            'code.unique'   => 'Mã lớp đã tồn tại.',
         ]);
 
         return DB::transaction(function () use ($request) {
