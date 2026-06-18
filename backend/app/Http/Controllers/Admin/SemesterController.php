@@ -29,8 +29,10 @@ class SemesterController extends Controller
         if ($request->has('status') && $request->status == 'active') {
             $query->where('is_active', true);
         }
-
-        return response()->json($query->get());
+        // Phân trang — mặc định 10 item/trang, cho phép client truyền ?per_page=
+        $perPage = (int) $request->input('per_page', 5);
+        $perPage = max(1, min($perPage, 100));
+        return response()->json($query->paginate($perPage));
     }
 
     /**
