@@ -394,7 +394,7 @@ async function loadAvailableStudents() {
   if (!props.classId) return
   loadingStudents.value = true
   try {
-    const { data } = await axiosClient.get(`/lecturer/classes/${props.classId}/students`)
+    const { data } = await axiosClient.get(`/lecturer/my-classes/${props.classId}/students`)
     const memberIds = new Set(localMembers.value.map((m) => m.id))
     // Lọc ra SV chưa có trong nhóm này
     const students = Array.isArray(data) ? data : (data.data ?? data.students ?? [])
