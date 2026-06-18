@@ -119,14 +119,14 @@
               </p>
 
               <!-- Warning text bổ sung -->
-              <p v-if="warningText" class="mt-3 text-xs text-red-600 font-medium">
+              <p v-if="warningText" class="mt-3 text-base text-red-600 font-medium">
                 ⚠️ {{ warningText }}
               </p>
             </div>
 
             <!-- Optional: input confirmation (gõ đúng tên để xóa) -->
             <div v-if="requireTypeConfirm" class="px-6 pb-4">
-              <p class="text-xs text-stone-500 mb-2">
+              <p class="text-base text-stone-500 mb-2">
                 Gõ <strong class="text-red-600">{{ requireTypeConfirm }}</strong> để xác nhận:
               </p>
               <input
