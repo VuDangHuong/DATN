@@ -10,14 +10,20 @@ export const useAdminClassStore = defineStore('adminClass', () => {
   const loading = ref(false)
   const importing = ref(false)
   const error = ref(null)
-
+  const pagination = ref({ current_page: 1, last_page: 1, per_page: 5, total: 0 })
   //Actions: Lớp học phần
   async function fetchClasses(params = {}) {
     loading.value = true
     error.value = null
     try {
       const { data } = await classApi.getClasses(params)
-      classes.value = data
+      classes.value = data.data ?? []
+      pagination.value = {
+        current_page: data.current_page ?? 1,
+        last_page: data.last_page ?? 1,
+        per_page: data.per_page ?? 5,
+        total: data.total ?? 0,
+      }
     } catch (e) {
       error.value = e.response?.data?.message ?? 'Lỗi tải danh sách lớp'
     } finally {
@@ -115,6 +121,7 @@ export const useAdminClassStore = defineStore('adminClass', () => {
     loading,
     importing,
     error,
+    pagination,
     fetchClasses,
     fetchClass,
     addClass,

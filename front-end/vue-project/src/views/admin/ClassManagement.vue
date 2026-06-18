@@ -5,7 +5,7 @@
       <div class="flex items-center justify-between mb-6">
         <div>
           <h1 class="text-2xl font-bold text-gray-900">Quản lý lớp học phần</h1>
-          <p class="text-base text-gray-500 mt-1">{{ store.classes.length }} lớp đang hoạt động</p>
+          <p class="text-base text-gray-500 mt-1">{{ pagination.total }} lớp</p>
         </div>
       </div>
 
@@ -13,6 +13,7 @@
       <div class="bg-white rounded-2xl border border-gray-200 p-4 mb-6 flex flex-wrap gap-3">
         <input
           v-model="search"
+          @input="onSearch"
           type="text"
           placeholder="Tìm theo tên, mã lớp..."
           class="flex-1 min-w-48 px-4 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -22,7 +23,7 @@
             v-model="includeInactive"
             type="checkbox"
             class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-            @change="loadClasses"
+            @change="onToggleInactive"
           />
           Hiện học kỳ không active
         </label>
@@ -61,7 +62,7 @@
           </thead>
           <tbody class="divide-y divide-gray-100">
             <tr
-              v-for="cls in filteredClasses"
+              v-for="cls in store.classes"
               :key="cls.id"
               class="hover:bg-gray-50 transition group"
             >
@@ -172,13 +173,63 @@
               </td>
             </tr>
 
-            <tr v-if="!filteredClasses.length">
+            <tr v-if="!store.classes.length">
               <td colspan="6" class="text-center py-16 text-gray-400 text-sm">
                 Không có lớp nào phù hợp
               </td>
             </tr>
           </tbody>
         </table>
+
+        <!-- ✅ Phân trang -->
+        <div
+          v-if="pagination.total > 0"
+          class="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-3 border-t border-gray-100 bg-gray-50"
+        >
+          <p class="text-base text-gray-600">
+            Hiển thị
+            <span class="font-medium">{{
+              (pagination.current_page - 1) * pagination.per_page + 1
+            }}</span>
+            –
+            <span class="font-medium">{{
+              Math.min(pagination.current_page * pagination.per_page, pagination.total)
+            }}</span>
+            / <span class="font-medium">{{ pagination.total }}</span> lớp
+          </p>
+
+          <div class="flex items-center gap-1">
+            <button
+              @click="goToPage(currentPage - 1)"
+              :disabled="currentPage <= 1"
+              class="px-3 py-1.5 rounded-lg border border-gray-300 text-base text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Trước
+            </button>
+
+            <button
+              v-for="p in pageNumbers"
+              :key="p"
+              @click="goToPage(p)"
+              :class="[
+                'px-3 py-1.5 rounded-lg border text-base transition',
+                p === currentPage
+                  ? 'bg-blue-600 border-blue-600 text-white'
+                  : 'border-gray-300 text-gray-600 hover:bg-gray-100',
+              ]"
+            >
+              {{ p }}
+            </button>
+
+            <button
+              @click="goToPage(currentPage + 1)"
+              :disabled="currentPage >= pagination.last_page"
+              class="px-3 py-1.5 rounded-lg border border-gray-300 text-base text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Sau
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- ── Student Panel (slide in từ phải) ── -->
@@ -372,19 +423,22 @@ import axiosClient from '@/api/axiosClient'
 import ModalUpdateClass from '@/components/admin/classes/ModalUpdateClass.vue'
 import { useConfirm } from '@/composables/useConfirm'
 import ConfirmModal from '@/components/common/ConfirmModal.vue'
+
 const {
   state: confirmState,
-  confirmDelete, // ← Helper từ composable
+  confirmDelete,
   setLoading: setConfirmLoading,
   close: closeConfirm,
   _handleConfirm,
   _handleCancel,
 } = useConfirm()
 const store = useAdminClassStore()
-const toast = useToastStore() // ← thêm
+const toast = useToastStore()
 
 // ── UI State ──────────────────────────────────────────────
 const search = ref('')
+const currentPage = ref(1)
+const pagination = computed(() => store.pagination)
 const includeInactive = ref(false)
 const selectedClass = ref(null)
 const showClassForm = ref(false)
@@ -397,13 +451,39 @@ const semesters = ref([])
 const lecturers = ref([])
 const subjects = ref([])
 
-// ── Computed ──────────────────────────────────────────────
-const filteredClasses = computed(() => {
-  if (!search.value) return store.classes
-  const q = search.value.toLowerCase()
-  return store.classes.filter(
-    (c) => c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q),
-  )
+// ── Pagination / Search ───────────────────────────────────
+const debounce = (fn, delay = 400) => {
+  let t
+  return (...a) => {
+    clearTimeout(t)
+    t = setTimeout(() => fn(...a), delay)
+  }
+}
+
+const onSearch = debounce(() => {
+  currentPage.value = 1
+  loadClasses()
+}, 400)
+
+function onToggleInactive() {
+  currentPage.value = 1
+  loadClasses()
+}
+
+const goToPage = (page) => {
+  if (page < 1 || page > pagination.value.last_page || page === currentPage.value) return
+  currentPage.value = page
+  loadClasses()
+}
+
+const pageNumbers = computed(() => {
+  const last = pagination.value.last_page
+  const cur = currentPage.value
+  const pages = []
+  const start = Math.max(1, cur - 2)
+  const end = Math.min(last, cur + 2)
+  for (let i = start; i <= end; i++) pages.push(i)
+  return pages
 })
 
 // ── Lifecycle ─────────────────────────────────────────────
@@ -413,7 +493,11 @@ onMounted(async () => {
 })
 
 async function loadClasses() {
-  const params = includeInactive.value ? { include_inactive: 1 } : {}
+  const params = {
+    page: currentPage.value,
+    search: search.value,
+  }
+  if (includeInactive.value) params.include_inactive = 1
   await store.fetchClasses(params)
 }
 
@@ -447,14 +531,15 @@ async function handleClassSubmit(payload) {
   try {
     if (payload.id) {
       await store.editClass(payload.id, payload)
-      toast.success('Cập nhật lớp thành công') // ← đổi
+      toast.success('Cập nhật lớp thành công')
     } else {
       await store.addClass(payload)
-      toast.success('Tạo lớp thành công') // ← đổi
+      toast.success('Tạo lớp thành công')
     }
     showClassForm.value = false
+    await loadClasses()
   } catch (e) {
-    toast.error(e.response?.data?.message ?? 'Có lỗi xảy ra') // ← đổi
+    toast.error(e.response?.data?.message ?? 'Có lỗi xảy ra')
   }
 }
 
@@ -481,6 +566,7 @@ async function handleDeleteClass(cls) {
     }
 
     toast.success('Đã xóa lớp')
+    await loadClasses()
   } catch (e) {
     toast.error(e.response?.data?.message ?? 'Lỗi khi xóa lớp')
   } finally {
@@ -498,9 +584,9 @@ async function handleAddStudent(code) {
   try {
     await store.addStudent(selectedClass.value.id, code)
     showAddStudent.value = false
-    toast.success('Đã thêm sinh viên') // ← đổi
+    toast.success('Đã thêm sinh viên')
   } catch (e) {
-    toast.error(e.response?.data?.message ?? 'Lỗi thêm sinh viên') // ← đổi
+    toast.error(e.response?.data?.message ?? 'Lỗi thêm sinh viên')
   }
 }
 
@@ -518,9 +604,9 @@ async function handleImport(file) {
   try {
     const result = await store.importStudents(selectedClass.value.id, file)
     importModal.value?.setResult(result)
-    toast.success(`Đã thêm ${result.added} sinh viên`) // ← đổi
+    toast.success(`Đã thêm ${result.added} sinh viên`)
   } catch (e) {
-    toast.error(e.response?.data?.message ?? 'Lỗi import') // ← đổi
+    toast.error(e.response?.data?.message ?? 'Lỗi import')
   }
 }
 
