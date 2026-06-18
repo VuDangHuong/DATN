@@ -508,9 +508,9 @@ async function handleRemoveStudent(studentId) {
   if (!confirm('Xóa sinh viên khỏi lớp?')) return
   try {
     await store.removeStudent(selectedClass.value.id, studentId)
-    toast.success('Đã xóa sinh viên') // ← đổi
+    toast.success('Đã xóa sinh viên')
   } catch {
-    toast.error('Lỗi khi xóa') // ← đổi
+    toast.error('Lỗi khi xóa')
   }
 }
 

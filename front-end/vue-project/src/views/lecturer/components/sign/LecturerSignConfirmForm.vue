@@ -10,7 +10,7 @@
 
     <!-- Warning: Submission chưa chấm điểm -->
     <div v-if="submissionNotGraded" class="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-      <div class="flex items-start gap-3">
+      <!-- <div class="flex items-start gap-3">
         <svg
           class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5"
           fill="none"
@@ -36,7 +36,7 @@
             📝 Chấm điểm ngay →
           </button>
         </div>
-      </div>
+      </div> -->
     </div>
 
     <!-- E2: Chưa có sign-profile -->
@@ -272,9 +272,9 @@ async function handleSubmit() {
       })
 
       // Auto navigate sau 1.5s để user kịp đọc toast
-      setTimeout(() => {
-        goToGrade()
-      }, 1500)
+      // setTimeout(() => {
+      //   goToGrade()
+      // }, 1500)
       return
     }
 
@@ -298,21 +298,21 @@ async function handleSubmit() {
 }
 
 // Navigate đến trang chấm điểm
-function goToGrade() {
-  if (!gradeInfo.value) return
+// function goToGrade() {
+//   if (!gradeInfo.value) return
 
-  // Đóng modal/form trước khi navigate
-  emit('cancel')
+//   // Đóng modal/form trước khi navigate
+//   emit('cancel')
 
-  // Navigate đến trang review của assignment
-  if (gradeInfo.value.assignment_id) {
-    router.push(`/lecturer/assignments/${gradeInfo.value.assignment_id}/review`)
-    return
-  }
+//   // Navigate đến trang review của assignment
+//   if (gradeInfo.value.assignment_id) {
+//     router.push(`/lecturer/assignments/${gradeInfo.value.assignment_id}/review`)
+//     return
+//   }
 
-  // Last fallback
-  router.push('/lecturer/assignments')
-}
+//   // Last fallback
+//   router.push('/lecturer/assignments')
+// }
 
 function formatDate(d) {
   if (!d) return '—'

@@ -1,6 +1,7 @@
 <script setup>
+import { useToastStore } from '@/stores/toast'
 import { reactive, watch, computed } from 'vue'
-
+const toast = useToastStore()
 const props = defineProps({
   show: Boolean,
   editingItem: Object,
@@ -81,7 +82,7 @@ watch(
         subject_details:
           props.editingItem.subjects?.map((s) => ({
             subject_id: s.id,
-            // ✅ Lấy đúng từ pivot của từng môn
+            // Lấy đúng từ pivot của từng môn
             max_members: s.pivot?.max_members ?? props.editingItem.max_members ?? 60,
           })) ?? [],
       })
@@ -101,7 +102,7 @@ const updateAllMembers = () => {
 
 const handleSubmit = () => {
   if (form.subject_details.length === 0) {
-    alert('Vui lòng chọn ít nhất một môn học.')
+    toast.error('Vui lòng chọn ít nhất một môn học.')
     return
   }
   // Gửi form đi. Lưu ý Backend cần xử lý mảng subject_details này
@@ -152,7 +153,7 @@ const handleSubmit = () => {
                 </div>
               </div>
               <div v-else class="text-base text-orange-500 bg-orange-50 p-2 rounded">
-                ⚠️ Vui lòng chọn Ngành ở bộ lọc để tải môn học.
+                Vui lòng chọn Ngành ở bộ lọc để tải môn học.
               </div>
             </div>
 

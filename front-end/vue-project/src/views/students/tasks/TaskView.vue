@@ -7,19 +7,19 @@
         <p class="text-slate-500 mt-0.5 text-sm">Kanban board · Nhóm {{ groupName }}</p>
       </div>
       <div v-if="isLeader && groupId" class="flex items-center gap-2">
-        <button
+        <!-- <button
           @click="openCreateModal"
           class="px-4 py-2.5 bg-white border border-indigo-200 text-indigo-700 rounded-xl text-sm font-semibold hover:bg-indigo-50 transition flex items-center gap-2"
         >
           <SvgIcon name="plus" class="w-4 h-4" />
           Tạo 1 việc
-        </button>
+        </button> -->
         <button
           @click="showBulkModal = true"
           class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition flex items-center gap-2"
         >
           <SvgIcon name="tasks" class="w-4 h-4" />
-          Tạo nhiều việc
+          Tạo công việc
         </button>
       </div>
     </div>
