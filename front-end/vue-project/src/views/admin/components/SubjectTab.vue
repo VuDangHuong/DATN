@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, watch, onMounted } from 'vue'
+import { ref, reactive, watch, onMounted, computed } from 'vue'
 import { useCategoryStore } from '@/stores/admin/category'
 import { categoryApi } from '@/api/admin/category'
 import { useToastStore } from '@/stores/toast'
@@ -35,7 +35,36 @@ const importFile = ref(null)
 const importing = ref(false)
 const importResult = ref(null)
 const fileInputRef = ref(null)
+const currentPage = ref(1)
+const keyword = ref('')
+const subjectPagination = ref({ current_page: 1, last_page: 1, per_page: 5, total: 0 })
 
+const debounce = (fn, d = 400) => {
+  let t
+  return (...a) => {
+    clearTimeout(t)
+    t = setTimeout(() => fn(...a), d)
+  }
+}
+
+const onSearch = debounce(() => {
+  currentPage.value = 1
+  loadSubjects()
+}, 400)
+
+const goToPage = (page) => {
+  if (page < 1 || page > subjectPagination.value.last_page || page === currentPage.value) return
+  currentPage.value = page
+  loadSubjects()
+}
+
+const pageNumbers = computed(() => {
+  const last = subjectPagination.value.last_page
+  const cur = currentPage.value
+  const pages = []
+  for (let i = Math.max(1, cur - 2); i <= Math.min(last, cur + 2); i++) pages.push(i)
+  return pages
+})
 // Logic lọc
 watch(filterFaculty, async (newVal) => {
   filterMajor.value = ''
@@ -47,16 +76,33 @@ watch(filterFaculty, async (newVal) => {
   }
 })
 
-watch(filterMajor, loadSubjects)
+watch(filterMajor, () => {
+  currentPage.value = 1
+  keyword.value = ''
+  loadSubjects()
+})
 
 async function loadSubjects() {
   if (!filterMajor.value) {
     subjects.value = []
+    subjectPagination.value = { current_page: 1, last_page: 1, per_page: 10, total: 0 }
     return
   }
   try {
-    const res = await categoryApi.getSubjects({ major_id: filterMajor.value })
-    subjects.value = res.data
+    const res = await categoryApi.getSubjects({
+      paginate: 1,
+      page: currentPage.value,
+      keyword: keyword.value,
+      major_id: filterMajor.value,
+    })
+    const data = res.data
+    subjects.value = data.data ?? []
+    subjectPagination.value = {
+      current_page: data.current_page ?? 1,
+      last_page: data.last_page ?? 1,
+      per_page: data.per_page ?? 10,
+      total: data.total ?? 0,
+    }
   } catch (e) {
     console.error(e)
   }
@@ -259,7 +305,32 @@ const downloadTemplate = async () => {
         </button>
       </div>
     </div>
+    <div
+      v-if="filterMajor"
+      class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4"
+    >
+      <h3 class="text-base font-semibold text-gray-700">
+        Danh sách môn học
+        <span v-if="subjectPagination.total" class="text-gray-400 font-normal">
+          ({{ subjectPagination.total }} môn)
+        </span>
+      </h3>
 
+      <div class="relative w-full sm:w-80">
+        <span
+          class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400"
+        >
+          <SvgIcon name="search" class="w-4 h-4" />
+        </span>
+        <input
+          v-model="keyword"
+          @input="onSearch"
+          type="text"
+          placeholder="Tìm theo mã hoặc tên môn học..."
+          class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+        />
+      </div>
+    </div>
     <div class="overflow-x-auto">
       <table class="w-full border-collapse min-w-[600px]">
         <thead>
@@ -299,7 +370,55 @@ const downloadTemplate = async () => {
         </tbody>
       </table>
     </div>
+    <div
+      v-if="subjectPagination.total > 0"
+      class="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 px-1"
+    >
+      <p class="text-sm text-gray-600">
+        Hiển thị
+        <span class="font-medium">{{
+          (subjectPagination.current_page - 1) * subjectPagination.per_page + 1
+        }}</span>
+        –
+        <span class="font-medium">{{
+          Math.min(
+            subjectPagination.current_page * subjectPagination.per_page,
+            subjectPagination.total,
+          )
+        }}</span>
+        / <span class="font-medium">{{ subjectPagination.total }}</span> môn học
+      </p>
 
+      <div class="flex items-center gap-1">
+        <button
+          @click="goToPage(currentPage - 1)"
+          :disabled="currentPage <= 1"
+          class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Trước
+        </button>
+        <button
+          v-for="p in pageNumbers"
+          :key="p"
+          @click="goToPage(p)"
+          :class="[
+            'px-3 py-1.5 rounded-lg border text-sm transition',
+            p === currentPage
+              ? 'bg-blue-600 border-blue-600 text-white'
+              : 'border-gray-300 text-gray-600 hover:bg-gray-100',
+          ]"
+        >
+          {{ p }}
+        </button>
+        <button
+          @click="goToPage(currentPage + 1)"
+          :disabled="currentPage >= subjectPagination.last_page"
+          class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Sau
+        </button>
+      </div>
+    </div>
     <!-- Modal Thêm / Sửa -->
     <Teleport to="body">
       <div
