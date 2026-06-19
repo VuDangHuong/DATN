@@ -1,8 +1,8 @@
 import axiosClient from '../axiosClient'
 
 export const categoryApi = {
-  getFaculties() {
-    return axiosClient.get('/admin/faculties')
+  getFaculties(params = {}) {
+    return axiosClient.get('/admin/faculties', { params })
   },
   createFaculty(data) {
     return axiosClient.post('/admin/faculties', data)

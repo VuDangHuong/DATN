@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { useCategoryStore } from '@/stores/admin/category'
 import { categoryApi } from '@/api/admin/category'
 import { useToastStore } from '@/stores/toast'
@@ -40,7 +40,36 @@ const importFile = ref(null)
 const importing = ref(false)
 const importResult = ref(null)
 const fileInputRef = ref(null)
+const currentPage = ref(1)
+const searchQuery = ref('')
+const classPagination = ref({ current_page: 1, last_page: 1, per_page: 5, total: 0 })
 
+const debounce = (fn, d = 400) => {
+  let t
+  return (...a) => {
+    clearTimeout(t)
+    t = setTimeout(() => fn(...a), d)
+  }
+}
+
+const onSearch = debounce(() => {
+  currentPage.value = 1
+  loadClasses()
+}, 400)
+
+const goToPage = (page) => {
+  if (page < 1 || page > classPagination.value.last_page || page === currentPage.value) return
+  currentPage.value = page
+  loadClasses()
+}
+
+const pageNumbers = computed(() => {
+  const last = classPagination.value.last_page
+  const cur = currentPage.value
+  const pages = []
+  for (let i = Math.max(1, cur - 2); i <= Math.min(last, cur + 2); i++) pages.push(i)
+  return pages
+})
 onMounted(async () => {
   loadClasses()
   try {
@@ -59,10 +88,12 @@ watch(filterFaculty, async (newVal) => {
   filterMajor.value = ''
   subjectList.value = []
   availableMajors.value = newVal ? await store.fetchMajors(newVal) : []
+  currentPage.value = 1
   loadClasses()
 })
 
 watch(filterMajor, async (newVal) => {
+  currentPage.value = 1
   loadClasses()
   if (newVal) {
     try {
@@ -77,11 +108,21 @@ watch(filterMajor, async (newVal) => {
 })
 
 async function loadClasses() {
-  const params = {}
+  const params = {
+    page: currentPage.value,
+    search: searchQuery.value,
+  }
   if (filterMajor.value) params.major_id = filterMajor.value
   try {
     const res = await categoryApi.getClasses(params)
-    classes.value = res.data
+    const data = res.data
+    classes.value = data.data ?? []
+    classPagination.value = {
+      current_page: data.current_page ?? 1,
+      last_page: data.last_page ?? 1,
+      per_page: data.per_page ?? 5,
+      total: data.total ?? 0,
+    }
   } catch (e) {
     console.error(e)
   }
@@ -281,7 +322,30 @@ const downloadTemplate = async () => {
         </button>
       </div>
     </div>
+    <!-- Thanh tìm kiếm -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+      <h3 class="text-base font-semibold text-gray-700">
+        Danh sách lớp học phần
+        <span v-if="classPagination.total" class="text-gray-400 font-normal">
+          ({{ classPagination.total }} lớp)
+        </span>
+      </h3>
 
+      <div class="relative w-full sm:w-80">
+        <span
+          class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400"
+        >
+          <SvgIcon name="search" class="w-4 h-4" />
+        </span>
+        <input
+          v-model="searchQuery"
+          @input="onSearch"
+          type="text"
+          placeholder="Tìm theo mã hoặc tên lớp..."
+          class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+        />
+      </div>
+    </div>
     <div class="overflow-x-auto">
       <table class="w-full border-collapse min-w-[800px]">
         <thead>
@@ -359,7 +423,52 @@ const downloadTemplate = async () => {
         </tbody>
       </table>
     </div>
+    <div
+      v-if="classPagination.total > 0"
+      class="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 px-1"
+    >
+      <p class="text-sm text-gray-600">
+        Hiển thị
+        <span class="font-medium">{{
+          (classPagination.current_page - 1) * classPagination.per_page + 1
+        }}</span>
+        –
+        <span class="font-medium">{{
+          Math.min(classPagination.current_page * classPagination.per_page, classPagination.total)
+        }}</span>
+        / <span class="font-medium">{{ classPagination.total }}</span> lớp
+      </p>
 
+      <div class="flex items-center gap-1">
+        <button
+          @click="goToPage(currentPage - 1)"
+          :disabled="currentPage <= 1"
+          class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Trước
+        </button>
+        <button
+          v-for="p in pageNumbers"
+          :key="p"
+          @click="goToPage(p)"
+          :class="[
+            'px-3 py-1.5 rounded-lg border text-sm transition',
+            p === currentPage
+              ? 'bg-blue-600 border-blue-600 text-white'
+              : 'border-gray-300 text-gray-600 hover:bg-gray-100',
+          ]"
+        >
+          {{ p }}
+        </button>
+        <button
+          @click="goToPage(currentPage + 1)"
+          :disabled="currentPage >= classPagination.last_page"
+          class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Sau
+        </button>
+      </div>
+    </div>
     <ClassModal
       :show="showModal"
       :editing-item="editingItem"
