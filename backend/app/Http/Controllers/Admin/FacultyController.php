@@ -9,9 +9,29 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\FacultiesImport;
 class FacultyController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Faculty::all());
+        $query = Faculty::query();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                    ->orWhere('code', 'LIKE', "%{$search}%");
+            });
+        }
+
+        $query->orderBy('code');
+
+        // Nếu không yêu cầu phân trang → trả full (dùng cho dropdown)
+        if (!$request->boolean('paginate')) {
+            return response()->json($query->get());
+        }
+
+        $perPage = (int) $request->input('per_page', 5);
+        $perPage = max(1, min($perPage, 100));
+
+        return response()->json($query->paginate($perPage));
     }
 
     public function store(Request $request)
