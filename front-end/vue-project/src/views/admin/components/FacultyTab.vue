@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useCategoryStore } from '@/stores/admin/category'
 import { categoryApi } from '@/api/admin/category'
 import { useToastStore } from '@/stores/toast'
@@ -28,7 +28,45 @@ const importFile = ref(null)
 const importing = ref(false)
 const importResult = ref(null) // { success_count, fail_count, errors }
 const fileInputRef = ref(null)
+//page
+const currentPage = ref(1)
+const searchQuery = ref('')
+const facultyPagination = computed(() => store.facultyPagination)
+const debounce = (fn, d = 400) => {
+  let t
+  return (...a) => {
+    clearTimeout(t)
+    t = setTimeout(() => fn(...a), d)
+  }
+}
 
+const loadFaculties = () => {
+  store.fetchFaculties({
+    paginate: 1,
+    page: currentPage.value,
+    search: searchQuery.value,
+  })
+}
+
+const onSearch = debounce(() => {
+  currentPage.value = 1
+  loadFaculties()
+}, 400)
+
+const goToPage = (page) => {
+  if (page < 1 || page > facultyPagination.value.last_page || page === currentPage.value) return
+  currentPage.value = page
+  loadFaculties()
+}
+
+const pageNumbers = computed(() => {
+  const last = facultyPagination.value.last_page
+  const cur = currentPage.value
+  const pages = []
+  for (let i = Math.max(1, cur - 2); i <= Math.min(last, cur + 2); i++) pages.push(i)
+  return pages
+})
+onMounted(loadFaculties)
 // Actions
 const openModal = (item = null) => {
   if (item) {
@@ -50,7 +88,7 @@ const handleSave = async () => {
       await categoryApi.createFaculty(form)
       toast.success('Thêm khoa thành công')
     }
-    store.fetchFaculties()
+    loadFaculties()
     showModal.value = false
   } catch (e) {
     toast.error(e.response?.data?.message || 'Có lỗi xảy ra')
@@ -72,7 +110,7 @@ const handleDelete = async (faculty) => {
   try {
     await categoryApi.deleteFaculty(faculty.id)
     toast.success('Đã xóa khoa')
-    store.fetchFaculties()
+    loadFaculties()
   } catch (e) {
     toast.error(e.response?.data?.message || 'Không thể xóa')
   } finally {
@@ -140,7 +178,7 @@ const handleImport = async () => {
       toast.success(`Import thành công ${importResult.value.success_count} khoa`)
     }
 
-    store.fetchFaculties()
+    loadFaculties()
   } catch (e) {
     if (e.response?.status === 422 && e.response.data?.errors) {
       importResult.value = {
@@ -179,6 +217,13 @@ const downloadTemplate = async () => {
     <div class="flex justify-between mb-4">
       <h3 class="text-lg font-semibold text-gray-700">Danh sách Khoa / Viện</h3>
       <div class="flex gap-2">
+        <input
+          v-model="searchQuery"
+          @input="onSearch"
+          type="text"
+          placeholder="Tìm mã hoặc tên khoa..."
+          class="border border-gray-300 rounded px-3 py-2 text-sm w-56 focus:ring-2 focus:ring-blue-500 outline-none"
+        />
         <button
           @click="openImportModal"
           class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center"
@@ -219,7 +264,55 @@ const downloadTemplate = async () => {
         </tr>
       </tbody>
     </table>
+    <div
+      v-if="facultyPagination.total > 0"
+      class="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 px-1"
+    >
+      <p class="text-sm text-gray-600">
+        Hiển thị
+        <span class="font-medium">{{
+          (facultyPagination.current_page - 1) * facultyPagination.per_page + 1
+        }}</span>
+        –
+        <span class="font-medium">{{
+          Math.min(
+            facultyPagination.current_page * facultyPagination.per_page,
+            facultyPagination.total,
+          )
+        }}</span>
+        / <span class="font-medium">{{ facultyPagination.total }}</span> khoa
+      </p>
 
+      <div class="flex items-center gap-1">
+        <button
+          @click="goToPage(currentPage - 1)"
+          :disabled="currentPage <= 1"
+          class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Trước
+        </button>
+        <button
+          v-for="p in pageNumbers"
+          :key="p"
+          @click="goToPage(p)"
+          :class="[
+            'px-3 py-1.5 rounded-lg border text-sm transition',
+            p === currentPage
+              ? 'bg-blue-600 border-blue-600 text-white'
+              : 'border-gray-300 text-gray-600 hover:bg-gray-100',
+          ]"
+        >
+          {{ p }}
+        </button>
+        <button
+          @click="goToPage(currentPage + 1)"
+          :disabled="currentPage >= facultyPagination.last_page"
+          class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Sau
+        </button>
+      </div>
+    </div>
     <!-- Modal Thêm / Sửa -->
     <div
       v-if="showModal"
