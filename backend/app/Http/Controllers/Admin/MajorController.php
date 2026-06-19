@@ -18,7 +18,25 @@ class MajorController extends Controller
             $query->where('faculty_id', $request->faculty_id);
         }
 
-        return response()->json($query->get());
+        if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function ($q) use ($search) {
+            $q->where('name', 'LIKE', "%{$search}%")
+                ->orWhere('code', 'LIKE', "%{$search}%");
+        });
+        }
+
+        $query->orderBy('code');
+
+        // Không yêu cầu phân trang → trả full (dùng cho dropdown nơi khác)
+        if (!$request->boolean('paginate')) {
+            return response()->json($query->get());
+        }
+
+        $perPage = (int) $request->input('per_page', 5);
+        $perPage = max(1, min($perPage, 100));
+
+        return response()->json($query->paginate($perPage));
     }
 
     // 2. Tạo Ngành
