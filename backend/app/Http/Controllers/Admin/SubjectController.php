@@ -15,27 +15,37 @@ class SubjectController extends Controller
         $query = Subject::with('major');
 
         // 1. Lọc theo Ngành
-        if ($request->has('major_id')) {
+        if ($request->has('major_id') && $request->major_id) {
             $query->where('major_id', $request->major_id);
         }
 
         // 2. Lọc theo Khoa
-        if ($request->has('faculty_id')) {
+        if ($request->has('faculty_id') && $request->faculty_id) {
             $query->whereHas('major', function ($q) use ($request) {
                 $q->where('faculty_id', $request->faculty_id);
             });
         }
 
         // 3. Tìm kiếm theo tên hoặc mã môn
-        if ($request->has('keyword')) {
+        if ($request->filled('keyword')) {
             $keyword = $request->keyword;
             $query->where(function ($q) use ($keyword) {
-                $q->where('name', 'like', "%$keyword%")
-                  ->orWhere('code', 'like', "%$keyword%");
+                $q->where('name', 'like', "%{$keyword}%")
+                    ->orWhere('code', 'like', "%{$keyword}%");
             });
         }
 
-        return response()->json($query->get());
+        $query->orderBy('code');
+
+        // Không yêu cầu phân trang → trả full (dropdown nơi khác)
+        if (!$request->boolean('paginate')) {
+            return response()->json($query->get());
+        }
+
+        $perPage = (int) $request->input('per_page', 5);
+        $perPage = max(1, min($perPage, 100));
+
+        return response()->json($query->paginate($perPage));
     }
 
     public function store(Request $request)
