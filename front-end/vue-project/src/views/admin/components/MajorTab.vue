@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, watch, computed } from 'vue'
 import { useCategoryStore } from '@/stores/admin/category'
 import { categoryApi } from '@/api/admin/category'
 import { useToastStore } from '@/stores/toast'
@@ -30,13 +30,57 @@ const importFile = ref(null)
 const importing = ref(false)
 const importResult = ref(null)
 const fileInputRef = ref(null)
+const currentPage = ref(1)
+const searchQuery = ref('')
+const majorPagination = ref({ current_page: 1, last_page: 1, per_page: 10, total: 0 })
 
-const loadMajors = async () => {
-  const res = await categoryApi.getMajors({ faculty_id: selectedFaculty.value || null })
-  majors.value = res.data
+const debounce = (fn, d = 400) => {
+  let t
+  return (...a) => {
+    clearTimeout(t)
+    t = setTimeout(() => fn(...a), d)
+  }
 }
 
-watch(selectedFaculty, loadMajors)
+const onSearch = debounce(() => {
+  currentPage.value = 1
+  loadMajors()
+}, 400)
+
+const goToPage = (page) => {
+  if (page < 1 || page > majorPagination.value.last_page || page === currentPage.value) return
+  currentPage.value = page
+  loadMajors()
+}
+
+const pageNumbers = computed(() => {
+  const last = majorPagination.value.last_page
+  const cur = currentPage.value
+  const pages = []
+  for (let i = Math.max(1, cur - 2); i <= Math.min(last, cur + 2); i++) pages.push(i)
+  return pages
+})
+const loadMajors = async () => {
+  const res = await categoryApi.getMajors({
+    paginate: 1,
+    page: currentPage.value,
+    search: searchQuery.value,
+    faculty_id: selectedFaculty.value || null,
+  })
+  const data = res.data
+  majors.value = data.data ?? []
+  majorPagination.value = {
+    current_page: data.current_page ?? 1,
+    last_page: data.last_page ?? 1,
+    per_page: data.per_page ?? 5,
+    total: data.total ?? 0,
+  }
+}
+
+watch(selectedFaculty, () => {
+  currentPage.value = 1
+  loadMajors()
+})
 
 const openModal = (item = null) => {
   if (item) {
@@ -195,6 +239,13 @@ onMounted(() => {
       </div>
 
       <div class="flex gap-2">
+        <input
+          v-model="searchQuery"
+          @input="onSearch"
+          type="text"
+          placeholder="Tìm mã hoặc tên ngành..."
+          class="border border-gray-300 rounded p-2 text-sm w-full md:w-56 focus:ring-2 focus:ring-blue-500 outline-none"
+        />
         <button
           @click="openImportModal"
           class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center whitespace-nowrap"
@@ -240,7 +291,53 @@ onMounted(() => {
         </tr>
       </tbody>
     </table>
+    <!-- ✅ Phân trang -->
+    <div
+      v-if="majorPagination.total > 0"
+      class="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 px-1"
+    >
+      <p class="text-sm text-gray-600">
+        Hiển thị
+        <span class="font-medium">{{
+          (majorPagination.current_page - 1) * majorPagination.per_page + 1
+        }}</span>
+        –
+        <span class="font-medium">{{
+          Math.min(majorPagination.current_page * majorPagination.per_page, majorPagination.total)
+        }}</span>
+        / <span class="font-medium">{{ majorPagination.total }}</span> ngành
+      </p>
 
+      <div class="flex items-center gap-1">
+        <button
+          @click="goToPage(currentPage - 1)"
+          :disabled="currentPage <= 1"
+          class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Trước
+        </button>
+        <button
+          v-for="p in pageNumbers"
+          :key="p"
+          @click="goToPage(p)"
+          :class="[
+            'px-3 py-1.5 rounded-lg border text-sm transition',
+            p === currentPage
+              ? 'bg-blue-600 border-blue-600 text-white'
+              : 'border-gray-300 text-gray-600 hover:bg-gray-100',
+          ]"
+        >
+          {{ p }}
+        </button>
+        <button
+          @click="goToPage(currentPage + 1)"
+          :disabled="currentPage >= majorPagination.last_page"
+          class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Sau
+        </button>
+      </div>
+    </div>
     <!-- Modal Thêm / Sửa -->
     <div
       v-if="showModal"
