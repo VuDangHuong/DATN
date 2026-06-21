@@ -161,21 +161,21 @@ class LecturerSignController extends Controller
         }
 
         // Check graded + score
-        if ($submission->status !== 'graded' || is_null($submission->score)) {
-            return response()->json([
-                'message'    => 'Bạn cần chấm điểm bài nộp trước khi ký xác nhận tài liệu.',
-                'error_code' => 'SUBMISSION_NOT_GRADED',
-                'data' => [
-                    'submission_id'     => $submission->id,
-                    'submission_status' => $submission->status,
-                    'has_score'         => !is_null($submission->score),
-                    'assignment_id'     => $submission->assignment_id,
-                    'class_id'          => $signRequest->class_id,
-                    // Đường dẫn frontend nên redirect đến
-                    'grade_url'         => "/lecturer/assignments/{$submission->assignment_id}/review",
-                ],
-            ], 403);
-        }
+        // if ($submission->status !== 'graded' || is_null($submission->score)) {
+        //     return response()->json([
+        //         'message'    => 'Bạn cần chấm điểm bài nộp trước khi ký xác nhận tài liệu.',
+        //         'error_code' => 'SUBMISSION_NOT_GRADED',
+        //         'data' => [
+        //             'submission_id'     => $submission->id,
+        //             'submission_status' => $submission->status,
+        //             'has_score'         => !is_null($submission->score),
+        //             'assignment_id'     => $submission->assignment_id,
+        //             'class_id'          => $signRequest->class_id,
+        //             // Đường dẫn frontend nên redirect đến
+        //             'grade_url'         => "/lecturer/assignments/{$submission->assignment_id}/review",
+        //         ],
+        //     ], 403);
+        // }
         // ── 4. Verify signing password ──────────────────
         if (!Hash::check($request->signing_password, $signProfile->signing_password_hash)) {
             return response()->json([
