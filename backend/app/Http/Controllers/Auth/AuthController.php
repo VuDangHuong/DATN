@@ -178,9 +178,16 @@ class AuthController extends Controller
     // --- API 1: Gửi yêu cầu quên mật khẩu ---
     public function forgotPassword(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email|exists:users,email'
-        ]);
+        $request->validate(
+            [
+                'email' => 'required|email|exists:users,email'
+            ],
+            [
+                'email.required' => 'Vui lòng nhập email.',
+                'email.email'    => 'Email không đúng định dạng.',
+                'email.exists'   => 'Email không tồn tại trong hệ thống.',
+            ]
+        );
 
         $email = $request->email;
         
@@ -205,11 +212,25 @@ class AuthController extends Controller
 // --- API 2: Đặt lại mật khẩu bằng OTP ---
     public function resetPassword(Request $request)
     {
-        $request->validate([
-            'email'    => 'required|email|exists:users,email',
-            'otp'      => 'required|digits:6',
-            'password' => 'required|min:8|confirmed',
-        ]);
+        $request->validate(
+            [
+                'email'    => 'required|email|exists:users,email',
+                'otp'      => 'required|digits:6',
+                'password' => 'required|min:8|confirmed',
+            ],
+            [
+                'email.required'    => 'Vui lòng nhập email.',
+                'email.email'       => 'Email không đúng định dạng.',
+                'email.exists'      => 'Email không tồn tại trong hệ thống.',
+
+                'otp.required'      => 'Vui lòng nhập mã OTP.',
+                'otp.digits'        => 'Mã OTP phải gồm 6 chữ số.',
+
+                'password.required' => 'Vui lòng nhập mật khẩu mới.',
+                'password.min'      => 'Mật khẩu phải có ít nhất 8 ký tự.',
+                'password.confirmed'=> 'Xác nhận mật khẩu không khớp.',
+            ]
+        );
 
         // 1. Tìm bản ghi OTP theo email
         $otpRecord = DB::table('password_otps')->where('email', $request->email)->first();
