@@ -16,16 +16,11 @@ class Classes extends Model
         'semester_id',
         'lecturer_id',
         'name',
-        'min_members',
-        'max_members',
-        'group_registration_deadline',
         'is_active',
         'max_members_per_group',
     ];
     protected $casts = [
         'is_active'                   => 'boolean',
-        'group_registration_deadline' => 'datetime',
-        'max_members'           => 'integer',
         'max_members_per_group' => 'integer',
     ];
 

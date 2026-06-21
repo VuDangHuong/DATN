@@ -12,7 +12,6 @@ use App\Models\Evaluation\Submission;
 use App\Models\Sign\DocumentSignRequest;
 use App\Models\Task\Task;
 use App\Models\Evaluation\StudentGrade;
-use App\Models\Evaluation\PeerEvaluation;
 use App\Models\Communication\Message;
 class Group extends Model
 {
@@ -20,7 +19,6 @@ class Group extends Model
         'name',
         'class_id',
         'leader_id',
-        'invitation_code',
         'is_locked',
     ];
     protected $casts = [
@@ -46,10 +44,6 @@ class Group extends Model
                     ->withPivot('role', 'joined_at')
                     ->withTimestamps();
     }
-    public function topic(): HasOne
-    {
-        return $this->hasOne(Topic::class);
-    }
     public function submission(): HasOne
     {
         //latesrofMany tránh lấy nhầm bản nộp cũ nếu nhóm nộp lại nhiều lần
@@ -73,20 +67,6 @@ class Group extends Model
     public function latestMessage(): HasOne
     {
         return $this->hasOne(Message::class)->latestOfMany();
-    }
-    public function joinRequests(): HasMany
-    {
-        return $this->hasMany(JoinRequest::class);
-    }
-
-    public function recruitmentPosts(): HasMany
-    {
-        return $this->hasMany(RecruitmentPost::class);
-    }
-
-    public function peerEvaluations(): HasMany
-    {
-        return $this->hasMany(PeerEvaluation::class);
     }
 
     public function studentGrades(): HasMany
@@ -142,19 +122,10 @@ class Group extends Model
 
     /**
      * Nhóm có đủ điều kiện nộp bài không
-     * (có topic được duyệt + có ít nhất 1 file)
      */
     public function canSubmit(): bool
     {
-        if ($this->is_locked) {
-            return false;
-        }
-
-        $hasApprovedTopic = $this->topic()
-            ->where('status', 'approved')
-            ->exists();
-
-        return $hasApprovedTopic;
+        return !$this->is_locked;
     }
 
     /**
@@ -165,13 +136,4 @@ class Group extends Model
         return $this->submissions()->exists();
     }
 
-    /**
-     * Tạo invitation code ngẫu nhiên nếu chưa có
-     */
-    public function generateInvitationCode(): string
-    {
-        $code = strtoupper(substr(md5($this->id . $this->name . now()), 0, 8));
-        $this->update(['invitation_code' => $code]);
-        return $code;
-    }
 }

@@ -40,7 +40,6 @@ class GroupService
                 'name'            => $name,
                 'class_id'        => $class->id,
                 'leader_id'       => $user->id,
-                'invitation_code' => strtoupper(Str::random(8)),
                 'is_locked'       => false,
             ]);
  
@@ -455,7 +454,6 @@ class GroupService
             'id'              => $group->id,
             'name'            => $group->name,
             'class_id'        => $group->class_id,
-            'invitation_code' => $group->invitation_code,
             'is_locked'       => $group->is_locked,
             'leader'          => $group->leader ? [
                 'id'   => $group->leader->id,

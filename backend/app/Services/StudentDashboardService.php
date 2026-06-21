@@ -50,9 +50,7 @@ class StudentDashboardService
                         'id'   => $class->id,
                         'code' => $class->code,
                         'name' => $class->name,
-                        'min_members' => $class->min_members,
-                        'max_members' => $class->max_members,
-                        'group_registration_deadline' => $class->group_registration_deadline,
+                        'max_members' => $class->subjects->first()?->pivot?->max_members,
                         'is_active' => $class->is_active,
                     ],
                     'semester' => $class->semester ? [
@@ -76,7 +74,6 @@ class StudentDashboardService
                     'my_group' => $group ? [
                         'id'              => $group->id,
                         'name'            => $group->name,
-                        'invitation_code' => $group->invitation_code,
                         'is_locked'       => $group->is_locked,
                         'leader'          => $group->leader ? [
                             'id'   => $group->leader->id,

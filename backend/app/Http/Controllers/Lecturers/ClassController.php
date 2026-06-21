@@ -27,7 +27,7 @@ class ClassController extends Controller
         $class = Classes::where('lecturer_id', Auth::id())->findOrFail($classId);
     
         $groups = Group::where('class_id', $classId)
-        ->select('id', 'name', 'leader_id', 'invitation_code', 'is_locked', 'class_id')
+        ->select('id', 'name', 'leader_id', 'is_locked', 'class_id')
         ->with(['leader:id,code,name'])
         ->withCount('members')   //Đếm members
         ->get()
@@ -36,7 +36,6 @@ class ClassController extends Controller
                 'id'              => $g->id,
                 'name'            => $g->name,
                 'leader_id'       => $g->leader_id,
-                'invitation_code' => $g->invitation_code,
                 'is_locked'       => $g->is_locked,
                 'member_count'    => $g->members_count,   // ← từ withCount
                 'leader'          => $g->leader ? [
