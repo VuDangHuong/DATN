@@ -18,6 +18,7 @@ class MessageController extends Controller
      */
     public function index(Request $request, int $groupId): JsonResponse
     {
+        $groupId = (int) $groupId;
         $perPage = $request->integer('per_page', 30);
  
         $result = $this->service->getMessages(auth()->user(), $groupId, $perPage);
@@ -34,6 +35,7 @@ class MessageController extends Controller
      */
     public function store(Request $request, int $groupId): JsonResponse
     {
+        $groupId = (int) $groupId;
         $data = $request->validate([
             'content'      => 'nullable|string|max:5000',
             'mentions'     => 'nullable|array|max:20',
