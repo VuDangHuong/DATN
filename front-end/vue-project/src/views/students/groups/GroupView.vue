@@ -460,6 +460,8 @@ import { storeToRefs } from 'pinia'
 import SvgIcon from '@/components/icons/SVG.vue'
 import { useConfirm } from '@/composables/useConfirm'
 import ConfirmModal from '@/components/common/ConfirmModal.vue'
+import { useToastStore } from '@/stores/toast'
+
 const {
   state: confirmState,
   confirmDelete,
@@ -472,8 +474,8 @@ const route = useRoute()
 const router = useRouter()
 const dashboardStore = useDashboardStore()
 const groupStore = useGroupStore()
-const authStore = useAuthStore() // ✅ Sử dụng authStore thay cho localStorage thủ công
-
+const authStore = useAuthStore()
+const toast = useToastStore()
 const { selectedClass, myGroup, selectedClassId } = storeToRefs(dashboardStore)
 const { currentGroup, loading } = storeToRefs(groupStore)
 
@@ -547,7 +549,7 @@ async function handleRemoveMember(member) {
     title: 'Xóa thành viên khỏi nhóm',
     message: 'Sinh viên này sẽ bị xóa khỏi nhóm và có thể tham gia nhóm khác trong cùng lớp.',
     warningText: isLeader
-      ? '⚠️ Đây là TRƯỞNG NHÓM! Hãy chuyển quyền cho thành viên khác trước.'
+      ? 'Đây là TRƯỞNG NHÓM! Hãy chuyển quyền cho thành viên khác trước.'
       : member.code
         ? `Mã SV: ${member.code}`
         : '',
@@ -565,7 +567,7 @@ async function handleRemoveMember(member) {
     if (res?.success === false) {
       toast.error(res.message || 'Không thể xóa thành viên')
     } else {
-      toast.success(`Đã xóa ${member.name} khỏi nhóm`)
+      toast.success(`Đã xóa thành viên khỏi nhóm`)
     }
   } catch (e) {
     toast.error(e.response?.data?.message || 'Lỗi khi xóa thành viên')
