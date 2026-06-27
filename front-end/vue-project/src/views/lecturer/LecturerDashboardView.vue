@@ -2,7 +2,7 @@
 <template>
   <div class="space-y-6">
     <!-- ─── Welcome banner ─── -->
-    <div class="bg-gradient-to-r from-teal-500 to-cyan-600 rounded-2xl p-6 text-white shadow-sm">
+    <!-- <div class="bg-gradient-to-r from-teal-500 to-cyan-600 rounded-2xl p-6 text-white shadow-sm">
       <div class="flex items-center justify-between">
         <div>
           <h2 class="text-2xl font-bold mb-1">Xin Chào {{ user?.name || 'Giảng viên' }}!</h2>
@@ -13,7 +13,7 @@
           <p class="text-base text-teal-100">tài liệu đã ký hôm nay</p>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <!-- Loading -->
     <div v-if="store.loading" class="flex justify-center py-16">

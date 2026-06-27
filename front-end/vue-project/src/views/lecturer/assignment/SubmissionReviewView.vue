@@ -230,7 +230,7 @@
                     'bg-red-100 text-red-700': sub.status === 'rejected',
                   }"
                 >
-                  {{ sub.status }}
+                  {{ statusLabel(sub.status) }}
                 </span>
                 <span
                   v-if="sub.is_late"
@@ -503,7 +503,15 @@ async function loadAssignmentList() {
 function selectAssignment(a) {
   router.push({ name: 'lecturer-assignment-review', params: { assignmentId: a.id } })
 }
-
+function statusLabel(s) {
+  return (
+    {
+      pending: 'Chờ duyệt',
+      approved: 'Đã chấp nhận',
+      rejected: 'Đã từ chối',
+    }[s] || s
+  )
+}
 async function loadSubmissions() {
   if (!props.assignmentId) return
   loading.value = true

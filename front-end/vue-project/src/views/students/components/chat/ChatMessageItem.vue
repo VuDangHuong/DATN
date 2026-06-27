@@ -108,7 +108,7 @@
             class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition group/file"
             :class="isMine ? 'bg-white/20 hover:bg-white/30' : 'bg-white hover:bg-slate-50'"
           >
-            <span class="text-lg">📕</span>
+            <span class="text-lg"><SvgIcon name="document" class="h-5 w-5" /></span>
             <div class="flex-1 min-w-0">
               <p
                 class="text-base font-medium truncate"
@@ -146,13 +146,14 @@
 
 <script setup>
 import { computed, onMounted } from 'vue'
+import SvgIcon from '@/components/icons/SVG.vue'
 const props = defineProps({
   message: { type: Object, required: true },
   currentUserId: { type: Number, required: true },
   isLeader: { type: Boolean, default: false },
 })
 onMounted(() => {
-  console.log('🔥 ChatMessageItem mounted:', {
+  console.log('ChatMessageItem mounted:', {
     id: props.message.id,
     content: props.message.content,
     mentioned_users: props.message.mentioned_users,
@@ -172,7 +173,7 @@ function canDeleteAttachment(att) {
 const imageAttachments = computed(() => (props.message.attachments || []).filter((a) => a.is_image))
 const pdfAttachments = computed(() => (props.message.attachments || []).filter((a) => !a.is_image))
 
-// ✅ Highlight @mentions trong content
+//Highlight @mentions trong content
 const formattedContent = computed(() => {
   if (!props.message.content) return ''
 

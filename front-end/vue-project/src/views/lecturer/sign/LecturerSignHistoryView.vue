@@ -258,7 +258,7 @@
           <!-- Header -->
           <div class="p-6 border-b border-stone-100 flex items-start justify-between">
             <div>
-              <h3 class="text-lg font-bold text-stone-900">Chi tiết ký số</h3>
+              <h3 class="text-lg font-bold text-stone-900">CHI TIẾT KÝ SỐ</h3>
               <p class="text-base text-stone-400 mt-0.5">Yêu cầu #{{ selectedRecord.id }}</p>
             </div>
             <button @click="selectedRecord = null" class="p-1.5 hover:bg-stone-100 rounded-lg">

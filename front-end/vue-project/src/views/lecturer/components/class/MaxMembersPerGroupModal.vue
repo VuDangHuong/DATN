@@ -6,7 +6,7 @@
       <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
         <div class="flex items-start gap-3 mb-4">
           <div class="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
-            <span class="text-xl">👥</span>
+            <SvgICon name="group-users" class="h-4 w-4 mr-1" />
           </div>
           <div>
             <h3 class="text-lg font-bold text-stone-800">Định mức thành viên mỗi nhóm</h3>
@@ -68,6 +68,7 @@
 import { ref, watch } from 'vue'
 import { useToastStore } from '@/stores/toast'
 import { useLecturerClassStore } from '@/stores/lecturer/classStore'
+import SvgICon from '@/components/icons/SVG.vue'
 
 const props = defineProps({
   show: { type: Boolean, default: false },

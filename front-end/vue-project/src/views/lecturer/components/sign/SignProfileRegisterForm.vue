@@ -3,7 +3,7 @@
   <div class="bg-white rounded-2xl border border-stone-200 p-6">
     <div class="flex items-center justify-between mb-1">
       <h3 class="text-lg font-bold text-stone-800">
-        {{ store.hasProfile ? 'Cập nhật chữ ký số' : 'Đăng ký chữ ký số' }}
+        {{ store.hasProfile ? 'CẬP NHẬT CHỮ KÝ SỐ' : 'ĐĂNG KÝ CHỮ KÝ SỐ' }}
       </h3>
       <button
         @click="showGenerateTest = true"

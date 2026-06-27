@@ -1,6 +1,6 @@
 <!-- src/components/students/chat/ChatMessageInput.vue -->
 <template>
-  <div class="border-t border-slate-200 bg-white p-3 space-y-2">
+  <div class="bg-white p-3 space-y-2">
     <!-- File preview -->
     <div v-if="files.length" class="space-y-1.5">
       <div
@@ -8,7 +8,10 @@
         :key="idx"
         class="flex items-center gap-2 p-2 bg-slate-50 border border-slate-200 rounded-lg"
       >
-        <span class="text-lg">{{ isImage(file) ? '🖼️' : '📕' }}</span>
+        <span class="text-lg flex items-center">
+          <SvgIcon v-if="isImage(file)" name="image" class="h-5 w-5 text-indigo-500" />
+          <SvgIcon v-else name="document" class="h-5 w-5 text-red-500" />
+        </span>
         <div class="flex-1 min-w-0">
           <p class="text-base font-medium text-slate-700 truncate">{{ file.name }}</p>
           <p class="text-[10px] text-slate-400">{{ formatBytes(file.size) }}</p>
@@ -142,6 +145,7 @@
 <script setup>
 import { ref, computed, nextTick } from 'vue'
 import { useToastStore } from '@/stores/toast'
+import SvgIcon from '@/components/icons/SVG.vue'
 
 const props = defineProps({
   members: { type: Array, default: () => [] }, // [{id, name, code, avatar_url}]

@@ -199,11 +199,81 @@
       </div>
 
       <!-- ── Form đăng ký / cập nhật ── -->
-      <SignProfileRegisterForm
-        v-if="showForm"
-        @cancel="showForm = false"
-        @success="onRegisterSuccess"
-      />
+      <!-- ── Modal Form đăng ký / cập nhật ── -->
+      <Teleport to="body">
+        <Transition
+          enter-active-class="transition duration-200 ease-out"
+          enter-from-class="opacity-0"
+          enter-to-class="opacity-100"
+          leave-active-class="transition duration-150 ease-in"
+          leave-from-class="opacity-100"
+          leave-to-class="opacity-0"
+        >
+          <div v-if="showForm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <!-- Backdrop -->
+            <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="showForm = false" />
+
+            <!-- Modal box -->
+            <Transition
+              enter-active-class="transition duration-200 ease-out"
+              enter-from-class="opacity-0 scale-95"
+              enter-to-class="opacity-100 scale-100"
+              leave-active-class="transition duration-150 ease-in"
+              leave-from-class="opacity-100 scale-100"
+              leave-to-class="opacity-0 scale-95"
+            >
+              <div
+                v-if="showForm"
+                class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+              >
+                <!-- Header modal -->
+                <div
+                  class="flex items-center justify-between px-6 py-4 border-b border-stone-100 sticky top-0 bg-white z-10"
+                >
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center">
+                      <SvgICon name="shield-check" class="w-5 h-5 text-teal-600" />
+                    </div>
+                    <div>
+                      <h3 class="text-lg font-bold text-stone-800">
+                        {{ store.hasProfile ? 'CẬP NHẬT CHỮ KÝ SỐ' : 'ĐĂNG KÝ CHỮ KÝ SỐ' }}
+                      </h3>
+                      <p class="text-base text-stone-400">
+                        {{
+                          store.hasProfile
+                            ? 'Thay thế chữ ký số hiện tại bằng chứng thư mới'
+                            : 'Đăng ký chữ ký số cá nhân để ký tài liệu'
+                        }}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    @click="showForm = false"
+                    class="p-2 rounded-lg hover:bg-stone-100 text-stone-400 transition"
+                  >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Nội dung form -->
+                <div class="p-6">
+                  <SignProfileRegisterForm
+                    @cancel="showForm = false"
+                    @success="onRegisterSuccess"
+                  />
+                </div>
+              </div>
+            </Transition>
+          </div>
+        </Transition>
+      </Teleport>
 
       <!-- ── Lịch sử chữ ký ── -->
       <div v-if="store.history.length > 1" class="mt-8">
@@ -298,17 +368,33 @@
               </svg>
             </div>
             <div>
-              <h3 class="text-lg font-bold text-stone-800">Yêu cầu vô hiệu hóa</h3>
+              <h3 class="text-lg font-bold text-stone-800">YÊU CẦU VÔ HIỆU HÓA</h3>
               <p class="text-base text-stone-500 mt-1">Yêu cầu sẽ được gửi cho Admin duyệt</p>
             </div>
           </div>
 
           <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl mb-4">
-            <p class="text-base text-amber-800">
-              ⚠️ <strong>Lưu ý:</strong> Trong thời gian chờ duyệt, bạn sẽ
-              <strong>không thể ký tài liệu</strong>. Nếu Admin từ chối, chữ ký sẽ tiếp tục hoạt
-              động bình thường.
-            </p>
+            <div class="flex items-start gap-3">
+              <svg
+                class="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+
+              <p class="text-base text-amber-800 leading-6">
+                <strong>Lưu ý:</strong> Trong thời gian chờ duyệt, bạn sẽ
+                <strong>không thể ký tài liệu</strong>. Nếu Admin từ chối, chữ ký sẽ tiếp tục hoạt
+                động bình thường.
+              </p>
+            </div>
           </div>
 
           <div class="mb-4">

@@ -13,7 +13,7 @@
         <div class="p-6 border-b border-stone-100 flex items-start justify-between flex-shrink-0">
           <div>
             <div class="flex items-center gap-2 mb-1">
-              <h3 class="text-lg font-bold text-stone-900">Chi tiết yêu cầu ký số</h3>
+              <h3 class="text-lg font-bold text-stone-900">CHI TIẾT YÊU CẦU KÝ SỐ</h3>
               <!-- <span
                 class="px-2 py-0.5 text-[10px] font-bold rounded-full"
                 :class="statusBadgeClass(store.selectedRequest.status)"

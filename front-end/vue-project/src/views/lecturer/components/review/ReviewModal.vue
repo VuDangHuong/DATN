@@ -9,133 +9,160 @@
         <!-- Header -->
         <div class="p-6 border-b border-slate-100 flex-shrink-0">
           <h3 class="text-lg font-bold text-slate-800">
-            {{ form.status === 'approved' ? '✅ Chấp nhận bài nộp' : '❌ Từ chối bài nộp' }}
+            {{ form.status === 'approved' ? 'CHẤP NHẬN BÀI NỘP' : ' TỪ CHỐI BÀI NỘP' }}
           </h3>
           <p class="text-sm text-slate-500 mt-0.5">{{ submission?.submitter_name }}</p>
         </div>
 
         <!-- Body -->
         <div class="flex-1 overflow-y-auto p-6 space-y-5">
-          <!-- ── Chấm điểm NHÓM — từng thành viên ── -->
-          <div v-if="isGroup">
-            <p class="text-base font-semibold text-slate-500 uppercase tracking-wider mb-3">
-              Điểm từng thành viên
-            </p>
+          <!-- ══ CHẤP NHẬN: hiện chấm điểm ══ -->
+          <template v-if="form.status === 'approved'">
+            <!-- ── Chấm điểm NHÓM — từng thành viên ── -->
+            <div v-if="isGroup">
+              <p class="text-base font-semibold text-slate-500 uppercase tracking-wider mb-3">
+                Điểm từng thành viên
+              </p>
 
-            <div v-if="loadingGrades" class="flex items-center gap-2 text-base text-slate-400 py-2">
               <div
-                class="w-3.5 h-3.5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"
-              />
-              Đang tải danh sách thành viên...
-            </div>
-
-            <div v-else class="space-y-3">
-              <div
-                v-for="(member, idx) in form.member_grades"
-                :key="member.student_id"
-                class="bg-slate-50 rounded-xl p-3 flex items-center gap-3"
+                v-if="loadingGrades"
+                class="flex items-center gap-2 text-base text-slate-400 py-2"
               >
-                <!-- Avatar + tên -->
                 <div
-                  class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-base font-bold text-indigo-700 flex-shrink-0"
-                >
-                  {{ member.student_name?.charAt(0) }}
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-1.5">
-                    <p class="text-sm font-medium text-slate-800 truncate">
-                      {{ member.student_name }}
-                    </p>
-                    <span
-                      v-if="member.role === 'leader'"
-                      class="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold rounded"
-                    >
-                      Trưởng nhóm
-                    </span>
-                  </div>
-                  <p class="text-base text-slate-400 font-mono">{{ member.student_code }}</p>
-                </div>
-                <!-- Điểm -->
-                <div class="flex items-center gap-2 flex-shrink-0">
-                  <input
-                    v-model.number="form.member_grades[idx].score"
-                    type="number"
-                    min="0"
-                    max="10"
-                    step="0.5"
-                    placeholder="Điểm"
-                    class="w-20 px-2 py-1.5 border border-slate-200 rounded-lg text-sm text-center focus:ring-2 focus:ring-indigo-500 outline-none"
-                  />
-                  <span class="text-base text-slate-400">/10</span>
-                </div>
+                  class="w-3.5 h-3.5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"
+                />
+                Đang tải danh sách thành viên...
               </div>
 
-              <!-- Ghi chú chung cho nhóm -->
-              <div class="mt-2">
-                <label class="block text-base font-medium text-slate-600 mb-1">
-                  Nhận xét chung cho nhóm
+              <div v-else class="space-y-3">
+                <div
+                  v-for="(member, idx) in form.member_grades"
+                  :key="member.student_id"
+                  class="bg-slate-50 rounded-xl p-3 flex items-center gap-3"
+                >
+                  <div
+                    class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-base font-bold text-indigo-700 flex-shrink-0"
+                  >
+                    {{ member.student_name?.charAt(0) }}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-1.5">
+                      <p class="text-sm font-medium text-slate-800 truncate">
+                        {{ member.student_name }}
+                      </p>
+                      <span
+                        v-if="member.role === 'leader'"
+                        class="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold rounded"
+                      >
+                        Trưởng nhóm
+                      </span>
+                    </div>
+                    <p class="text-base text-slate-400 font-mono">{{ member.student_code }}</p>
+                  </div>
+                  <div class="flex items-center gap-2 flex-shrink-0">
+                    <input
+                      v-model.number="form.member_grades[idx].score"
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.5"
+                      placeholder="Điểm"
+                      class="w-20 px-2 py-1.5 border border-slate-200 rounded-lg text-sm text-center focus:ring-2 focus:ring-indigo-500 outline-none"
+                    />
+                    <span class="text-base text-slate-400">/10</span>
+                  </div>
+                </div>
+
+                <div class="mt-2">
+                  <label class="block text-base font-medium text-slate-600 mb-1">
+                    Nhận xét chung cho nhóm
+                  </label>
+                  <textarea
+                    v-model="form.feedback"
+                    rows="3"
+                    placeholder="Nhận xét về bài nộp của nhóm..."
+                    class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm resize-none focus:ring-2 focus:ring-indigo-500 outline-none"
+                  />
+                </div>
+
+                <details class="mt-1">
+                  <summary
+                    class="text-base text-slate-500 cursor-pointer hover:text-slate-700 select-none"
+                  >
+                    Thêm ghi chú riêng cho từng thành viên...
+                  </summary>
+                  <div class="mt-3 space-y-2">
+                    <div
+                      v-for="(member, idx) in form.member_grades"
+                      :key="`note-${member.student_id}`"
+                    >
+                      <label class="block text-base text-slate-500 mb-1">{{
+                        member.student_name
+                      }}</label>
+                      <input
+                        v-model="form.member_grades[idx].note"
+                        type="text"
+                        placeholder="Ghi chú riêng..."
+                        class="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-indigo-500 outline-none"
+                      />
+                    </div>
+                  </div>
+                </details>
+              </div>
+            </div>
+
+            <!-- ── Chấm điểm CÁ NHÂN ── -->
+            <div v-else class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1">
+                  Điểm số <span class="text-slate-400">(0–10, tuỳ chọn)</span>
+                </label>
+                <input
+                  v-model.number="form.score"
+                  type="number"
+                  min="0"
+                  max="10"
+                  step="0.5"
+                  placeholder="VD: 8.5"
+                  class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-600 mb-1">
+                  Nhận xét <span class="text-slate-400">(tuỳ chọn)</span>
                 </label>
                 <textarea
                   v-model="form.feedback"
-                  rows="3"
-                  placeholder="Nhận xét về bài nộp của nhóm..."
-                  class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm resize-none focus:ring-2 focus:ring-indigo-500 outline-none"
+                  rows="4"
+                  placeholder="Nhận xét chi tiết..."
+                  class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm resize-none focus:ring-2 focus:ring-indigo-500 outline-none"
                 />
               </div>
-
-              <!-- Ghi chú riêng từng thành viên (toggle) -->
-              <details class="mt-1">
-                <summary
-                  class="text-base text-slate-500 cursor-pointer hover:text-slate-700 select-none"
-                >
-                  Thêm ghi chú riêng cho từng thành viên...
-                </summary>
-                <div class="mt-3 space-y-2">
-                  <div
-                    v-for="(member, idx) in form.member_grades"
-                    :key="`note-${member.student_id}`"
-                  >
-                    <label class="block text-base text-slate-500 mb-1">{{
-                      member.student_name
-                    }}</label>
-                    <input
-                      v-model="form.member_grades[idx].note"
-                      type="text"
-                      placeholder="Ghi chú riêng..."
-                      class="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-indigo-500 outline-none"
-                    />
-                  </div>
-                </div>
-              </details>
             </div>
-          </div>
+          </template>
 
-          <!-- ── Chấm điểm CÁ NHÂN ── -->
+          <!-- ══ TỪ CHỐI: chỉ ô lý do ══ -->
           <div v-else class="space-y-4">
             <div>
               <label class="block text-sm font-medium text-slate-600 mb-1">
-                Điểm số <span class="text-slate-400">(0–10, tuỳ chọn)</span>
-              </label>
-              <input
-                v-model.number="form.score"
-                type="number"
-                min="0"
-                max="10"
-                step="0.5"
-                placeholder="VD: 8.5"
-                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-600 mb-1">
-                Nhận xét <span class="text-slate-400">(tuỳ chọn)</span>
+                Lý do từ chối <span class="text-red-500">*</span>
               </label>
               <textarea
                 v-model="form.feedback"
                 rows="4"
-                placeholder="Nhận xét chi tiết..."
-                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm resize-none focus:ring-2 focus:ring-indigo-500 outline-none"
+                maxlength="1000"
+                placeholder="Nêu rõ lý do từ chối để sinh viên chỉnh sửa và nộp lại..."
+                class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm resize-none focus:ring-2 focus:ring-red-500 outline-none"
               />
+              <div class="flex justify-between mt-1">
+                <p
+                  class="text-base"
+                  :class="form.feedback.trim().length < 10 ? 'text-red-500' : 'text-slate-400'"
+                >
+                  Tối thiểu 10 ký tự
+                </p>
+                <p class="text-base text-slate-400">{{ form.feedback.length }}/1000</p>
+              </div>
             </div>
           </div>
 
@@ -170,7 +197,11 @@
           </button>
           <button
             @click="handleSubmit"
-            :disabled="reviewing || loadingGrades"
+            :disabled="
+              reviewing ||
+              loadingGrades ||
+              (form.status === 'rejected' && form.feedback.trim().length < 10)
+            "
             class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 flex items-center justify-center gap-2 transition"
             :class="
               form.status === 'approved'
@@ -235,7 +266,7 @@ watch(
       member_grades: [],
     }
 
-    if (isGroup.value) {
+    if (isGroup.value && props.status === 'approved') {
       await loadMemberGrades()
     }
   },
@@ -264,6 +295,10 @@ async function loadMemberGrades() {
 }
 
 async function handleSubmit() {
+  if (form.value.status === 'rejected' && form.value.feedback.trim().length < 10) {
+    toast.error('Vui lòng nhập lý do từ chối tối thiểu 10 ký tự')
+    return
+  }
   reviewing.value = true
   try {
     const payload = {
@@ -271,15 +306,17 @@ async function handleSubmit() {
       feedback: form.value.feedback || null,
     }
 
-    if (isGroup.value) {
-      // Chỉ gửi thành viên có điểm
-      payload.member_grades = form.value.member_grades.map((m) => ({
-        student_id: m.student_id,
-        score: m.score ?? null,
-        note: m.note || null,
-      }))
-    } else {
-      payload.score = form.value.score ?? null
+    // Chỉ gửi điểm khi CHẤP NHẬN
+    if (form.value.status === 'approved') {
+      if (isGroup.value) {
+        payload.member_grades = form.value.member_grades.map((m) => ({
+          student_id: m.student_id,
+          score: m.score ?? null,
+          note: m.note || null,
+        }))
+      } else {
+        payload.score = form.value.score ?? null
+      }
     }
 
     const { data } = await axiosClient.patch(

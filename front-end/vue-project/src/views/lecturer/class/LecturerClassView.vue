@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
       <div>
-        <h2 class="text-2xl font-bold text-slate-800">Lớp học của tôi</h2>
+        <h2 class="text-2xl font-bold text-slate-800">Quản lý nhóm lớp học</h2>
         <p class="text-base text-slate-500 mt-1">
           {{ filteredClasses.length }} lớp
           <span v-if="lecturerStore.selectedClassId"> · đang lọc theo lớp đã chọn</span>

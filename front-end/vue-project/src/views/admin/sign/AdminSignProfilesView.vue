@@ -293,7 +293,7 @@ function statusClass(s) {
 function statusLabel(s) {
   return (
     {
-      active: 'Active',
+      active: 'Hoạt động',
       pending_deactivation: 'Chờ vô hiệu',
       inactive: 'Vô hiệu',
       expired: 'Hết hạn',

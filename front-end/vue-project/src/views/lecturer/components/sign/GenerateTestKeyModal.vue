@@ -6,7 +6,7 @@
       <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6">
         <div class="flex items-start justify-between mb-4">
           <div>
-            <h3 class="text-lg font-bold text-stone-800 mb-1">🧪 Tạo chữ ký số demo</h3>
+            <h3 class="text-lg font-bold text-stone-800 mb-1">TẠO CHỮ KÝ SỐ DEMO</h3>
             <p class="text-sm text-stone-500">Tạo cặp khóa RSA + chứng thư self-signed để test</p>
           </div>
           <button @click="$emit('close')" class="p-1 hover:bg-stone-100 rounded">

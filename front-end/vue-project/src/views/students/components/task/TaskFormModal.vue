@@ -7,7 +7,7 @@
         class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto"
       >
         <h3 class="text-lg font-bold text-slate-800 mb-5">
-          {{ editingTask ? 'Chỉnh sửa công việc' : 'Tạo công việc mới' }}
+          {{ editingTask ? 'CHỈNH SỬA CÔNG VIỆC' : 'Tạo công việc mới' }}
         </h3>
         <div class="space-y-4">
           <div>
@@ -48,25 +48,21 @@
               </select>
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-slate-600 mb-1">Ngày bắt đầu</label>
-              <input v-model="form.start_date" type="datetime-local" class="input-field" />
-            </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-slate-600 mb-1">Deadline *</label>
               <input v-model="form.deadline" type="datetime-local" class="input-field" />
             </div>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-slate-600 mb-1">Trọng số (1-10)</label>
-            <input
-              v-model.number="form.weight"
-              type="number"
-              min="1"
-              max="10"
-              class="input-field"
-            />
+            <div>
+              <label class="block text-sm font-medium text-slate-600 mb-1">Trọng số (1-10)</label>
+              <input
+                v-model.number="form.weight"
+                type="number"
+                min="1"
+                max="10"
+                class="input-field"
+              />
+            </div>
           </div>
         </div>
         <div class="flex gap-3 mt-6">

@@ -12,7 +12,7 @@
           class="px-6 py-4 border-b border-slate-100 flex items-center justify-between flex-shrink-0"
         >
           <div>
-            <h3 class="text-lg font-bold text-slate-800">Tạo nhiều công việc</h3>
+            <h3 class="text-lg font-bold text-slate-800">TẠO CÔNG VIỆC</h3>
             <p class="text-base text-slate-400 mt-0.5">
               Đã thêm {{ tasks.length }} công việc — Tối đa 20
             </p>

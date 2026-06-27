@@ -9,7 +9,7 @@
       <!-- Header -->
       <div class="flex items-center justify-between mb-5">
         <div>
-          <h3 class="text-lg font-semibold text-gray-900">Import sinh viên từ Excel</h3>
+          <h3 class="text-lg font-semibold text-gray-900">IMPORT SINH VIÊN TỪ EXCEL</h3>
           <p class="text-sm text-gray-500 mt-0.5">Cột A chứa mã sinh viên</p>
         </div>
         <button

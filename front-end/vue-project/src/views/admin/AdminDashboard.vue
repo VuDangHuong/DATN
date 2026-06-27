@@ -197,7 +197,7 @@
       </div>
 
       <!-- ─── Recent users + Recent classes + Top lecturers ─── -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <!-- Recent users -->
         <div class="bg-white rounded-2xl border border-stone-200 overflow-hidden">
           <div class="px-5 py-3 border-b border-stone-100 flex items-center justify-between">
@@ -289,7 +289,7 @@
         </div>
 
         <!-- Top lecturers -->
-        <div class="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+        <!-- <div class="bg-white rounded-2xl border border-stone-200 overflow-hidden">
           <div class="px-5 py-3 border-b border-stone-100 flex items-center justify-between">
             <div class="flex items-center gap-2">
               <div
@@ -340,7 +340,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </div> -->
       </div>
 
       <!-- ─── Activity feed ─── -->

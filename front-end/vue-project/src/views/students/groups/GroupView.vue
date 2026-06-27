@@ -638,6 +638,7 @@ async function handleAddMember() {
   if (result.success) {
     showAddMemberModal.value = false
     newMemberCode.value = ''
+    toast.success('Thêm thành viên thành công')
   } else {
     modalError.value = result.message
   }

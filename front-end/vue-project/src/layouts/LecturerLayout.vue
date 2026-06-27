@@ -60,7 +60,7 @@
 
         <router-link to="/lecturer/classes" class="nav-link" active-class="nav-active">
           <SvgIcon name="building" class="w-4 h-4 text-gray-600" />
-          <span>Quản lý lớp</span>
+          <span>Quản lý nhóm lớp học</span>
         </router-link>
 
         <router-link to="/lecturer/materials" class="nav-link" active-class="nav-active">

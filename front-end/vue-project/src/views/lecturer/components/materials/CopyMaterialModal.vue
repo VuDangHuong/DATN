@@ -8,7 +8,7 @@
       >
         <div class="flex items-start gap-3 mb-4 flex-shrink-0">
           <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
-            <span class="text-xl">📋</span>
+            <SvgICon name="copy" class="w-4 h-4" />
           </div>
           <div>
             <h3 class="text-lg font-bold text-stone-800">Sao chép tài liệu sang lớp khác</h3>
@@ -44,7 +44,7 @@
           <!-- Cùng môn -->
           <template v-if="sameSubjectClasses.length">
             <p class="text-base font-bold text-emerald-700 uppercase tracking-wide mb-2">
-              ✨ Lớp cùng môn ({{ sameSubjectClasses.length }})
+              Lớp cùng môn ({{ sameSubjectClasses.length }})
             </p>
             <label
               v-for="c in sameSubjectClasses"
@@ -127,7 +127,7 @@
             class="text-sm font-medium"
             :class="result.skippedCount > 0 ? 'text-amber-800' : 'text-emerald-800'"
           >
-            ✅ Đã sao chép {{ result.copiedCount }} tài liệu
+            Đã sao chép {{ result.copiedCount }} tài liệu
             <span v-if="result.skippedCount > 0">· Bỏ qua {{ result.skippedCount }}</span>
           </p>
           <details v-if="result.skippedReasons?.length" class="mt-2">
@@ -156,7 +156,7 @@
               v-if="copying"
               class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"
             />
-            {{ copying ? 'Đang sao chép...' : `📋 Sao chép sang ${selectedIds.length} lớp` }}
+            {{ copying ? 'Đang sao chép...' : `Sao chép sang ${selectedIds.length} lớp` }}
           </button>
         </div>
       </div>
@@ -168,7 +168,7 @@
 import { ref, computed, watch } from 'vue'
 import { useMaterialStore } from '@/stores/lecturer/materialStore'
 import { useToastStore } from '@/stores/toast'
-
+import SvgICon from '@/components/icons/SVG.vue'
 const props = defineProps({
   show: { type: Boolean, default: false },
   classId: { type: Number, required: true }, // Lớp nguồn

@@ -8,7 +8,7 @@
       <!-- Header -->
       <div class="flex items-center justify-between mb-5">
         <div>
-          <h3 class="text-lg font-semibold text-gray-900">Thêm sinh viên</h3>
+          <h3 class="text-lg font-semibold text-gray-900">THÊM SINH VIÊN</h3>
           <p class="text-sm text-gray-500 mt-0.5">Nhập mã sinh viên có trong hệ thống</p>
         </div>
         <button

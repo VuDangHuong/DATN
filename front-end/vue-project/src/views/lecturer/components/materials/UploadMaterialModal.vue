@@ -13,7 +13,7 @@
           </div>
           <div>
             <h3 class="text-lg font-bold text-stone-800">
-              {{ mode === 'add' ? 'Thêm file vào tài liệu' : 'Upload tài liệu mới' }}
+              {{ mode === 'add' ? 'THÊM FILE VÀO TÀI LIỆU' : 'UPLOAD TÀI LIỆU MỚI' }}
             </h3>
             <p class="text-base text-stone-500 mt-1">
               <template v-if="mode === 'add'">
@@ -174,8 +174,8 @@
               uploading
                 ? 'Đang upload...'
                 : mode === 'add'
-                  ? `📤 Thêm ${selectedFiles.length} file`
-                  : `📤 Upload ${selectedFiles.length} file`
+                  ? `Thêm ${selectedFiles.length} file`
+                  : `Upload ${selectedFiles.length} file`
             }}
           </button>
         </div>

@@ -185,7 +185,7 @@
       <div v-if="showRejectModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" @click="closeRejectModal" />
         <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-          <h3 class="text-lg font-bold text-stone-800 mb-1">Từ chối yêu cầu</h3>
+          <h3 class="text-lg font-bold text-stone-800 mb-1">TỪ CHỐI YÊU CẦU</h3>
           <p class="text-base text-stone-500 mb-4">
             Giảng viên <strong>{{ rejectingRequest?.lecturer?.name }}</strong>
           </p>
