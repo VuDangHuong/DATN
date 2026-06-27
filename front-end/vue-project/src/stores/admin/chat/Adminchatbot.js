@@ -143,9 +143,16 @@ export const useAdminChatbotStore = defineStore('adminChatbot', () => {
     }
   }
 
-  function clearChat() {
-    messages.value = []
-    suggestedQuestions.value = []
+  async function clearChat() {
+    try {
+      await adminChatbotApi.clearHistory()
+      messages.value = []
+      suggestedQuestions.value = []
+      toast.success('Đã xóa toàn bộ lịch sử chat')
+    } catch (err) {
+      toast.error('Không thể xóa lịch sử')
+      console.error(err)
+    }
   }
 
   return {

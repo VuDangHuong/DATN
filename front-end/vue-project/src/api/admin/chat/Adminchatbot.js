@@ -28,4 +28,7 @@ export const adminChatbotApi = {
   suggestedQuestions(question, answer) {
     return axiosInstance.post(`${BASE}/suggested-questions`, { question, answer })
   },
+  clearHistory() {
+    return axiosInstance.delete(`${BASE}/history`)
+  },
 }

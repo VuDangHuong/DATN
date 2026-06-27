@@ -19,7 +19,7 @@
           </div>
           <div class="flex-1 min-w-0">
             <div class="text-white font-semibold text-[14px] leading-tight">
-              Moncover - Đồng hành cùng bạn 24/7!
+              Tư Vấn Sinh Viên 24/7!
             </div>
           </div>
           <button
@@ -514,6 +514,19 @@
         >{{ unreadCount }}</span
       >
     </button>
+    <ConfirmModal
+      v-model="confirmState.show"
+      :title="confirmState.title"
+      :message="confirmState.message"
+      :item-name="confirmState.itemName"
+      :warning-text="confirmState.warningText"
+      :confirm-text="confirmState.confirmText"
+      :cancel-text="confirmState.cancelText"
+      :variant="confirmState.variant"
+      :loading="confirmState.loading"
+      @confirm="_handleConfirm"
+      @cancel="_handleCancel"
+    />
   </div>
 </template>
 
@@ -522,7 +535,16 @@ import { ref, computed, watch, nextTick } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAdminChatbotStore } from '@/stores/admin/chat/Adminchatbot'
 import MarkdownRenderer from './chatBot/MarkdownRenderer.vue'
-
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
+import { useConfirm } from '@/composables/useConfirm.js'
+const {
+  state: confirmState,
+  confirmDelete,
+  setLoading: setConfirmLoading,
+  close: closeConfirm,
+  _handleConfirm,
+  _handleCancel,
+} = useConfirm()
 const store = useAdminChatbotStore()
 const { messages, loading, loadingHistory, loadingSuggestions, suggestedQuestions } =
   storeToRefs(store)
@@ -583,8 +605,20 @@ function toggleSources(msgId) {
   s.has(msgId) ? s.delete(msgId) : s.add(msgId)
   expandedSources.value = s
 }
-function confirmClear() {
-  if (confirm('Xóa toàn bộ lịch sử chat?')) store.clearChat()
+async function confirmClear() {
+  const ok = await confirmDelete('toàn bộ lịch sử chat', {
+    title: 'Xóa lịch sử chat',
+    message: 'Tất cả tin nhắn trong cuộc trò chuyện sẽ bị xóa vĩnh viễn và không thể khôi phục.',
+    confirmText: 'Xóa lịch sử',
+  })
+  if (!ok) return
+
+  setConfirmLoading(true)
+  try {
+    await store.clearChat()
+  } finally {
+    closeConfirm()
+  }
 }
 function sendLike(msgId, val) {
   store.sendLike(msgId, val)
