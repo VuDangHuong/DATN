@@ -19,6 +19,7 @@
     "@vueuse/integrations": "^14.2.1",
     "apexcharts": "^5.3.6",
     "axios": "^1.13.2",
+    "chart.js": "^4.5.1",
     "dompurify": "^3.3.3",
     "lodash": "^4.17.21",
     "marked": "^17.0.4",
