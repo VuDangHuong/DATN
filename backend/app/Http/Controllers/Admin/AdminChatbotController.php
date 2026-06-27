@@ -36,6 +36,12 @@ class AdminChatbotController extends Controller
         $isAnswered = 2;
         $contexts = [];
 
+        $lastChat = ChatHistory::where('user_id', $adminId)
+            ->latest('created_at')
+            ->first();
+
+        $isFirstMessage = !$lastChat
+            || $lastChat->created_at->lt(now()->subMinutes(30));
         // =====================================================
         // TH1: Có file đính kèm
         // =====================================================
@@ -50,7 +56,8 @@ class AdminChatbotController extends Controller
                 $fileText = $this->extractTextFromFile($file, $extension);
                 $answer = $this->gemini->generateAnswer(
                     $question,
-                    "=== NỘI DUNG FILE ===\n{$fileText}"
+                    "=== NỘI DUNG FILE ===\n{$fileText}",
+                    $isFirstMessage
                 );
                 $isAnswered = 2;
 
@@ -64,14 +71,14 @@ class AdminChatbotController extends Controller
             $contexts = $this->gemini->findRelevantContexts($question, $request->category, 5);
 
             if (empty($contexts)) {
-                $answer = $this->gemini->generateAnswer($question, 'Không có dữ liệu tri thức liên quan.');
+                $answer = $this->gemini->generateAnswer($question, 'Không có dữ liệu tri thức liên quan.', $isFirstMessage);
                 $isAnswered = 2;
             } else {
                 $contextText = collect($contexts)
                     ->map(fn($c) => "Hỏi: {$c['question']}\nĐáp: {$c['answer']}")
                     ->implode("\n\n---\n\n");
 
-                $answer = $this->gemini->generateAnswer($question, $contextText);
+                $answer = $this->gemini->generateAnswer($question, $contextText, $isFirstMessage);
                 $isAnswered = 1;
             }
         }
@@ -87,7 +94,11 @@ class AdminChatbotController extends Controller
             'is_answered' => $isAnswered,
             'type' => $type,
         ]);
-
+        \Log::info('DEBUG first message', [
+    'isFirst' => $isFirstMessage,
+    'last_chat_at' => optional($lastChat)->created_at?->toDateTimeString(),
+    'now' => now()->toDateTimeString(),
+]);
         return response()->json([
             'success' => true,
             'data' => [
@@ -206,5 +217,15 @@ class AdminChatbotController extends Controller
         $log->update($request->only(['is_liked', 'star']));
 
         return response()->json(['success' => true, 'message' => 'Cảm ơn phản hồi!']);
+    }
+    // Xóa toàn bộ lịch sử chat của user hiện tại
+    public function clearHistory(Request $request)
+    {
+        ChatHistory::where('user_id', Auth::id())->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã xóa toàn bộ lịch sử chat',
+        ]);
     }
 }

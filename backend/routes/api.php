@@ -84,6 +84,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get ('history',              [AdminChatbotController::class, 'history']);
         Route::post('suggested-questions',  [AdminChatbotController::class, 'suggestedQuestions']);
         Route::post('{id}/feedback',        [AdminChatbotController::class, 'feedback']);
+        Route::delete('history', [AdminChatbotController::class, 'clearHistory']);
     });
     // =================================================================
     // B. ADMIN AREA (Chỉ Admin - Quản lý hệ thống & Đào tạo)
@@ -244,7 +245,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         // GET /api/lecturer/assignments/{id}/submissions?status=pending&type=group
         Route::get('assignments/{id}/submissions', [SubmissionReviewController::class, 'submissionList']);
 
-        Route::post('groups/{groupId}/members',              [GroupController::class, 'addMember']);     // Thêm TV
+        Route::post('groups/{groupId}/members',              [ClassController::class, 'addMemberToGroup']);     // Thêm TV
         Route::delete('groups/{groupId}/members/{memberId}', [GroupController::class, 'removeMember']); // Xóa TV
 
         // Danh sách nhóm theo lớp

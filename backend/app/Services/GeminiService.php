@@ -20,7 +20,7 @@ class GeminiService
     public function getEmbedding(string $text): array
     {
         $response = Http::post("{$this->baseUrl}/models/gemini-embedding-001:embedContent?key={$this->apiKey}", [
-            'model' => 'models/gemini-embedding-001', // ✅ đổi model
+            'model' => 'models/gemini-embedding-001',
             'content' => ['parts' => [['text' => $text]]],
         ]);
 
@@ -38,11 +38,13 @@ class GeminiService
     /**
      * Gọi Gemini sinh câu trả lời từ context (RAG)
      */
-    public function generateAnswer(string $question, string $context): string
+    public function generateAnswer(string $question, string $context,  bool $isFirstMessage = false): string
     {
         $currentDate = now()->format('d/m/Y');
         $currentDay  = now()->locale('vi')->isoFormat('dddd');
-
+        $greetingRule = $isFirstMessage
+    ? "- Đây là câu hỏi ĐẦU TIÊN của người dùng trong phiên này. Hãy mở đầu bằng một lời chào thân thiện (vd: \"Chào bạn 👋\") trước khi trả lời."
+    : "- Đây KHÔNG phải câu hỏi đầu tiên. TUYỆT ĐỐI KHÔNG chào hỏi lại (không \"Chào bạn\", không \"Xin chào\"). Vào thẳng nội dung trả lời.";
         // ========================================================
         // SYSTEM INSTRUCTION - Nhân cách cố định cho chatbot
         // ========================================================
@@ -55,7 +57,7 @@ class GeminiService
     - Trả lời ngắn gọn, dễ hiểu, tránh văn phong hành chính khô khan.
     - Dùng emoji vừa phải (1-2 emoji/câu trả lời) để tạo sự gần gũi.
     - Xưng hô: "mình" hoặc "TLU Bot", gọi người hỏi là "bạn".
-
+    {$greetingRule}
     ## PHẠM VI CHUYÊN MÔN CHÍNH
     - Tư vấn tuyển sinh: phương thức xét tuyển, điểm chuẩn, ngành đào tạo, hồ sơ nhập học.
     - Thông tin trường: lịch sử, cơ sở vật chất, chương trình đào tạo, học phí, học bổng.
@@ -153,6 +155,16 @@ class GeminiService
 
             if ($response->successful()) {
                 $answer = $response->json('candidates.0.content.parts.0.text');
+                // Model đôi khi vẫn chào dù đã cấm → cắt cứng khi không phải câu đầu
+                if (!$isFirstMessage && $answer) {
+                    $answer = preg_replace(
+                        '/^\s*(Chào bạn|Xin chào|Chào)\b[^\n]*?[,.!\n]+\s*/iu',
+                        '',
+                        $answer,
+                        1
+                    );
+                    $answer = ltrim($answer);
+                }
                 return $answer ?: 'Xin lỗi, mình chưa thể trả lời lúc này. Bạn thử hỏi lại nhé! 😊';
             }
 
