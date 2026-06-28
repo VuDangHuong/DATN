@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Auth\Notifications\ResetPassword;
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,13 +20,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Ép HTTPS khi chạy trên môi trường production (Railway/Vercel dùng HTTPS)
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
+
         ResetPassword::createUrlUsing(function (object $notifiable, string $token) {
-            
-            // Đây là đường dẫn đến FRONTEND (React/Vue/Android) của bạn
-            // Ví dụ Frontend chạy ở port 3000
-            $frontendUrl = 'http://localhost:3000/reset-password'; 
-            
-            // Trả về link đầy đủ kèm token và email
+            // Lấy URL frontend từ biến môi trường (đặt trên Railway/Vercel),
+            // fallback về localhost khi chạy local.
+            $frontendUrl = rtrim(env('FRONTEND_URL', 'http://localhost:3000'), '/') . '/reset-password';
+
             return "{$frontendUrl}?token={$token}&email={$notifiable->getEmailForPasswordReset()}";
         });
     }
