@@ -2,7 +2,7 @@
 import axios from 'axios'
 
 const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://127.0.0.1:8080/api',
+  baseURL: 'https://datn-production-d208.up.railway.app/api',
   headers: {
     // 'Content-Type': 'application/json',
     Accept: 'application/json',
