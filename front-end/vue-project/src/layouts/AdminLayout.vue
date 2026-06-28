@@ -39,14 +39,9 @@ const handleClickOutside = (event) => {
 }
 
 // --- LOGIC AUTH & NAV ---
-const handleLogout = async () => {
-  // if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
-  try {
-    await authStore.logout()
-  } finally {
-    window.location.href = '/login'
-  }
-  // }
+async function logout() {
+  await authStore.logout()
+  router.push('/login')
 }
 
 const navigateTo = (path) => {
@@ -156,7 +151,7 @@ onUnmounted(() => {
           </div>
 
           <button
-            @click="handleLogout"
+            @click="logout"
             class="flex items-center px-3 py-2 text-sm font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors duration-200"
             title="Đăng xuất"
           >
