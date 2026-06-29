@@ -2,8 +2,8 @@
   <div>
     <!-- Header -->
     <div class="mb-6">
-      <h2 class="text-2xl font-bold text-slate-800">Nộp bài</h2>
-      <p class="text-base text-slate-500 mt-1">Danh sách đợt nộp bài của lớp</p>
+      <h2 class="text-xl sm:text-2xl font-bold text-slate-800">Nộp bài</h2>
+      <p class="text-sm sm:text-base text-slate-500 mt-1">Danh sách đợt nộp bài của lớp</p>
     </div>
 
     <!-- Loading -->
@@ -39,32 +39,34 @@
         class="bg-white rounded-2xl border border-slate-200 overflow-hidden"
       >
         <!-- Assignment header -->
-        <div class="p-5 border-b border-slate-100">
-          <div class="flex items-start justify-between gap-4">
+        <div class="p-4 sm:p-5 border-b border-slate-100">
+          <div class="flex flex-col sm:flex-row items-start justify-between gap-4">
             <div class="flex-1">
               <div class="flex items-center gap-2 mb-1.5 flex-wrap">
                 <h3 class="font-semibold text-slate-800">{{ assignment.title }}</h3>
                 <!-- Status badges -->
                 <span
                   v-if="assignment.is_expired && !assignment.allow_late"
-                  class="px-2 py-0.5 bg-red-100 text-red-700 text-base font-bold rounded-full"
+                  class="px-2 py-0.5 bg-red-100 text-red-700 text-sm font-bold rounded-full"
                   >Hết hạn</span
                 >
                 <span
                   v-else-if="assignment.is_expired && assignment.allow_late"
-                  class="px-2 py-0.5 bg-amber-100 text-amber-700 text-base font-bold rounded-full"
+                  class="px-2 py-0.5 bg-amber-100 text-amber-700 text-sm font-bold rounded-full"
                   >Quá hạn — vẫn nhận</span
                 >
                 <span
                   v-else
-                  class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-base font-bold rounded-full"
+                  class="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-sm font-bold rounded-full"
                   >Đang mở</span
                 >
               </div>
               <p v-if="assignment.description" class="text-base text-slate-500 mb-2">
                 {{ assignment.description }}
               </p>
-              <div class="flex items-center gap-4 text-base text-slate-500">
+              <div
+                class="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm sm:text-base text-slate-500"
+              >
                 <span class="flex items-center gap-1">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -86,7 +88,7 @@
         </div>
 
         <!-- Submission areas -->
-        <div class="p-5 space-y-4">
+        <div class="p-4 sm:p-5 space-y-4">
           <!-- Nộp cá nhân -->
           <div v-if="['individual', 'both'].includes(assignment.submission_type)">
             <p class="text-base font-semibold text-slate-500 uppercase tracking-wider mb-3">
@@ -128,15 +130,18 @@
 
     <!-- Modal: Lịch sử nộp -->
     <Teleport to="body">
-      <div v-if="showHistoryModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div
+        v-if="showHistoryModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4"
+      >
         <div
           class="absolute inset-0 bg-black/30 backdrop-blur-sm"
           @click="showHistoryModal = false"
         />
         <div
-          class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col"
+          class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85dvh] flex flex-col"
         >
-          <div class="p-5 border-b flex items-center justify-between">
+          <div class="p-4 sm:p-5 border-b flex items-center justify-between">
             <h3 class="font-bold text-slate-800">Lịch sử nộp bài</h3>
             <button @click="showHistoryModal = false" class="p-1.5 hover:bg-slate-100 rounded-lg">
               <svg
@@ -154,7 +159,7 @@
               </svg>
             </button>
           </div>
-          <div class="flex-1 overflow-y-auto p-5">
+          <div class="flex-1 overflow-y-auto p-4 sm:p-5">
             <div v-if="!store.history.length" class="text-center py-8 text-slate-400 text-base">
               Chưa có lịch sử nộp
             </div>
@@ -196,7 +201,7 @@
     <transition name="toast">
       <div
         v-if="toast.show"
-        class="fixed bottom-6 right-6 z-50 px-5 py-3.5 rounded-2xl shadow-lg text-white text-base font-medium flex items-center gap-2"
+        class="fixed bottom-4 right-4 left-4 sm:left-auto sm:bottom-6 sm:right-6 z-50 px-5 py-3.5 rounded-2xl shadow-lg text-white text-sm sm:text-base font-medium flex items-center gap-2"
         :class="toast.type === 'success' ? 'bg-gray-900' : 'bg-red-600'"
       >
         <svg

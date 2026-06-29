@@ -92,7 +92,7 @@ const handleLogin = async () => {
       class="hidden md:flex md:w-2/5 relative overflow-hidden items-center justify-center bg-blue-950"
     >
       <img
-        src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Thuyloi_University_campus.jpg/1200px-Thuyloi_University_campus.jpg"
+        src="/src/assets/images/tlucampus.png"
         alt="TLU Campus"
         class="absolute inset-0 w-full h-full object-cover transition-transform duration-10000 hover:scale-105"
       />
