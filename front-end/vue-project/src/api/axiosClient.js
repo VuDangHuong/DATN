@@ -2,7 +2,7 @@
 import axios from 'axios'
 
 const axiosClient = axios.create({
-  baseURL: 'https://datn-production-d208.up.railway.app/api',
+  baseURL: 'https://datn-production-d208.up.railway.app/api' || 'http://127.0.0.1:8080/api',
   headers: {
     // 'Content-Type': 'application/json',
     Accept: 'application/json',
