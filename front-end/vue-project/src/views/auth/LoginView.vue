@@ -94,7 +94,7 @@ const handleLogin = async () => {
       <img
         src="/src/assets/images/tlucampus.png"
         alt="TLU Campus"
-        class="absolute inset-0 w-full h-full object-cover transition-transform duration-10000 hover:scale-105"
+        class="absolute inset-0 w-full h-full object-cover transition-transform duration-[10000ms] hover:scale-105"
       />
       <div
         class="absolute inset-0 bg-gradient-to-tr from-blue-950/90 via-blue-900/60 to-transparent"
@@ -317,6 +317,31 @@ const handleLogin = async () => {
               </span>
               <span v-else>Đăng Nhập</span>
             </button>
+          </div>
+
+          <!-- Xác nhận tài liệu ký số -->
+          <div class="text-center pt-2">
+            <a
+              href="/verify"
+              class="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                ư
+                class="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                />
+              </svg>
+              Xác nhận tài liệu ký số
+            </a>
           </div>
         </form>
 
