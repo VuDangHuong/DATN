@@ -49,7 +49,7 @@
             <label class="block text-sm font-medium text-gray-600 mb-1">Học kỳ</label>
             <select v-model="form.semester_id" class="input-field">
               <option value="">-- Chọn học kỳ --</option>
-              <option v-for="s in semesters" :key="s.id" :value="s.id">
+              <option v-for="s in safeSemesters" :key="s.id" :value="s.id">
                 {{ s.name }} - {{ s.year }}
               </option>
             </select>
@@ -60,7 +60,7 @@
             <label class="block text-sm font-medium text-gray-600 mb-1">Giảng viên</label>
             <select v-model="form.lecturer_id" class="input-field">
               <option value="">-- Chọn giảng viên --</option>
-              <option v-for="l in lecturers" :key="l.id" :value="l.id">
+              <option v-for="l in safeLecturers" :key="l.id" :value="l.id">
                 {{ l.name }}
               </option>
             </select>
@@ -68,10 +68,10 @@
           <!-- Môn học -->
           <div>
             <label class="block text-sm font-medium text-gray-600 mb-1">Môn học *</label>
-            <div v-if="!subjects?.length" class="text-xs text-gray-400">Không có môn học</div>
+            <div v-if="!safeSubjects.length" class="text-base text-gray-400">Không có môn học</div>
             <div v-else class="space-y-2">
               <div
-                v-for="s in subjects"
+                v-for="s in safeSubjects"
                 :key="s.id"
                 class="flex items-center gap-3 p-3 border border-gray-200 rounded-xl"
               >
@@ -84,7 +84,7 @@
                   class="rounded border-gray-300 text-blue-600"
                 />
                 <label :for="`sub-${s.id}`" class="flex-1 text-sm text-gray-700 cursor-pointer">
-                  {{ s.name }} <span class="font-mono text-gray-400 text-xs">({{ s.code }})</span>
+                  {{ s.name }} <span class="font-mono text-gray-400 text-base">({{ s.code }})</span>
                 </label>
                 <!-- max_members khi chọn -->
                 <input
@@ -93,7 +93,7 @@
                   type="number"
                   min="1"
                   placeholder="Sĩ số"
-                  class="w-20 px-2 py-1 border border-gray-200 rounded-lg text-xs text-center"
+                  class="w-20 px-2 py-1 border border-gray-200 rounded-lg text-base text-center"
                 />
               </div>
             </div>
@@ -137,7 +137,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 
 const props = defineProps({
   show: { type: Boolean, default: false },
@@ -149,6 +149,16 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'submit'])
+
+// Chuẩn hóa: nhận cả mảng [] lẫn object phân trang { data: [] }, đồng thời lọc null/thiếu id
+const toArray = (val) => {
+  if (Array.isArray(val)) return val
+  if (val && Array.isArray(val.data)) return val.data
+  return []
+}
+const safeSemesters = computed(() => toArray(props.semesters).filter((s) => s && s.id != null))
+const safeLecturers = computed(() => toArray(props.lecturers).filter((l) => l && l.id != null))
+const safeSubjects = computed(() => toArray(props.subjects).filter((s) => s && s.id != null))
 
 const form = ref({
   name: '',
@@ -172,11 +182,13 @@ watch(
         lecturer_id: cls.lecturer?.id ?? cls.lecturer_id ?? '',
         max_members: cls.subjects?.[0]?.pivot?.max_members ?? cls.max_members ?? 50,
         subject_details:
-          cls.subjects?.map((s) => ({
-            subject_id: s.id,
-            max_members: s.pivot?.max_members ?? 50,
-            max_groups: s.pivot?.max_groups ?? 10,
-          })) ?? [], // ← thêm
+          cls.subjects
+            ?.filter((s) => s && s.id != null)
+            .map((s) => ({
+              subject_id: s.id,
+              max_members: s.pivot?.max_members ?? 50,
+              max_groups: s.pivot?.max_groups ?? 10,
+            })) ?? [],
       }
     }
   },

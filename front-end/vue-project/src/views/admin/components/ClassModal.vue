@@ -23,12 +23,22 @@ const defaultForm = {
 }
 
 const form = reactive({ ...defaultForm })
+// Chuẩn hóa: nhận cả mảng [] lẫn object phân trang { data: [] }
+const toArray = (val) => {
+  if (Array.isArray(val)) return val
+  if (val && Array.isArray(val.data)) return val.data
+  return []
+}
+
+const safeSubjects = computed(() => toArray(props.subjects).filter((s) => s && s.id != null))
+const safeSemesters = computed(() => toArray(props.semesters).filter((s) => s && s.id != null))
+const safeLecturers = computed(() => toArray(props.lecturers).filter((l) => l && l.id != null))
 
 const selectedSubjectsList = computed(() => {
   if (!form.subject_details) return []
   // Map thông tin chi tiết từ props.subjects vào để hiển thị tên
   return form.subject_details.map((detail) => {
-    const originalSubject = props.subjects.find((s) => s.id === detail.subject_id)
+    const originalSubject = safeSubjects.value.find((s) => s.id === detail.subject_id)
     return {
       ...detail,
       name: originalSubject?.name || 'Unknown',
@@ -80,15 +90,17 @@ watch(
           props.editingItem.max_members ??
           60,
         subject_details:
-          props.editingItem.subjects?.map((s) => ({
-            subject_id: s.id,
-            // Lấy đúng từ pivot của từng môn
-            max_members: s.pivot?.max_members ?? props.editingItem.max_members ?? 60,
-          })) ?? [],
+          props.editingItem.subjects
+            ?.filter((s) => s && s.id != null)
+            .map((s) => ({
+              subject_id: s.id,
+              // Lấy đúng từ pivot của từng môn
+              max_members: s.pivot?.max_members ?? props.editingItem.max_members ?? 60,
+            })) ?? [],
       })
     } else {
       Object.assign(form, { ...defaultForm, subject_details: [] })
-      if (props.semesters.length > 0) form.semester_id = props.semesters[0].id
+      if (safeSemesters.value.length > 0) form.semester_id = safeSemesters.value[0].id
     }
   },
 )
@@ -133,10 +145,10 @@ const handleSubmit = () => {
                 1. Chọn Môn học <span class="text-red-500">*</span>
               </label>
               <div
-                v-if="subjects.length > 0"
+                v-if="safeSubjects.length > 0"
                 class="grid grid-cols-2 gap-2 border rounded-lg p-3 max-h-40 overflow-y-auto bg-gray-50"
               >
-                <div v-for="s in subjects" :key="s.id" class="flex items-center">
+                <div v-for="s in safeSubjects" :key="s.id" class="flex items-center">
                   <input
                     type="checkbox"
                     :id="'sub-' + s.id"
@@ -210,7 +222,7 @@ const handleSubmit = () => {
                 class="w-full border-gray-300 rounded-lg p-2"
                 required
               >
-                <option v-for="sem in semesters" :key="sem.id" :value="sem.id">
+                <option v-for="sem in safeSemesters" :key="sem.id" :value="sem.id">
                   {{ sem.name }}
                 </option>
               </select>
@@ -244,7 +256,7 @@ const handleSubmit = () => {
               <label class="block text-sm font-medium text-gray-700 mb-1">Giảng viên</label>
               <select v-model="form.lecturer_id" class="w-full border-gray-300 rounded-lg p-2">
                 <option value="">-- Chưa phân công --</option>
-                <option v-for="L in lecturers" :key="L.id" :value="L.id">{{ L.name }}</option>
+                <option v-for="L in safeLecturers" :key="L.id" :value="L.id">{{ L.name }}</option>
               </select>
             </div>
           </div>
