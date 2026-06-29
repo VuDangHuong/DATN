@@ -208,15 +208,15 @@ class AdminDashboardController extends Controller
         ])->toArray();
     }
  
-    // ─── Recent users (5 mới nhất) ──────────
-    private function getRecentUsers()
-    {
-        return User::orderBy('created_at', 'desc')
-            ->limit(5)
-            ->get(['id', 'name', 'code', 'email', 'role', 'avatar', 'created_at']);
-    }
+    //Recent users (5 mới nhất)
+    // private function getRecentUsers()
+    // {
+    //     return User::orderBy('created_at', 'desc')
+    //         ->limit(5)
+    //         ->get(['id', 'name', 'code', 'email', 'role', 'avatar', 'created_at']);
+    // }
  
-    // ─── Recent classes ─────────────────────
+    //Recent classes
     private function getRecentClasses()
     {
         return Classes::with('lecturer:id,name,code,avatar')
@@ -233,7 +233,7 @@ class AdminDashboardController extends Controller
             ]);
     }
  
-    // ─── Activity feed ───────────────────────
+    //Activity feed
     private function buildRecentActivities(): array
     {
         // User mới
@@ -288,7 +288,7 @@ class AdminDashboardController extends Controller
             ->toArray();
     }
  
-    // ─── Top lecturers by activity ──────────
+    //Top lecturers by activity
     private function getTopLecturers()
     {
         // Top 5 GV có nhiều sign requests đã ký nhất

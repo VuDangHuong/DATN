@@ -42,16 +42,13 @@ class AdminChatbotController extends Controller
 
         $isFirstMessage = !$lastChat
             || $lastChat->created_at->lt(now()->subMinutes(30));
-        // =====================================================
         // TH1: Có file đính kèm
-        // =====================================================
-        // Thêm vào AdminChatbotController@ask
         if ($request->hasFile('file')) {
             $file = $request->file('file');
             $extension = strtolower($file->getClientOriginalExtension());
             $mimeType = $this->gemini->getSupportedMimeType($extension);
 
-            // ✅ Excel/CSV/Word → đọc text rồi ghép vào prompt
+            //Excel/CSV/Word đọc text rồi ghép vào prompt
             if (in_array($extension, ['xlsx', 'xls', 'csv', 'doc', 'docx'])) {
                 $fileText = $this->extractTextFromFile($file, $extension);
                 $answer = $this->gemini->generateAnswer(
@@ -61,7 +58,7 @@ class AdminChatbotController extends Controller
                 );
                 $isAnswered = 2;
 
-                // ✅ Ảnh/PDF → gửi base64 trực tiếp
+                //Ảnh/PDF → gửi base64 trực tiếp
             } else {
                 $fileBase64 = base64_encode(file_get_contents($file->getRealPath()));
                 $answer = $this->gemini->generateAnswerWithFile($question, '', $fileBase64, $mimeType);
@@ -89,7 +86,7 @@ class AdminChatbotController extends Controller
             'user_id' => $adminId,
             'question' => $question,
             'answer' => $answer,
-            'file_name' => $fileName,   // ✅ lưu tên file nếu có
+            'file_name' => $fileName,
             'source_text' => $contexts,
             'is_answered' => $isAnswered,
             'type' => $type,
