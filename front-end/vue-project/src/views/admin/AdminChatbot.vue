@@ -1,10 +1,12 @@
 <template>
-  <div class="fixed bottom-6 right-6 z-50 font-['Be_Vietnam_Pro',sans-serif]">
+  <div
+    class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 font-['Be_Vietnam_Pro',sans-serif]"
+  >
     <transition name="chat-panel">
       <div
         v-if="isOpen"
-        class="absolute bottom-16 right-0 w-[480px] bg-white rounded-2xl overflow-hidden flex flex-col"
-        style="height: 620px; box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18)"
+        class="fixed sm:absolute inset-x-2 bottom-24 sm:inset-x-auto sm:bottom-16 sm:right-0 w-auto sm:w-[480px] max-w-[calc(100vw-1rem)] bg-white rounded-2xl overflow-hidden flex flex-col h-[calc(100dvh-8rem)] sm:h-[620px] max-h-[620px]"
+        style="box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18)"
       >
         <!-- ── Header ── -->
         <div class="flex items-center gap-3 px-4 py-3 flex-shrink-0" style="background: #22c55e">
@@ -354,8 +356,8 @@
             <button
               v-for="q in suggestedQuestions"
               :key="q"
-              class="px-2.5 py-1 rounded-lg text-[12px] transition-colors truncate border"
-              style="max-width: 180px; background: #f0fdf4; color: #16a34a; border-color: #bbf7d0"
+              class="px-2.5 py-1 rounded-lg text-[12px] transition-colors truncate border max-w-[140px] sm:max-w-[180px]"
+              style="background: #f0fdf4; color: #16a34a; border-color: #bbf7d0"
               @click="sendQuick(q)"
             >
               {{ q }}
@@ -481,7 +483,7 @@
 
     <!-- Toggle button -->
     <button
-      class="w-20 h-20 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 relative overflow-hidden"
+      class="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 relative overflow-hidden"
       :style="isOpen ? 'background:#64748b' : 'background:#22c55e'"
       style="box-shadow: 0 4px 20px rgba(34, 197, 94, 0.4)"
       @click="toggleChat"
