@@ -62,9 +62,14 @@ class PublicVerificationController extends Controller
         // Bỏ whereNotNull('signature') để verify được cả bản cũ
         $signRequest = DocumentSignRequest::whereRaw('UPPER(sign_certificate) = ?', [$normalized])
             ->where('status', 'signed')
-            ->with(['requester:id,name,code', 'lecturer:id,name,email'])
+            ->latest('signed_at')
             ->first();
-
+        \Log::debug('verifyFile loaded record', [
+            'request_id'  => $signRequest?->id,
+            'signed_at'   => $signRequest?->signed_at,
+            'file_hash'   => $signRequest?->file_hash,
+            'sign_hash'   => $signRequest?->sign_hash,
+        ]);
         if (!$signRequest) {
             return response()->json([
                 'verified' => false,
@@ -106,7 +111,7 @@ class PublicVerificationController extends Controller
             $hasRsaSignature = true;
 
             $signatureValid = $this->pki->verifySignature(
-                $storedHash,
+                file_get_contents($request->file('file')->getPathname()),
                 $signRequest->signature,
                 $signRequest->signer_public_key
             );

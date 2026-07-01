@@ -31,9 +31,15 @@ class DocumentSignService
      */
     public function verifySignature($file, string $publicKeyPem, string $signature): bool
     {
-        $data   = file_get_contents($file->getRealPath());
+        $data = file_get_contents($file->getRealPath());
+
         $pubKey = openssl_pkey_get_public($publicKeyPem);
+        if (!$pubKey) {
+            return false;
+        }
+
         $result = openssl_verify($data, base64_decode($signature), $pubKey, OPENSSL_ALGO_SHA256);
+
         return $result === 1;
     }
  

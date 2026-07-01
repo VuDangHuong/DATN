@@ -209,12 +209,13 @@ class LecturerSignController extends Controller
         //     ->findOrFail($id);
  
         // ── 7. Generate PDF + Hash + Sign ───────────────
-        $signedFilePath = $this->generateSignedPdf($signRequest, $signProfile);
+        $signedAt = now();
+        $signedFilePath = $this->generateSignedPdf($signRequest, $signProfile, $signedAt);
         $fileHash       = $this->pki->hashFile(Storage::path($signedFilePath));
- 
-        // ✅ Ký SHA-256 hash của PDF bằng RSA-SHA256
+        $fileContent    = Storage::get($signedFilePath);
+        // Ký SHA-256 hash của PDF bằng RSA-SHA256
         try {
-            $signatureB64 = $this->pki->signData($fileHash, $privateKeyPem);
+            $signatureB64 = $this->pki->signData($fileContent, $privateKeyPem);
         } catch (\Exception $e) {
             \Log::error('Sign failed: ' . $e->getMessage());
             return response()->json([
@@ -224,7 +225,7 @@ class LecturerSignController extends Controller
         }
  
         // ── 8. Verify ngay (sanity check) ───────────────
-        $verified = $this->pki->verifySignature($fileHash, $signatureB64, $signProfile->public_key);
+        $verified = $this->pki->verifySignature($fileContent, $signatureB64, $signProfile->public_key);
         if (!$verified) {
             return response()->json([
                 'message' => 'Verify chữ ký thất bại sau khi ký. Có lỗi hệ thống.',
@@ -233,7 +234,7 @@ class LecturerSignController extends Controller
         }
  
         // ── 9. Lưu vào DB ───────────────────────────────
-        DB::transaction(function () use ($signRequest, $signedFilePath, $fileHash, $signatureB64, $signProfile) {
+        DB::transaction(function () use ($signRequest, $signedFilePath, $fileHash, $signatureB64, $signProfile,$signedAt) {
             $signRequest->update([
                 'signed_file'         => $signedFilePath,
                 'sign_hash'           => $fileHash,
@@ -243,7 +244,7 @@ class LecturerSignController extends Controller
                 'signature_algorithm' => 'sha256WithRSAEncryption',
                 'sign_certificate'    => $signProfile->certificate_serial,
                 'status'              => DocumentSignRequest::STATUS_SIGNED,
-                'signed_at'           => now(),
+                'signed_at'           => $signedAt,
             ]);
  
             $this->signService->log(
@@ -329,13 +330,16 @@ class LecturerSignController extends Controller
                 ->values()
         );
     }
-    private function generateSignedPdf(DocumentSignRequest $signRequest, LecturerSignProfile $signProfile): string
+    private function generateSignedPdf(DocumentSignRequest $signRequest, LecturerSignProfile $signProfile, \Carbon\Carbon $signedAt): string
     {
         $lecturer    = Auth::user();
         $student     = $signRequest->requester;
         $classModel  = $signRequest->classModel;
-        $signedAt    = now()->format('d/m/Y H:i:s');
-        $signHash    = strtoupper(substr(hash('sha256', $signRequest->id . $lecturer->id . now()->timestamp), 0, 16));
+        $signedAtStr = $signedAt->format('d/m/Y H:i:s');
+        $signHash = strtoupper(substr(
+            hash('sha256', $signRequest->id . $lecturer->id . $signedAt->timestamp),
+            0, 16
+        ));
         $originalFileName = basename($signRequest->original_file);
         $categoryLabel    = $signRequest->document_category_label ?? $signRequest->document_category;
         $certSerial       = $signProfile->certificate_serial ?? 'N/A';
@@ -398,7 +402,7 @@ body { font-family: DejaVu Sans, sans-serif; font-size: 13px; color: #1a1a1a; ba
 <div class="stamp-box">
 <div class="stamp-title">✅ Đã được ký số xác nhận</div>
 <div class="stamp-code">{$signHash}</div>
-<div class="stamp-date">Ký lúc: {$signedAt}</div>
+<div class="stamp-date">Ký lúc: {$signedAtStr}</div>
 </div>
  
 <div class="section">
@@ -424,7 +428,7 @@ body { font-family: DejaVu Sans, sans-serif; font-size: 13px; color: #1a1a1a; ba
 <div class="grid">
     <div class="field"><label>Họ và tên</label><span>{$lecturer->name}</span></div>
     <div class="field"><label>Email</label><span>{$lecturer->email}</span></div>
-    <div class="field"><label>Thời gian ký</label><span>{$signedAt}</span></div>
+    <div class="field"><label>Thời gian ký</label><span>{$signedAtStr}</span></div>
     <div class="field"><label>Mã xác nhận</label><span style="font-family:monospace;color:#0d9488">{$signHash}</span></div>
 </div>
  
@@ -458,7 +462,7 @@ body { font-family: DejaVu Sans, sans-serif; font-size: 13px; color: #1a1a1a; ba
 </div>
  
 <div class="footer">
-<p>Tài liệu được tạo tự động bởi hệ thống EduGroup · {$signedAt}</p>
+<p>Tài liệu được tạo tự động bởi hệ thống EduGroup · {$signedAtStr}</p>
 <p>Đây là xác nhận điện tử có giá trị trong phạm vi hệ thống</p>
 </div>
  
