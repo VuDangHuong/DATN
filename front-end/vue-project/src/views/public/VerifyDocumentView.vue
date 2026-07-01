@@ -251,7 +251,7 @@ async function handleVerify() {
   try {
     // Public endpoint, không cần auth header
     const { data } = await axios.post(
-      `${import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000/api'}/public/verify/file`,
+      `${import.meta.env.VITE_API_URL}/api/public/verify/file`,
       fd,
       { headers: { 'Content-Type': 'multipart/form-data' } },
     )
