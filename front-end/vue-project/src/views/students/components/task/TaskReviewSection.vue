@@ -11,7 +11,7 @@
     <!-- ─── Assignee: Status = doing → Nút Báo hoàn thành ─── -->
     <div v-if="canSubmitReview">
       <div class="flex items-start gap-2 mb-3">
-        <span class="text-lg">🎯</span>
+        <!-- <span class="text-lg">🎯</span> -->
         <div class="flex-1">
           <p class="text-sm font-semibold text-stone-700">Hoàn thành công việc?</p>
           <p class="text-base text-stone-500 mt-0.5">
@@ -23,7 +23,7 @@
         @click="showSubmitModal = true"
         class="w-full py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700"
       >
-        📤 Báo hoàn thành
+        Báo hoàn thành
       </button>
     </div>
 
